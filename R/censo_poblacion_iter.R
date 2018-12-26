@@ -2,7 +2,7 @@
 #' ITER
 #'
 #' @param year Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.
-#' @param estado Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi", "Nacional.
+#' @param estado Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi", "Nacional".
 #' @param totalestado TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel estado.
 #' @param totalmunici TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel municipio.
 #' @param nolocalidad TRUE para no obtener información observaciones a nivel localidad.
