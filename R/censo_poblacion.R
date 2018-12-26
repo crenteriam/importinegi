@@ -1,8 +1,8 @@
 #' Censos y Conteos de Población y Vivienda.
 #'
-#' @param type Tipo de base de datos requerida. Las opciones son: "iter", "ageb", "EntornoUrbano", "Rural", y "Muestra". La opción "Muestra" requiere especificaciones adicionales en el argumento "muestra".
+#' @param type Proyecto INEGI. Opciones: "iter", "ageb", "EntornoUrbano", "Rural", y "Muestra". La opción "Muestra" tiene argumentos adicionales.
 #' @param year Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.
-#' @param state La función regresa la base de datos nacional por default. Si se requiere sólo un estado, utilizar el nombre del estado. Por ejemplo, "Aguascalientes". El Distrito Federal se especifica "CDMX". Para estados con dos o más palabras no utilzar espacios. Por ejemplo, "SanLuisPotosi".
+#' @param state Descarga datos por estado. Utilizar el nombre del estado, sin espacios. Ejemplos: "Aguascalientes", "CDMX", "SanLuisPotosi". NA/Default = Nacional.
 #' @param totalent Para el formato "iter", TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel estado.
 #' @param totalmun Para el formato "iter", TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel municipio.
 #' @param noloc Para el formato "iter", TRUE para no obtener información observaciones a nivel localidad.
