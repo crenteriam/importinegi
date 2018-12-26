@@ -11,11 +11,12 @@ censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado
   library(foreign) # Importar archivos dbf.
 
 # Informacion de la version
-message("censo_poblacion_iter() Versión 1.0. Años disponibles: 1990, 2000 y 2010. \nPara los an~os 2015, 2005 y 1995 ver conteo_poblacion_iter(). \n \n")
+message("censo_poblacion_iter() Versión 1.0. Años disponibles: 1990, 2000 y 2010.
+        \nPara los an~os 2015, 2005 y 1995 ver conteo_poblacion_iter(). \n \n")
 
-  # Objetos generales
-  formato_archivo = "dbf"
-  inegi.base      = "http://www.beta.inegi.org.mx/contenidos/programas/ccpv/"
+# Objetos generales
+formato_archivo = "dbf"
+inegi.base      = "http://www.beta.inegi.org.mx/contenidos/programas/ccpv/"
 
 # Estado  -------------------------------------------------------------
   if      (estado == "Aguascalientes"){   censo.state = "01" }
@@ -59,15 +60,13 @@ message("censo_poblacion_iter() Versión 1.0. Años disponibles: 1990, 2000 y 20
 #1 Obtener URL
 censo.url.iter  = paste0(inegi.base, year, "/microdatos/iter/", censo.state, "_",
                          tolower(estado), "_", year, "_", "iter_dbf.zip")
-# http://www.beta.inegi.org.mx/contenidos/programas/ccpv/1990/microdatos/iter/00_nacional_1990_iter_dbf.zip
-
 
 #2 Descarga archivo temporal
 censo.temp.iter = base::tempfile()
 download.file(censo.url.iter, censo.temp.iter)
 
 #3 Unzip, read file and fix missing. Unlink temporary file
-data.output.iter = foreign::read.dbf((utils::unzip(censo.temp.iter)))
+data.output.iter = foreign::read.dbf((utils::unzip(censo.temp.iter)), as.is = TRUE)
 data.output.iter[data.output.iter=="*"]<-NA  # Crea datos perdidos
 
 #4 TOTALENT - Total Entidad Federativa
