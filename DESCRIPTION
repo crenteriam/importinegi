@@ -2,12 +2,13 @@ Package: importinegi
 Title: Importar Datos de INEGI
 Version: 0.0.0.9000
 Authors@R: person("Cesar", "Renteria", email = "crenteria@albany.edu", role = c("aut", "cre"))
+Author: Cesar Renteria [aut, cre]
+Maintainer: Cesar Renteria <crenteria@albany.edu>
 Description: What the package does (one paragraph). Add another sencence. Then another. And then another, so you see a paragraph here.
 Depends: R (>= 3.3.1)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: foreign,
-    dplyr,
+Imports: foreign, dplyr
+Suggests: tidyverse
 RoxygenNote: 6.1.1
-Suggests: testthat

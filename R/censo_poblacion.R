@@ -50,7 +50,7 @@ censo_poblacion <- function(type = "iter", year = "2010", state = "Nacional", to
   else if (state == "Yucatan") { ccpv.state = "31"}
   else if (state == "Zacatecas"){ccpv.state = "32"}
   else if (state == "Nacional") {ccpv.state = "00"}
-  else {stop("Argumento requerido: selecciona un estado o 'Nacional'")}
+  else {stop("Argumento requerido: nombra un estado o 'Nacional'")}
 
   #############################################################################################
   ### YEAR 2010
@@ -64,8 +64,8 @@ censo_poblacion <- function(type = "iter", year = "2010", state = "Nacional", to
     #1 ITER -----------------------------------------------------------------------------------
     if (type=="iter"){
       #1 GET URL
-      ccpv.url.iter  = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/ccpv/", year, "/microdatos/", type, "/", ccpv.state, "_",
-                              tolower(state), "_", year, "_", type, "_zip.zip")
+      ccpv.url.iter  = paste0("http://www.beta.inegi.org.mx/contenidos/programas/ccpv/", year, "/microdatos/", type, "/", ccpv.state, "_",
+                              tolower(state), "_", year, "_", type, "_dbf.zip")
       #2 DOWNLOAD TEMPORARY FILE
       ccpv.temp.iter = base::tempfile()
       download.file(ccpv.url.iter, ccpv.temp.iter)
