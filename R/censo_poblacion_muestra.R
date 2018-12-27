@@ -8,12 +8,11 @@
 censo_poblacion_muestra <- function(year = "2010", estado = NA, muestra = NA){
   library(foreign) # Importar archivos dbf.
 
-# Debugger:
+# Debug.
 if ((muestra!="Personas" | muestra!= "Migrantes" | muestra!="Viviendas") & year!="1990"){
   stop("La funcion no reconoce la muestra requerida.
        \rLas muestras validas son: \"Personas\", \"Viviendas\" y \"Migrantes\".
        \rEl Censo 1990 no requiere tipo de muestra, ya que existe una sola base de datos disponible.")} else{}
-# TODO: Mostrar errores si no tiene estado o muestra.
 
 # Informacion de la version
   message("censo_poblacion_rural() Versión 1.0.
