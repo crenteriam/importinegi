@@ -11,8 +11,11 @@ censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado
   library(foreign) # Importar archivos dbf.
 
 # Informacion de la version
-message("censo_poblacion_iter() Versión 1.0. Años disponibles: 1990, 2000 y 2010.
-        \nPara los an~os 2015, 2005 y 1995 ver conteo_poblacion_iter(). \n \n")
+message("censo_poblacion_iter() Versión 1.0.
+        \rPrincipales resultados por localidad (ITER)
+        \rAños disponibles: 1990, 2000 y 2010.
+        \nPara los an~os 2015, 2005 y 1995 usar conteo_poblacion_iter().
+        \r\n")
 
 # Objetos generales
 formato_archivo = "dbf"

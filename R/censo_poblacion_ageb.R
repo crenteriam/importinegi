@@ -12,7 +12,10 @@ censo_poblacion_ageb <- function(year = "2010", estado = NA , totalestado = FALS
 library(foreign) # Importar archivos dbf.
 
 # Informacion de la version
-message("censo_poblacion_ageb() Versión 1.0. Años disponibles: 2010. \n\n")
+message("censo_poblacion_ageb() Versión 1.0.
+        \rPrincipales resultados por AGEB y manzana urbana
+        \rAños disponibles: 2010.
+        \r\n")
 
 # Objetos generales
 formato_archivo = "dbf"
