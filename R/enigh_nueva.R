@@ -17,6 +17,7 @@
 enigh_nueva = function(year = NA, hogares = FALSE, concentrado = FALSE, erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE, poblacion = FALSE, ingresos = FALSE, gastopersona = FALSE, trabajos = FALSE, agro = FALSE, noagro = FALSE){
 library(dplyr)
 library(foreign)
+library(data.table)
 # General
 enigh.nueva.base = "https://www.inegi.org.mx/contenidos/programas/enigh/nc/"
 nuevaconstruccion = "NCV"
@@ -152,11 +153,11 @@ names(data.enigh) = tolower(names(data.enigh))
         # Unzip y abrir
         utils::unzip(temp.enigh, exdir = zipdir)
         if (year == 2014 | year == 2012) {ruta_nest3 = paste0(zipdir, "\\\\", tolower(nuevaconstruccion), tolower(Poblacion), year, "_concil_2010_", formato_archivo)}
-        else if (year == 2010 | year == 2008) {ruta_nest3 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), Poblacion, year, "_concil_2010_", toupper(formato_archivo))} else {}
+        else if (year == 2010 | year == 2008) {ruta_nest3 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), Poblacion, year, "_concil_2010_", toupper(formato_archivo))}
         data.enigh.N3 = foreign::read.dbf(paste0(ruta_nest3, ".", formato_archivo), as.is = TRUE)
         names(data.enigh.N3) = tolower(names(data.enigh.N3))
-        if (hogares == TRUE) {data.enigh = dplyr::full_join(data.enigh, data.enigh.N3, by=c("folioviv", "foliohog"), type="left", match="all")}
-        else if (hogares == FALSE) {data.enigh = data.enigh.N3}
+        data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog"))[data.table::data.table(data.enigh.N3,key=c("folioviv", "foliohog")), allow.cartesian=TRUE]
+        if (hogares == FALSE) {data.enigh = data.enigh.N3}
 
         ### Nest 4: Poblacion -> Ingresos  ---------------------------------------------------
         if (ingresos == TRUE & poblacion == FALSE) {stop(message("Poblacion debe ser TRUE"))} else {}
