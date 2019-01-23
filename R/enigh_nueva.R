@@ -53,7 +53,7 @@ names(data.enigh) = tolower(names(data.enigh))
   else if (hogares == TRUE) {
       hogares = "NCV_Hogares_"
       # Descargar Datos
-      Sys.sleep(sample(1:3, 1)) # Some sleeping time
+      #Sys.sleep(sample(1:3, 1)) # Some sleeping time
       url.hogares = paste0(url.base, hogares, year, "_concil_2010_", formato_archivo, ".zip")
       utils::download.file(url.hogares, temp.enigh)
 
@@ -87,7 +87,7 @@ names(data.enigh) = tolower(names(data.enigh))
       else if (erogaciones == TRUE & concentrado == FALSE & gastohogar == FALSE & gastotarjetas == FALSE & poblacion == FALSE){
 
         # Descargar archivos
-        Sys.sleep(sample(1:3, 1))
+        #Sys.sleep(sample(1:3, 1))
         Erogaciones = "_Erogaciones_"
         url.erogaciones = paste0(url.base, toupper(nuevaconstruccion), Erogaciones, year, "_concil_2010_", formato_archivo, ".zip")
         utils::download.file(url.erogaciones, temp.enigh)
@@ -106,7 +106,7 @@ names(data.enigh) = tolower(names(data.enigh))
       else if (gastohogar  == TRUE & concentrado == FALSE & erogaciones == FALSE & gastotarjetas == FALSE & poblacion == FALSE){
 
         # Descargar datos
-        Sys.sleep(sample(1:3, 1))
+        #Sys.sleep(sample(1:3, 1))
         gasto_hogar = "_Gastohogar_"
         url.gasto_hogar = paste0(url.base, toupper(nuevaconstruccion), gasto_hogar, year, "_concil_2010_", formato_archivo, ".zip")
         if (year == 2010 | year ==2008) {url.gasto_hogar = paste0(url.base, toupper(nuevaconstruccion), "_Gastos_", year, "_concil_2010_", formato_archivo, ".zip")}
@@ -126,7 +126,7 @@ names(data.enigh) = tolower(names(data.enigh))
       else if (gastotarjetas == TRUE & concentrado == FALSE & erogaciones == FALSE & gastohogar == FALSE & poblacion == FALSE){
 
         # Descargar datos
-        Sys.sleep(sample(1:3, 1))
+        #Sys.sleep(sample(1:3, 1))
         gasto_tarjetas = "_Gastotarjetas_"
         url.gasto_tarjetas = paste0(url.base, toupper(nuevaconstruccion), gasto_tarjetas, year, "_concil_2010_", formato_archivo, ".zip")
         utils::download.file(url.gasto_tarjetas, temp.enigh)
@@ -145,7 +145,7 @@ names(data.enigh) = tolower(names(data.enigh))
       else if (poblacion == TRUE & concentrado == FALSE & erogaciones == FALSE & gastohogar == FALSE & gastotarjetas == FALSE){
 
         # Descargar datos
-        Sys.sleep(sample(1:3, 1))
+        #Sys.sleep(sample(1:3, 1))
         Poblacion = "_Poblacion_"
         url.poblacion = paste0(url.base, toupper(nuevaconstruccion), Poblacion, year, "_concil_2010_", formato_archivo, ".zip")
         utils::download.file(url.poblacion, temp.enigh)
@@ -156,15 +156,15 @@ names(data.enigh) = tolower(names(data.enigh))
         else if (year == 2010 | year == 2008) {ruta_nest3 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), Poblacion, year, "_concil_2010_", toupper(formato_archivo))}
         data.enigh.N3 = foreign::read.dbf(paste0(ruta_nest3, ".", formato_archivo), as.is = TRUE)
         names(data.enigh.N3) = tolower(names(data.enigh.N3))
+        if (hogares == FALSE) {stop(print("Hogares debe ser TRUE"))}
         data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog"))[data.table::data.table(data.enigh.N3,key=c("folioviv", "foliohog")), allow.cartesian=TRUE]
-        if (hogares == FALSE) {data.enigh = data.enigh.N3}
 
         ### Nest 4: Poblacion -> Ingresos  ---------------------------------------------------
         if (ingresos == TRUE & poblacion == FALSE) {stop(message("Poblacion debe ser TRUE"))} else {}
         if (ingresos == TRUE & gastopersona == FALSE & trabajos == FALSE){
 
           # Descargar datos
-          Sys.sleep(sample(1:3, 1))
+          #Sys.sleep(sample(1:3, 1))
           n4_ingresos = "_Ingresos_"
           url.ingresos = paste0(url.base, toupper(nuevaconstruccion), n4_ingresos, year, "_concil_2010_", formato_archivo, ".zip")
           utils::download.file(url.ingresos, temp.enigh)
@@ -175,17 +175,19 @@ names(data.enigh) = tolower(names(data.enigh))
           else if (year == 2010 | year == 2008) {ruta_nest4 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), n4_ingresos, year, "_concil_2010_", toupper(formato_archivo), ".", formato_archivo)} else {}
           data.enigh.N4 = foreign::read.dbf(ruta_nest4, as.is = TRUE)
           names(data.enigh.N4) = tolower(names(data.enigh.N4))
-          #data.enigh = dplyr::full_join(data.enigh, data.enigh.N4, by=c("folioviv", "foliohog", "numren"), type="left")
-          data.enigh = data.enigh.N4
+          if (hogares == FALSE | poblacion == FALSE) {stop(print("Hogares y Poblacion deben ser TRUE"))}
+          data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren"))[data.table::data.table(data.enigh.N4,key=c("folioviv", "foliohog", "numren")), allow.cartesian=TRUE]
+          if (poblacion == FALSE) {data.enigh = data.enigh.N4}
         } # End of Nest_4 Ingresos
 
         ### Nest 4: Poblacion -> Gastopersona  ----------------------------------------------
         if (gastopersona == TRUE & ingresos == FALSE & trabajos == FALSE){
 
           # Descargar datos
-          Sys.sleep(sample(1:3, 1))
+          #Sys.sleep(sample(1:3, 1))
           n4_gastopersona = "_Gastopersona_"
           url.ingresos = paste0(url.base, toupper(nuevaconstruccion), n4_gastopersona, year, "_concil_2010_", formato_archivo, ".zip")
+          utils::download.file(url.ingresos, temp.enigh)
 
           # Unzip y abrir
           utils::unzip(temp.enigh, exdir = zipdir)
@@ -193,17 +195,17 @@ names(data.enigh) = tolower(names(data.enigh))
           else if (year == 2010 | year == 2008) {ruta_nest4 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), n4_gastopersona, year, "_concil_2010_", toupper(formato_archivo), ".", formato_archivo)} else {}
           data.enigh.N4 = foreign::read.dbf(ruta_nest4, as.is = TRUE)
           names(data.enigh.N4) = tolower(names(data.enigh.N4))
-          #data.enigh = dplyr::full_join(data.enigh, data.enigh.N4, by=c("folioviv", "foliohog", "numren"), type="left")
-          data.enigh = data.enigh.N4
+          if (hogares == FALSE | poblacion == FALSE) {stop(print("Hogares y Poblacion deben ser TRUE"))}
+          data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren"))[data.table::data.table(data.enigh.N4,key=c("folioviv", "foliohog", "numren")), allow.cartesian=TRUE]
         } # End of Nest_4 Gasto Persona
 
         ### Nest 4: Poblacion - > Trabajos  -----------------------------------------------
         if (trabajos == TRUE & ingresos == FALSE & gastopersona == FALSE){
 
           # Descargar
-          Sys.sleep(sample(1:3, 1))
+          #Sys.sleep(sample(1:3, 1))
           n4_trabajos = "_Trabajos_"
-          url.trabajos = paste0(url.base, year, toupper(nuevaconstruccion), n4_trabajos, year, "_concil_2010_", formato_archivo, ".zip")
+          url.trabajos = paste0(url.base, toupper(nuevaconstruccion), n4_trabajos, year, "_concil_2010_", formato_archivo, ".zip")
           utils::download.file(url.trabajos, temp.enigh)
 
           # Unzip y abrir
@@ -212,8 +214,8 @@ names(data.enigh) = tolower(names(data.enigh))
           else if (year == 2010 | year == 2008) {ruta_nest4 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), n4_trabajos, year, "_concil_2010_", toupper(formato_archivo), ".", formato_archivo)} else {}
           data.enigh.N4 = foreign::read.dbf(ruta_nest4, as.is = TRUE)
           names(data.enigh.N4) = tolower(names(data.enigh.N4))
-          #data.enigh = dplyr::full_join(data.enigh, data.enigh.N4, by=c("folioviv", "foliohog", "numren"), type="left")
-          data.enigh = data.enigh.N4
+          data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren"))[data.table::data.table(data.enigh.N4,key=c("folioviv", "foliohog", "numren")), allow.cartesian=TRUE]
+          if (hogares == FALSE | poblacion == FALSE) {stop(print("Hogares o Poblacion deben ser TRUE"))}
 
           #data.enigh$fk_trabajo = paste0(as.character(data.enigh$id_renglon), as.character(data.enigh$id_trabajo))
 
@@ -222,49 +224,42 @@ names(data.enigh) = tolower(names(data.enigh))
             if (agro == TRUE & noagro == FALSE){
 
               # Descargar
-              Sys.sleep(sample(1:3, 1))
+              #Sys.sleep(sample(1:3, 1))
               n5_agro = "_agropecuario_"
               url.agro = paste0(url.base, toupper(nuevaconstruccion), n5_agro, year, "_concil_2010_", formato_archivo, ".zip")
               utils::download.file(url.agro, temp.enigh)
 
               # Unzip y abrir
               utils::unzip(temp.enigh, exdir = zipdir)
-              if (year == 2014 | year == 2012) {n5_agro = tolower(n5_agro)} else {}
-              data.enigh.N5 = foreign::read.dbf(paste0(zipdir, "\\\\", year, "/microdatos/", toupper(nuevaconstruccion), n5_agro, year, "_concil_2010_", formato_archivo, ".", formato_archivo))
-              data.enigh.N5$fk_trabajo = paste0(as.character(data.enigh.N5$folioviv), as.character(data.enigh.N5$foliohog), as.character(data.enigh.N5$numren), as.character(data.enigh.N5$id_trabajo))
-              data.enigh$id_trabajo = NULL
-              data.enigh$numren = NULL
-              data.enigh$folioviv = NULL
-              data.enigh$foliohog = NULL
-              data.enigh = dplyr::full_join(data.enigh, data.enigh.N5, by="fk_trabajo", type="left", match = "all")
+              if (year == 2014 | year == 2012) {ruta_nest5 = paste0(zipdir, "\\\\", tolower(nuevaconstruccion), tolower(n5_agro), year, "_concil_2010_", formato_archivo, ".", formato_archivo)}
+              else if (year == 2010 | year == 2008) {ruta_nest5 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), n5_agro, year, "_concil_2010_", toupper(formato_archivo), ".", formato_archivo)} else {}
+              data.enigh.N5 = foreign::read.dbf(ruta_nest5, as.is = TRUE)
+              names(data.enigh.N5) = tolower(names(data.enigh.N5))
+              data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren", "id_trabajo"))[data.table::data.table(data.enigh.N5,key=c("folioviv", "foliohog", "numren", "id_trabajo")), allow.cartesian=TRUE]
+              if (trabajos == FALSE) {stop(print("Trabajos debe ser TRUE"))}
             } # End of Nest 5: Agro
 
            ### Nest 5: Poblacion -> Trabajos -> NoAgro  --------------------------------
             if (noagro == TRUE & agro == FALSE){
 
               # Descargar
-              Sys.sleep(sample(1:3, 1))
+              #Sys.sleep(sample(1:3, 1))
               n5_noagro = "_Noagropecuario_"
               url.noagro = paste0(url.base, toupper(nuevaconstruccion), n5_noagro, year, "_concil_2010_", formato_archivo, ".zip")
               utils::download.file(url.noagro, temp.enigh)
 
               # Unzip y abrir
               utils::unzip(temp.enigh, exdir = zipdir)
-              if (year == 2014 | year == 2012) {n5_noagro = tolower(n5_noagro)} else {}
-              data.enigh.N5 = foreign::read.dbf(paste0(zipdir, "\\\\", year, "/microdatos/", toupper(nuevaconstruccion), n5_noagro, "_concil_2010_", formato_archivo, ".", formato_archivo))
-              data.enigh.N5$fk_trabajo = paste0(as.character(data.enigh.N5$folioviv), as.character(data.enigh.N5$foliohog), as.character(data.enigh.N5$numren), as.character(data.enigh.N5$id_trabajo))
-              data.enigh$id_trabajo = NULL
-              data.enigh$numren = NULL
-              data.enigh$folioviv = NULL
-              data.enigh$foliohog = NULL
-              data.enigh = dplyr::full_join(data.enigh, data.enigh.N5, by="fk_trabajo", type="left", match = "all")
+              if (year == 2014 | year == 2012) {ruta_nest5 = paste0(zipdir, "\\\\", tolower(nuevaconstruccion), tolower(n5_noagro), year, "_concil_2010_", formato_archivo, ".", formato_archivo)}
+              else if (year == 2010 | year == 2008) {ruta_nest5 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), n5_noagro, year, "_concil_2010_", toupper(formato_archivo), ".", formato_archivo)} else {}
+              data.enigh.N5 = foreign::read.dbf(ruta_nest5, as.is = TRUE)
+              names(data.enigh.N5) = tolower(names(data.enigh.N5))
+              data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren", "id_trabajo"))[data.table::data.table(data.enigh.N5,key=c("folioviv", "foliohog", "numren", "id_trabajo")), allow.cartesian=TRUE]
+              if (trabajos == FALSE) {stop(print("Trabajos debe ser TRUE"))}
             } # End of Nest 5: NoAgro
-          data.enigh$fk_trabajo = NULL # Data from Nest 4: Poblacion -> Trabajos
         } # End Nest 4: Poblacion - > Trabajos
-        data.enigh$id_renglon = NULL # Data from Poblacion
       } #End of Nest 3: Poblacion
       else if (concentrado == FALSE & erogaciones == FALSE & gastohogar == FALSE & gastotarjetas == FALSE & poblacion == FALSE) {}
       else {stop(message("Dos o mas de los siguentes parametros no pueden ser TRUE al mismo tiempo: concentrado, erogaciones, gastohogar, gastotarjetas y poblacion."))}
-  data.enigh$id = NULL
   return(data.enigh)
 } # End of Function
