@@ -1,20 +1,24 @@
-#' Red Nacional de Caminos
+#' Marco Geoestadistico Nacional
 #'
 #' @param year An~o (1995-2018)
 #' @param capa Opciones: entidades, municipios, ageb, urbano, rural
 #' @param version Algunos an~ tienen multiples versiones. Si no la sabes, el mensaje de error te dara las opcines.
 # shell.exec("https://www.inegi.org.mx/temas/mapas/mg/")
 
-#marco_geoestadistico <- function(year = NA, capa = NA, version = NA){
+sig_marcogeo <- function(year = NA, capa = NA, version = NA){
 library(rgdal)
+
+# Generales -----------------------------------------------------------------
 # Informacion de la version
-message("marco_geoestadistico() Versión 1.0.
+message("sig_marcogeo() Versión 1.0.
         \rMarco Geoestadistico Nacional
         \rAños disponible: 1995-2018
         \r\n")
 
 # Get Help and More Information
 if (is.na(year) & is.na(capa) & is.na(version)) {base::shell.exec("https://www.inegi.org.mx/temas/mapas/mg/")}
+
+# Inicio --------------------------------------------------------------------
 
 # Links:
 url_base = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/marc_geo/"
@@ -61,3 +65,5 @@ if (capa == rural)      {codigo_capa = "mgu"}
   utils::unzip(paste0(zipdir, "\\\\mgm2000.zip"), exdir = zipdir_municipios)
   map_output = readOGR(dsn = zipdir_entidades, layer = "Entidades_1995")
   map_output = readOGR(dsn = zipdir_municipios, layer = "Municipios_1995")
+
+} # End of Function

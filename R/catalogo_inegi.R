@@ -1,3 +1,7 @@
+#' Cataologo INEGI
+#'
+#' @param id Describe.
+
 catalogo_inegi = function(id = NA){
   open.id = paste0("http://www3.inegi.org.mx/rnm/index.php/catalog/", id, "/data_dictionary")
   if (!is.na(id)) {base::shell.exec(open.id)}
@@ -11,5 +15,3 @@ catalogo_inegi = function(id = NA){
   return(Catalogo)
   } # End of Catálogo General
 } # End of Function
-
-# x
