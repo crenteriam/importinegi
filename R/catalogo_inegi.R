@@ -11,3 +11,5 @@ catalogo_inegi = function(id = NA){
   return(Catalogo)
   } # End of Catálogo General
 } # End of Function
+
+# x
