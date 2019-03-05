@@ -9,6 +9,6 @@ Depends: R (>= 3.3.1)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: foreign, dplyr
+Imports: foreign, dplyr, haven, rgdal
 Suggests: tidyverse
 RoxygenNote: 6.1.1
