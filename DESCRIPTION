@@ -1,10 +1,10 @@
 Package: importinegi
-Title: Importar Datos de INEGI
-Version: 0.0.0.9000
+Title: Paquete para importar datos de INEGI en
+Version: 0.8.0
 Authors@R: person("Cesar", "Renteria", email = "crenteria@albany.edu", role = c("aut", "cre"))
 Author: Cesar Renteria [aut, cre]
 Maintainer: Cesar Renteria <crenteria@albany.edu>
-Description: What the package does (one paragraph). Add another sencence. Then another. And then another, so you see a paragraph here.
+Description: Paquete de R para la importacion de datos de INEGI. La version 1.0 del paquete se concentra en los principales censos, encuestas y mapas.
 Depends: R (>= 3.3.1)
 License: GPL-3
 Encoding: UTF-8
