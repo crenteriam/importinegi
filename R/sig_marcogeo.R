@@ -33,7 +33,7 @@ else if (year == 1995 & (capa == "ageb" | capa == "urbano" | capa == "rural")) {
 # Links:
 url_base = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/marc_geo/"
 
-# URL por An~o
+# URL por An~o - Estructura anterior
 if      (year == 1995) {url_marcogeo = paste0(url_base, "702825292836_s.zip")}
 else if (year == 2000) {url_marcogeo = paste0(url_base, "702825292843_s.zip")}
 else if (year == 2005) {url_marcogeo = paste0(url_base, "702825292850_s.zip")}
@@ -43,6 +43,8 @@ else if (year == 2009) {url_marcogeo = paste0(url_base, "702825292782_s.zip")}
 else if (year == 2010 & version == "5.0") {url_marcogeo = paste0(url_base, "702825292812_s.zip")}
 else if (year == 2010 & version == "5.0.A") {url_marcogeo = paste0(url_base, "702825292805_s.zip")}
 else if (year == 2013) {url_marcogeo = paste0(url_base, "702825292829_s.zip")}
+
+# URL por an~o - Estructura nueva
 #else if (year == 2016) {url_marcogeo = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/marc_geo/702825217341_s.zip"}
 #2.3 GB else if (year == 2017) {url_marcogeo = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/marcogeo/889463171829_s.zip"}
 #else if (year == 2017 & version == "2010.0") {url_marcogeo = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/marcogeo/889463142683_s.zip"}
