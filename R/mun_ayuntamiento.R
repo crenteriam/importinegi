@@ -1,99 +1,32 @@
-mun_ayuntamiento = function(fuente = NA, year = NA){
-  library(foreign)
-  library(rio)
-
-  # Abrir metadatos
-  if (fuente == Na & year == NA) {shell.exec("http://www3.inegi.org.mx/rnm/index.php/catalog/208")}
-
-  # Create Temporary Files
-  fformat = "dbf"
-  temp.cngmd = tempfile()
-  zipdir = tempfile()
+# Administracion
 
 
 
-  # 2011
-
-
-}
-# Fin de la funcion
-
-
-"""
 ### ADMINISTRACION PUBLICA - ESTRUCTURA ---------------------------------------------------------------
-else if (fuente == "INSTITUC" | fuente == "INST_FSE" | fuente == "TITULARE") {
-url.estructura = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Estructura_organizacional_cngmd2015_",fformat, ".zip")
-utils::download.file(url.estructura, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 
-if (fuente == "INSTITUC") {
 raw  = paste0(zipdir, "\\Estructura_organizacional_cngmd2015_dbf\\Bases_de_datos\\INSTITUC.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "INST_FSE") {
 raw  = paste0(zipdir, "\\Estructura_organizacional_cngmd2015_dbf\\Bases_de_datos\\INST_FSE.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "TITULARE") {
 raw  = paste0(zipdir, "\\Estructura_organizacional_cngmd2015_dbf\\Bases_de_datos\\TITULARE.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-} # End of Administracion Publica - Estructura
 
 ### ADMINISTRACION PUBLICA - RECURSOS DE LAS ADMINISTRACIONES ---------------------------------------------------------------
-else if (fuente == "REC_HUMA" | fuente == "REC_PRES" | fuente == "REC_MATE_1" | fuente == "REC_MATE_2"  | fuente == "REC_MATE_3") {
 url.recursos   = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Recursos_cngmd2015_", fformat, ".zip")
-utils::download.file(url.recursos, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
-
-if (fuente == "REC_HUMA") {
 raw  = paste0(zipdir, "\\Recursos_cngmd2015_dbf\\Bases_datos\\REC_HUMA.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "REC_PRES") {
 raw  = paste0(zipdir, "\\Recursos_cngmd2015_dbf\\Bases_datos\\REC_PRES.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "REC_MATE_1") {
 raw  = paste0(zipdir, "\\Recursos_cngmd2015_dbf\\Bases_datos\\REC_MATE_1.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "REC_MATE_2") {
 raw  = paste0(zipdir, "\\Recursos_cngmd2015_dbf\\Bases_datos\\REC_MATE_2.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "REC_MATE_3") {
 raw  = paste0(zipdir, "\\Recursos_cngmd2015_dbf\\Bases_datos\\REC_MATE_3.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-} # End of Recuros de las Administraciones
 
 ### ADMINISTRACION PUBLICA - GOBIERNO ELECTRÓNICO ---------------------------------------------------------------
-else if (fuente == "GOB_ELEC") {
 url.gobiernoelectronico = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Gob_elec_cngmd2015_",fformat, ".zip")
-utils::download.file(url.gobiernoelectronico, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 raw  = paste0(zipdir, "\\Gob_elec_cngmd2015_dbf\\Bases_de_datos\\GOB_ELEC.", fformat)
-data = foreign::read.dbf(raw)
-} # End of Administracion Publica - Gobierno Electronico
 
 ### ADMINISTRACION PUBLICA - PLANEACIÓN Y EVALUACIÓN ---------------------------------------------------------------
-else if (fuente == "PLAN_EVA") {
 url.planeacion = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Plan_evalua_cngmd2015_",fformat, ".zip")
-utils::download.file(url.planeacion, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 raw  = paste0(zipdir, "\\Plan_evalua_cngmd2015_dbf\\Bases_datos\\PLAN_EVA.", fformat)
-data = foreign::read.dbf(raw)
-} # End of Administracion Publica - Planeacion y Evaluacion
 
 ### ADMINISTRACION PUBLICA - ACTIVIDADES ESTADÍSTICAS ---------------------------------------------------------------
-else if (fuente == "ESTA_GEO") {
 url.actividadesestadisticas = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Act_estadis_geograficas_cngmd2015_", fformat, ".zip")
-utils::download.file(url.actividadesestadisticas, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 raw  = paste0(zipdir, "\\Bases_datos\\ESTA_GEO.", fformat)
-data = foreign::read.dbf(raw)
-} # End of Administracion Publica - Actividades y Evaluacion
 
 ### ADMINISTRACION PUBLICA - TRÁMITES Y SERVICIOS ---------------------------------------------------------------
 else if (fuente == "TRAM_SER") {
@@ -343,174 +276,59 @@ data = foreign::read.dbf(raw)
 } # End of Catastro Inspección de Campo
 
 ### CATASTRO - IMPUESTO PREDIAL ------------------------------------------------------------------------
-else if (fuente == "IMP_PRED") {
 url.predial = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Impuesto_predial_cngmd2015_",fformat, ".zip")
-utils::download.file(url.predial, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 raw  = paste0(zipdir, "\\Impuesto_predial_cngmd2015_dbf\\Impuesto_predial_cngmd2015_dbf\\Bases_de_datos\\IMP_PRED.", fformat)
-data = foreign::read.dbf(raw)
-} # End of Catastro Impuesto Predial
 
 ### CATASTRO - VALUACIÓN CATASTRAL ---------------------------------------------------------------------
-else if (fuente == "VAL_CAT") {
 url.valuacion = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Valuacion_catastral_cngmd2015_",fformat, ".zip")
-utils::download.file(url.valuacion, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 raw  = paste0(zipdir, "\\Valuacion_catastral_cngmd2015_dbf\\Valuacion_catastral_cngmd2015_dbf\\Bases_de_datos\\VAL_CAT.", fformat)
-data = foreign::read.dbf(raw)
-} # End of Catastro Valuación Catastral
 
 ### CATASTRO - VINCULACIÓN CATASTRAL -------------------------------------------------------------------
-else if (fuente == "VINC_CAT") {
 url.vinculacion = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m2/Vinculacion_catastral_cngmd2015_",fformat, ".zip")
-utils::download.file(url.vinculacion, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 raw  = paste0(zipdir, "\\Vinculacion_catastral_cngmd2015_dbf\\Vinculacion_catastral_cngmd2015_dbf\\Bases_de_datos\\VINC_CAT.", fformat)
-data = foreign::read.dbf(raw)
-} # End of Catastro Vinculación Catastral
 
 ### SEGURIDAD PÚBLICA - SEGURIDAD PÚBLICA --------------------------------------------------------------
-else if (fuente == "SPEJFUES" | fuente == "SPINFEST" | fuente == "SPINFRAE") {
 url.seguridadpublica = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m3/sp_Seguridad_publica_cngmd2015_",fformat, ".zip")
-utils::download.file(url.seguridadpublica, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
-
-if (fuente == "SPEJFUES") {
 raw  = paste0(zipdir, "\\SP_Seguridad_publica_cngmd2015_dbf\\Bases_datos\\SPEJFUES.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "SPINFEST") {
 raw  = paste0(zipdir, "\\SP_Seguridad_publica_cngmd2015_dbf\\Bases_datos\\SPINFEST.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "SPINFRAE") {
 raw  = paste0(zipdir, "\\SP_Seguridad_publica_cngmd2015_dbf\\Bases_datos\\SPINFRAE.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-} # End of Catastro Seguridad Pública
+
 
 ### SEGURIDAD PÚBLICA - RECURSOS HUMANOS ---------------------------------------------------------------
-else if (fuente == "SPRE_HUM_1" | fuente == "SPRE_HUM_2" | fuente == "SPRE_HUM_3" | fuente == "SPRE_HUM_4" | fuente == "SPRE_HUM_5" | fuente == "SPRE_HUM_6") {
 url.rh = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m3/sp_Recursos_cngmd2015_",fformat, ".zip")
-utils::download.file(url.rh, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
-
-if (fuente == "SPRE_HUM_1") {
 raw  = paste0(zipdir, "\\SP_Recursos_cngmd2015_dbf\\Bases_datos\\SPRE_HUM_1.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "SPRE_HUM_2") {
 raw  = paste0(zipdir, "\\SP_Recursos_cngmd2015_dbf\\Bases_datos\\SPRE_HUM_2.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "SPRE_HUM_3") {
 raw  = paste0(zipdir, "\\SP_Recursos_cngmd2015_dbf\\Bases_datos\\SPRE_HUM_3.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "SPRE_HUM_4") {
 raw  = paste0(zipdir, "\\SP_Recursos_cngmd2015_dbf\\Bases_datos\\SPRE_HUM_4.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "SPRE_HUM_5") {
 raw  = paste0(zipdir, "\\SP_Recursos_cngmd2015_dbf\\Bases_datos\\SPRE_HUM_5.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "SPRE_HUM_6") {
 raw  = paste0(zipdir, "\\SP_Recursos_cngmd2015_dbf\\Bases_datos\\SPRE_HUM_6.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-} # End of Catastro Recursos Humanos
+
 
 ### SEGURIDAD PÚBLICA - EJERCICIO DE LA FUNCIÓN --------------------------------------------------------
-else if (fuente == "EJER_FNC_1" | fuente == "EJER_FNC_2" | fuente == "EJER_FNC_3" | fuente == "EJER_FNC_4" | fuente == "EJER_FNC_5" | fuente == "EJER_FNC_6") {
 url.funcion = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m3/SP_Ejercicio_funcion_cngmd2015_",fformat, ".zip")
-utils::download.file(url.funcion, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
-
-if (fuente == "EJER_FNC_1") {
 raw  = paste0(zipdir, "\\SP_Ejercicio_funcion_cngmd2015_dbf\\Bases_datos\\EJER_FNC_1.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJER_FNC_2") {
 raw  = paste0(zipdir, "\\SP_Ejercicio_funcion_cngmd2015_dbf\\Bases_datos\\EJER_FNC_2.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJER_FNC_3") {
 raw  = paste0(zipdir, "\\SP_Ejercicio_funcion_cngmd2015_dbf\\Bases_datos\\EJER_FNC_3.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJER_FNC_4") {
 raw  = paste0(zipdir, "\\SP_Ejercicio_funcion_cngmd2015_dbf\\Bases_datos\\EJER_FNC_4.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJER_FNC_5") {
 raw  = paste0(zipdir, "\\SP_Ejercicio_funcion_cngmd2015_dbf\\Bases_datos\\EJER_FNC_5.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJER_FNC_6") {
 raw  = paste0(zipdir, "\\SP_Ejercicio_funcion_cngmd2015_dbf\\Bases_datos\\EJER_FNC_6.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-} # End of Catastro Ejercicio de la Función
 
 ### JUSTICIA MUNICIPAL - RECURSOS HUMANOS --------------------------------------------------------------
-else if (fuente == "RE_HU_JM_1" | fuente == "RE_HU_JM_2" | fuente == "RE_HU_JM_3") {
 url.rh = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m4/JM_Recursos_cngmd2015_",fformat, ".zip")
-utils::download.file(url.rh, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
-
-if (fuente == "RE_HU_JM_1") {
 raw  = paste0(zipdir, "\\JM_Recursos_cngmd2015_dbf\\Bases_de_datos\\RE_HU_JM_1.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "RE_HU_JM_2") {
 raw  = paste0(zipdir, "\\JM_Recursos_cngmd2015_dbf\\Bases_de_datos\\RE_HU_JM_2.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "RE_HU_JM_3") {
 raw  = paste0(zipdir, "\\JM_Recursos_cngmd2015_dbf\\Bases_de_datos\\RE_HU_JM_3.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-} # End of Catastro Recursos Humanos
+
 
 ### JUSTICIA MUNICIPAL - INFRAESTRUCTURA ---------------------------------------------------------------
-else if (fuente == "JC_INFRA") {
-url.infraestructura = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m4/JM_Infraestuctura_cngmd2015_",fformat, ".zip")
-utils::download.file(url.infraestructura, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
 raw  = paste0(zipdir, "\\JM_Infraestuctura_cngmd2015_dbf\\Bases_de_datos\\JC_INFRA.", fformat)
-data = foreign::read.dbf(raw)
-} # End of Catastro Infraestructura
 
 ### JUSTICIA MUNICIPAL - EJERCICIO DE LA FUNCIÓN -------------------------------------------------------
-else if (fuente == "EJ_FJMU_1" | fuente == "EJ_FJMU_2" | fuente == "EJ_FJMU_3" | fuente == "EJ_FJMU_4" | fuente == "EJ_FJMU_5" | fuente == "EJ_FJMU_6") {
 url.ejercicio = paste0("http://www.beta.inegi.org.mx/contenidos/proyectos/censosgobierno/municipal/cngmd/2015/microdatos/m4/JM_Ejercicio_funcion_cngmd2015_",fformat, ".zip")
-utils::download.file(url.ejercicio, temp.cngmd)
-utils::unzip(temp.cngmd, exdir = zipdir)
-
-if (fuente == "EJ_FJMU_1") {
 raw  = paste0(zipdir, "\\JM_Ejercicio_funcion_cngmd2015_dbf\\Bases_de_datos\\EJ_FJMU_1.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJ_FJMU_2") {
 raw  = paste0(zipdir, "\\JM_Ejercicio_funcion_cngmd2015_dbf\\Bases_de_datos\\EJ_FJMU_2.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJ_FJMU_3") {
 raw  = paste0(zipdir, "\\JM_Ejercicio_funcion_cngmd2015_dbf\\Bases_de_datos\\EJ_FJMU_3.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJ_FJMU_4") {
 raw  = paste0(zipdir, "\\JM_Ejercicio_funcion_cngmd2015_dbf\\Bases_de_datos\\EJ_FJMU_4.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJ_FJMU_5") {
 raw  = paste0(zipdir, "\\JM_Ejercicio_funcion_cngmd2015_dbf\\Bases_de_datos\\EJ_FJMU_5.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-if (fuente == "EJ_FJMU_6") {
 raw  = paste0(zipdir, "\\JM_Ejercicio_funcion_cngmd2015_dbf\\Bases_de_datos\\EJ_FJMU_6.", fformat)
-data = foreign::read.dbf(raw)
-} # End Nest-Unzip
-} # End of Catastro Ejercicio de la Funcion
 """
