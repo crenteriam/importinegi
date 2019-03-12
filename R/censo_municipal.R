@@ -188,7 +188,7 @@ else {}
 
   # Read all .dbf files in the folder
   for (i in list_dataraw) {
-    Object = read.dbf(paste0(zipdir, folder.complemento, i))
+    Object = read.dbf(paste0(zipdir, folder.complemento, i), as.is = TRUE)
     Object$UBIC_GEO = paste0(formatC(as.character(Object$UBIC_GEO), width=5, flag="0"))
     assign(paste0("dt.", tools::file_path_sans_ext(i)), Object)
   }
