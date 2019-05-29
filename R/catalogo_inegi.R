@@ -1,6 +1,20 @@
 #' Cataologo INEGI
 #'
-#' @param id Describe.
+#' Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de una base de datos en particular.
+#'
+#' la funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id})). Si conoces el \code{id} de la base de datos requerida, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos.
+#'
+#' @param id Numero de identificacion unico de las bases de datos disponibles en el repositorio la Red Nacional de Metadatos del INEGI
+#'
+#' @examples
+#'
+#' # Almacena el catalogo como base de datos
+#' dt.catalogo <- catalogo_inegi()
+#'
+#' # Consulta metadatos de una base de datos.
+#' catalogo_inegi(id = 489)
+#'
+#' @seealso Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
 
 catalogo_inegi = function(id = NA){
   open.id = paste0("http://www3.inegi.org.mx/rnm/index.php/catalog/", id, "/data_dictionary")
