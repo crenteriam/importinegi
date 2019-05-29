@@ -9,7 +9,7 @@ censo_municipal(fuente = NA, year = NA, datos = NA)
 \arguments{
 \item{fuente}{Fuente de datos de las instituciones públicas de municipales y delegacionales en formato alfanumerico. Las opciones son: ayuntamiento, administracion, seguridad, justicia.}
 
-\item{year}{Año del levantamiento del censo en formato numerico. Los a\n{~}os disponibles son 2011, 2013, 2015 y 2017.}
+\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles son 2011, 2013, 2015 y 2017.}
 
 \item{datos}{Base de datos producida por cada fuente de datos en formato alfanumerico. Las opciones pueden ser, segun la fuente de datos: comision, estructura, funciones, marco, participacion, recursos, tramites, transparencia, ejercicio, infraestructura, y recursos.}
 }

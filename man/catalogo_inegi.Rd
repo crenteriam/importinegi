@@ -2,7 +2,7 @@
 % Please edit documentation in R/catalogo_inegi.R
 \name{catalogo_inegi}
 \alias{catalogo_inegi}
-\title{Cataologo INEGI}
+\title{Catalogo INEGI}
 \usage{
 catalogo_inegi(id = NA)
 }

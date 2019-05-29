@@ -1,4 +1,4 @@
-#' Censo de Poblacion - Localidades Rurales
+#' Censo de Poblacion - Localidades rurales
 #'
 #' Censo de Poblacion y Vivienda. Resultados sobre localidades con menos de 5 mil habitantes
 #'

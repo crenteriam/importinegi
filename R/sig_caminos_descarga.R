@@ -1,8 +1,8 @@
-#' Red Nacional de Caminos
+#' Red Nacional de Caminos - Descarga Datos
 #'
 #' @param year An`o de la version de la Red Nacional de Caminos (disponibles 2016, 2017, 2018)
 
-sig_caminos <- function(year = NA){
+sig_caminos_descarga <- function(year = NA){
 # Generales -----------------------------------------------------------------
 # shell.exec("https://www.inegi.org.mx/temas/mapas/viascomunicacion/")
 

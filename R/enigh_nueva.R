@@ -1,4 +1,5 @@
-#' Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH).
+#' ENIGH Nueva Construccion (2008-2014)
+#'
 #' @param year Año de levantamiento de la encuesta
 #' @param hogares En esta tabla se encuentran contenidas las características de los hogares que habitan los integrantes de los mismos.
 #' @param concentrado Principales variables por hogar. En esta tabla se encuentran las variables construidas a partir de las otras tablas de la base de datos. Registra el resumen concentrado por hogar, de ingresos y gastos en toda modalidad posible. Además todos los ingresos y gastos registrados en esta tabla son trimestrales.

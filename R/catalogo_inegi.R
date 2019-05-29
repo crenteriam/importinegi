@@ -1,4 +1,4 @@
-#' Cataologo INEGI
+#' Catalogo INEGI
 #'
 #' Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de una base de datos en particular.
 #'

@@ -1,4 +1,4 @@
-#' Red Nacional de Caminos II
+#' Red Nacional de Caminos - Extrae Shapefiles
 #'
 #' @param . Objeto (inserta el objeto creado con sig_caminos())
 #' @param year An~o de la version de la Red Nacional de Caminos (disponibles 2014-2018)
