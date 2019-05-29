@@ -1,17 +1,29 @@
-#' Censos y Conteos de Población y Vivienda.
-#' ENTORNO
+#' Censo de Poblacion - Entorno urbano
 #'
-#' @param year Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.
-#' @param estado Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi".
-#' @param totalestado TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel estado.
-#' @param totalmunici TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel municipio.
-#' @param nolocalidad TRUE para no obtener información observaciones a nivel localidad.
+#' Censo de Poblacion y Vivienda. Resultados sobre infraestructura y características del entorno urbano.
+#'
+#' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+#'
+#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.
+#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
+#' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.
+#' @param totalmunicipiopio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
+#'
+#' @examples
+#'
+#' # Consulta los datos del entorno urbano del Censo de Poblacion y Vivienda
+#' censo_poblacion_entorno()
+#'
+#' # Descarga los datos de San Luis Potosi de 2010.
+#' dt.entorno.sanluis2010 = censo_poblacion_entorno(year = 2010, estado = "San Luis Potosi")
+#'
+#' @family conteo_poblacion_entorno()
 
-censo_poblacion_urbano <- function(year = "2010", estado = NA, totalestado = FALSE, totalmunici = FALSE, nolocalidad = FALSE){
+censo_poblacion_urbano <- function(year = "2010", estado = NA, totalestado = FALSE, totalmunicipio = FALSE){
   library(foreign) # Importar archivos dbf.
 
   # Informacion de la version
-  message("censo_poblacion_urbano() Versión 1.0.
+  message("censo_poblacion_urbano() Versión 1.0.0
           \rResultados sobre infraestructura y características del entorno urbano
           \rAño disponible: 2010.
           \r\n")

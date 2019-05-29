@@ -9,7 +9,7 @@ censo_municipal(fuente = NA, year = NA, datos = NA)
 \arguments{
 \item{fuente}{Fuente de datos de las instituciones públicas de municipales y delegacionales en formato alfanumerico. Las opciones son: ayuntamiento, administracion, seguridad, justicia.}
 
-\item{year}{A\n{~o} del levantamiento del censo en formato numerico. Los a\n{~}os disponibles son 2011, 2013, 2015 y 2017.}
+\item{year}{Año del levantamiento del censo en formato numerico. Los a\n{~}os disponibles son 2011, 2013, 2015 y 2017.}
 
 \item{datos}{Base de datos producida por cada fuente de datos en formato alfanumerico. Las opciones pueden ser, segun la fuente de datos: comision, estructura, funciones, marco, participacion, recursos, tramites, transparencia, ejercicio, infraestructura, y recursos.}
 }
@@ -25,5 +25,9 @@ Los microdatos del censo contienen información de 2,454 gobiernos municipales y
 censo_municipal()
 
 # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-dr.estructura2011 <- censo_municipal(fuente = "ayuntamiento", "estructura", year = 2011)
+.dt.estructura2011 <- censo_municipal(fuente = "ayuntamiento", "estructura", year = 2011)
+
+}
+\seealso{
+Consulta la relacion entre fuentes y datos en el articulo \href{link}{TODO::VIGNETTE}.
 }

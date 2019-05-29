@@ -1,12 +1,26 @@
-#' Censos y Conteos de Población y Vivienda.
-#' MUESTRA
+#' Censo de Poblacion - Muestra
 #'
-#' @param year Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.
-#' @param estado Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi".
+#' Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado)
+#'
+#' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+#'
+#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: XXXXXXX.
+#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #' @param muestra Utilizar "Migrantes", "Personas", o "Viviendas" según el tipo de base de datos requerida.
+#'
+#' @examples
+#'
+#' # Consulta los metadatos de la muestra del Censo de Poblacion y Vivienda
+#' censo_poblacion_muestra()
+#'
+#' # Descarga los datos de San Luis Potosi de 2010.
+#' dt.muestra.sanluis2010 = censo_poblacion_muestra(year = 2010, estado = "San Luis Potosi", muestra = "Personas")
+#'
+#' @family conteo_poblacion_muestra()
 
 censo_poblacion_muestra <- function(year = "2010", estado = NA, muestra = NA){
-  library(foreign) # Importar archivos dbf.
+
+library(foreign) # Importar archivos dbf.
 
 # Debug.
 if ((muestra!="Personas" | muestra!= "Migrantes" | muestra!="Viviendas") & year!="1990"){
@@ -15,14 +29,14 @@ if ((muestra!="Personas" | muestra!= "Migrantes" | muestra!="Viviendas") & year!
        \rEl Censo 1990 no requiere tipo de muestra, ya que existe una sola base de datos disponible.")} else{}
 
 # Informacion de la version
-  message("censo_poblacion_rural() Versión 1.0.
-          \rResultados sobre localidades con menos de 5 mil habitantes
+  message("conteo_poblacion_muestra() Versión 1.0.0
+          \rMuestra (cuestionario ampliado)
           \rAño disponible: 2010.
           \r\n")
 
   # Objetos generales
   formato_archivo = "dbf"
-  inegi.base      = "http://www.beta.inegi.org.mx/contenidos/programas/ccpv/"
+  inegi.base      = "http://www.inegi.org.mx/contenidos/programas/ccpv/"
 
   # Estado  -------------------------------------------------------------
   if      (estado == "Aguascalientes"){  censo.state = "01" }

@@ -2,24 +2,33 @@
 % Please edit documentation in R/censo_poblacion_entorno.R
 \name{censo_poblacion_urbano}
 \alias{censo_poblacion_urbano}
-\title{Censos y Conteos de Población y Vivienda.
-ENTORNO}
+\title{Censo de Poblacion - Entorno urbano}
 \usage{
 censo_poblacion_urbano(year = "2010", estado = NA,
-  totalestado = FALSE, totalmunici = FALSE, nolocalidad = FALSE)
+  totalestado = FALSE, totalmunicipio = FALSE)
 }
 \arguments{
-\item{year}{Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.}
+\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.}
 
-\item{estado}{Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi".}
+\item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 
-\item{totalestado}{TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel estado.}
+\item{totalestado}{Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.}
 
-\item{totalmunici}{TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel municipio.}
-
-\item{nolocalidad}{TRUE para no obtener información observaciones a nivel localidad.}
+\item{totalmunicipiopio}{Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.}
 }
 \description{
-Censos y Conteos de Población y Vivienda.
-ENTORNO
+Censo de Poblacion y Vivienda. Resultados sobre infraestructura y características del entorno urbano.
 }
+\details{
+Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+}
+\examples{
+
+# Consulta los datos del entorno urbano del Censo de Poblacion y Vivienda
+censo_poblacion_entorno()
+
+# Descarga los datos de San Luis Potosi de 2010.
+dt.entorno.sanluis2010 = censo_poblacion_entorno(year = 2010, estado = "San Luis Potosi")
+
+}
+\concept{conteo_poblacion_entorno()}

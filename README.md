@@ -7,6 +7,4 @@ Paquete de R para la importacion de datos de INEGI. La version 1.0 del paquete s
 - Shapefiles del Marco Geoestadistico Nacional
 
 
-
-
 Other two good R packages are [INEGI API](https://www.diegovalle.net/mxmaps/articles/articles/inegi_api.html) and [inegiR](https://github.com/Eflores89/inegiR/).

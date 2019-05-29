@@ -1,17 +1,30 @@
-#' Censos y Conteos de Población y Vivienda.
-#' ITER
+#' Censo de Poblacion - ITER
 #'
-#' @param year Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.
-#' @param estado Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi", "Nacional".
-#' @param totalestado TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel estado.
-#' @param totalmunici TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel municipio.
-#' @param nolocalidad TRUE para no obtener información observaciones a nivel localidad.
+#' Censo de Poblacion y Vivienda. Principales resultados por localidad (ITER)
+#'
+#' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+#'
+#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 2000, 2005, 2010 y 2015.
+#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
+#' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.
+#' @param totalmunicipiopio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
+#' @param totallocalidad Resultados agregados a nivel localidad. \code{FALSE} omite los resultados a nivel localidad.
+#'
+#' @examples
+#'
+#' # Consulta los datos ITER del Censo de Poblacion y Vivienda
+#' censo_poblacion_iter()
+#'
+#' # Descarga los datos de San Luis Potosi de 2010.
+#' dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")
+#'
+#' @family conteo_poblacion_iter()
 
-censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunici = FALSE, nolocalidad = FALSE){
+censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunicipio = FALSE, totallocalidad = FALSE){
   library(foreign) # Importar archivos dbf.
 
 # Informacion de la version
-message("censo_poblacion_iter() Versión 1.0.
+message("censo_poblacion_iter() Versión 1.0.0
         \rPrincipales resultados por localidad (ITER)
         \rAños disponibles: 1990, 2000 y 2010.
         \nPara los an~os 2015, 2005 y 1995 usar conteo_poblacion_iter().
@@ -76,10 +89,10 @@ data.output.iter[data.output.iter=="*"]<-NA  # Crea datos perdidos
 if (totalestado == FALSE) { data.output.iter <- base::subset(data.output.iter, MUN!="000")} else {}
 
 #5 TOTALMUN - Total Municipio
-if (totalmunici == FALSE) {data.output.iter <- base::subset(data.output.iter, LOC!="0000")} else {}
+if (totalmunicipio == FALSE) {data.output.iter <- base::subset(data.output.iter, LOC!="0000")} else {}
 
 #NOLOC -> No extraer valores para localidades
-if (nolocalidad == TRUE) {data.output.iter <- base::subset(data.output.iter, MUN=="000" | LOC=="0000")} else {}
+if (totallocalidad == TRUE) {data.output.iter <- base::subset(data.output.iter, MUN=="000" | LOC=="0000")} else {}
 
 base::unlink(censo.temp.iter)
 return(data.output.iter)

@@ -2,24 +2,36 @@
 % Please edit documentation in R/censo_poblacion_iter.R
 \name{censo_poblacion_iter}
 \alias{censo_poblacion_iter}
-\title{Censos y Conteos de Población y Vivienda.
-ITER}
+\title{Censo de Poblacion - ITER}
 \usage{
 censo_poblacion_iter(year = "2010", estado = "Nacional",
-  totalestado = FALSE, totalmunici = FALSE, nolocalidad = FALSE)
+  totalestado = FALSE, totalmunicipio = FALSE,
+  totallocalidad = FALSE)
 }
 \arguments{
-\item{year}{Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.}
+\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 2000, 2005, 2010 y 2015.}
 
-\item{estado}{Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi", "Nacional".}
+\item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 
-\item{totalestado}{TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel estado.}
+\item{totalestado}{Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.}
 
-\item{totalmunici}{TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel municipio.}
+\item{totallocalidad}{Resultados agregados a nivel localidad. \code{FALSE} omite los resultados a nivel localidad.}
 
-\item{nolocalidad}{TRUE para no obtener información observaciones a nivel localidad.}
+\item{totalmunicipiopio}{Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.}
 }
 \description{
-Censos y Conteos de Población y Vivienda.
-ITER
+Censo de Poblacion y Vivienda. Principales resultados por localidad (ITER)
 }
+\details{
+Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+}
+\examples{
+
+# Consulta los datos ITER del Censo de Poblacion y Vivienda
+censo_poblacion_iter()
+
+# Descarga los datos de San Luis Potosi de 2010.
+dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")
+
+}
+\concept{conteo_poblacion_iter()}

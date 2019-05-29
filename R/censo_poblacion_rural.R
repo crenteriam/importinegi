@@ -1,17 +1,28 @@
-#' Censos y Conteos de Población y Vivienda.
-#' Resultados sobre localidades con menos de 5 mil habitantes
+#' Censo de Poblacion - Localidades Rurales
 #'
-#' @param year Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.
-#' @param estado Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi", "Nacional".
-#' @param totalestado TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel estado.
-#' @param totalmunici TRUE para obtener, además de la información a nivel localidad, resumen estadístico a nivel municipio.
-#' @param nolocalidad TRUE para no obtener información observaciones a nivel localidad.
+#' Censo de Poblacion y Vivienda. Resultados sobre localidades con menos de 5 mil habitantes
+#'
+#' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+#'
+#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 2000, 2005, 2010 y 2015.
+#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
+#' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa
+#'
+#' @examples
+#'
+#' # Consulta los datos sobre localidades rurales del Censo de Poblacion y Vivienda
+#' censo_poblacion_rural()
+#'
+#' # Descarga los datos de San Luis Potosi de 2010.
+#' dt.rural.sanluis2010 = censo_poblacion_rural(year = 2010, estado = "San Luis Potosi")
+#'
+#' @family conteo_poblacion_rural()
 
-censo_poblacion_rural <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunici = FALSE, nolocalidad = FALSE){
+censo_poblacion_rural <- function(year = "2010", estado = "Nacional", totalestado = FALSE){
   library(foreign) # Importar archivos dbf.
 
   # Informacion de la version
-  message("censo_poblacion_rural() Versión 1.0.
+  message("censo_poblacion_rural() Versión 1.0.0
           \rResultados sobre localidades con menos de 5 mil habitantes
           \rAño disponible: 2010.
           \r\n")

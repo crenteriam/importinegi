@@ -2,19 +2,30 @@
 % Please edit documentation in R/censo_poblacion_muestra.R
 \name{censo_poblacion_muestra}
 \alias{censo_poblacion_muestra}
-\title{Censos y Conteos de Población y Vivienda.
-MUESTRA}
+\title{Censo de Poblacion - Muestra}
 \usage{
 censo_poblacion_muestra(year = "2010", estado = NA, muestra = NA)
 }
 \arguments{
-\item{year}{Año requerido del censo o conteo. En esta versión están disponibles 2000, 2005, 2010 y 2015.}
+\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: XXXXXXX.}
 
-\item{estado}{Descarga datos por estado. Utilizar el nombre del estado, con espacios. Ejemplos: "Aguascalientes", "CDMX", "San Luis Potosi".}
+\item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 
 \item{muestra}{Utilizar "Migrantes", "Personas", o "Viviendas" según el tipo de base de datos requerida.}
 }
 \description{
-Censos y Conteos de Población y Vivienda.
-MUESTRA
+Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado)
 }
+\details{
+Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+}
+\examples{
+
+# Consulta los metadatos de la muestra del Censo de Poblacion y Vivienda
+censo_poblacion_muestra()
+
+# Descarga los datos de San Luis Potosi de 2010.
+dt.muestra.sanluis2010 = censo_poblacion_muestra(year = 2010, estado = "San Luis Potosi", muestra = "Personas")
+
+}
+\concept{conteo_poblacion_muestra()}
