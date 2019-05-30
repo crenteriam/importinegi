@@ -2,7 +2,7 @@
 % Please edit documentation in R/censo_poblacion_rural.R
 \name{censo_poblacion_rural}
 \alias{censo_poblacion_rural}
-\title{Censo de Poblacion - Localidades Rurales}
+\title{Censo de Poblacion - Localidades rurales}
 \usage{
 censo_poblacion_rural(year = "2010", estado = "Nacional",
   totalestado = FALSE)

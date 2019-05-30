@@ -2,7 +2,7 @@
 % Please edit documentation in R/enigh_tradicional.R
 \name{enigh}
 \alias{enigh}
-\title{Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH).}
+\title{ENIGH Tradicional (1984-2014)}
 \usage{
 enigh(year = NA, hogares = FALSE, concentrado = FALSE,
   erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE,
@@ -38,5 +38,5 @@ enigh(year = NA, hogares = FALSE, concentrado = FALSE,
 \item{construccion}{Modelo de cuestionario del INEGI. Las opciones son: "Nueva" o "Tradicional". El modelo "Nueva Serie" para la encuesta de 2016 no está actualmente disponible.}
 }
 \description{
-Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH).
+ENIGH Tradicional (1984-2014)
 }

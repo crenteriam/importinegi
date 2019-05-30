@@ -6,13 +6,12 @@
 # shell.exec("https://www.inegi.org.mx/temas/mapas/mg/")
 
 sig_marcogeo <- function(year = NA, capa = NA, version = NA){
-library(rgdal)
 
 # Generales -----------------------------------------------------------------
 # Informacion de la version
-message("sig_marcogeo() Versión 1.0.
+message("sig_marcogeo() Versiu00f3n 1.0.
         \rMarco Geoestadistico Nacional
-        \rAños disponible: 1995-2018
+        \rA\u00f1os disponible: 1995-2018
         \r\n")
 
 # Get Help and More Information
@@ -94,7 +93,7 @@ else if (year == 2010 & capa == "ageb_urbana" & version == "5.0") {nombre_capa =
   # Desgargas  ------------------------------------------------------------------
   # Download File
   tempmarcogeo = tempfile()
-  download.file(url_marcogeo, tempmarcogeo)
+  utils::download.file(url_marcogeo, tempmarcogeo)
 
   # Unzip and open
   zipdir = tempdir()
@@ -119,9 +118,9 @@ else if (year == 2010 & capa == "ageb_urbana" & version == "5.0") {nombre_capa =
   else {}
 
   # Extract Map
-  if (year == 2010 & version == "5.0") {map_output = readOGR(dsn = zipdir_level, layer = paste0(nombre_capa, "_", year, "_5"))}
-  else if (year == 2010 & version == "5.0.A") {map_output = readOGR(dsn = zipdir_level, layer = nombre_capa)}
-  else {map_output = readOGR(dsn = zipdir_level, layer = paste0(nombre_capa, "_", year))}
+  if (year == 2010 & version == "5.0") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_capa, "_", year, "_5"))}
+  else if (year == 2010 & version == "5.0.A") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = nombre_capa)}
+  else {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_capa, "_", year))}
 
   return(map_output)
 } # End of Function

@@ -7,7 +7,7 @@
 catalogo_inegi(id = NA)
 }
 \arguments{
-\item{id}{Numero de identificacion unico de las bases de datos disponibles en el repositorio la Red Nacional de Metadatos del INEGI}
+\item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico. El identificador unico se puede consultar al acceder a la lista del repositorio (ver ejemplo abajo).}
 }
 \description{
 Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de una base de datos en particular.
@@ -17,7 +17,7 @@ La funcion \code{catalogo_inegi} provee una lista de bases de datos con un ident
 }
 \examples{
 
-# Almacena el catalogo como base de datos.
+# Accede al repositorio de la Red Nacional de Metadatos de INEGI y almacenalo como una base de datos.
 dt.catalogo <- catalogo_inegi()
 
 # Consulta metadatos de una base de datos.

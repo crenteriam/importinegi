@@ -19,12 +19,11 @@
 #' @family conteo_poblacion_rural()
 
 censo_poblacion_rural <- function(year = "2010", estado = "Nacional", totalestado = FALSE){
-  library(foreign) # Importar archivos dbf.
 
   # Informacion de la version
-  message("censo_poblacion_rural() Versión 1.0.0
+  message("censo_poblacion_rural() Versi\u00f3n 1.0.0
           \rResultados sobre localidades con menos de 5 mil habitantes
-          \rAño disponible: 2010.
+          \rA\u00f1o disponible: 2010.
           \r\n")
 
   # Objetos generales
@@ -72,7 +71,7 @@ censo.url.rural =  paste0(inegi.base, year, "/microdatos/cinco_mil_menos/resloc_
 
 #2 Descarga base de datos
   censo.temp.rural = base::tempfile()
-  download.file(censo.url.rural, censo.temp.rural)
+  utils::download.file(censo.url.rural, censo.temp.rural)
 
 #3 Unzip, read file and fix missing. Unlink temporary file
   data.output.rural = foreign::read.dbf((utils::unzip(censo.temp.rural)), as.is = TRUE)

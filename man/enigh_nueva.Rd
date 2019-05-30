@@ -2,7 +2,7 @@
 % Please edit documentation in R/enigh_nueva.R
 \name{enigh_nueva}
 \alias{enigh_nueva}
-\title{Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH).}
+\title{ENIGH Nueva Construccion (2008-2014)}
 \usage{
 enigh_nueva(year = NA, hogares = FALSE, concentrado = FALSE,
   erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE,
@@ -37,5 +37,5 @@ enigh_nueva(year = NA, hogares = FALSE, concentrado = FALSE,
 \item{construccion}{Modelo de cuestionario del INEGI. Las opciones son: "Nueva" o "Tradicional". El modelo "Nueva Serie" para la encuesta de 2016 no está actualmente disponible.}
 }
 \description{
-Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH).
+ENIGH Nueva Construccion (2008-2014)
 }

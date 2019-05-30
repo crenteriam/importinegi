@@ -16,9 +16,6 @@
 
 # Tengo que arreglar hard-coding (construcción) em Viviendas y Hogares.
 enigh_nueva = function(year = NA, hogares = FALSE, concentrado = FALSE, erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE, poblacion = FALSE, ingresos = FALSE, gastopersona = FALSE, trabajos = FALSE, agro = FALSE, noagro = FALSE){
-library(dplyr)
-library(foreign)
-library(data.table)
 # General
 enigh.nueva.base = "https://www.inegi.org.mx/contenidos/programas/enigh/nc/"
 nuevaconstruccion = "NCV"

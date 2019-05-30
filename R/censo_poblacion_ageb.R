@@ -22,12 +22,11 @@
 
 
 censo_poblacion_ageb <- function(year = "2010", estado = NA , totalestado = FALSE, totalmunicipio = FALSE, totalageb = FALSE){
-library(foreign) # Importar archivos dbf.
 
 # Informacion de la version
-message("censo_poblacion_ageb() Versión 1.0.0
+message("censo_poblacion_ageb() Versi\u00f3n 1.0.0
         \rPrincipales resultados por AGEB y manzana urbana
-        \rAños disponibles: 2010.
+        \rA\u00f1os disponibles: 2010.
         \r\n")
 
 # Objetos generales
@@ -76,18 +75,18 @@ censo.url.ageb =  paste0(inegi.base, year, "/microdatos/iter/ageb_manzana/",
                          "_ageb_manzana_urbana_", formato_archivo, ".zip")
 #2 DOWNLOAD TEMPORARY FILE
 censo.temp.ageb = base::tempfile()
-download.file(censo.url.ageb, censo.temp.ageb)
+utils::download.file(censo.url.ageb, censo.temp.ageb)
 
 #3 Unzip, read file and fix missing. Unlink temporary file
 data.output.ageb = foreign::read.dbf((utils::unzip(censo.temp.ageb)), as.is = TRUE)
 data.output.ageb[data.output.ageb=="*"]<-NA
 
 #4 Eliminate totals
-if (totalestado == FALSE) {data.output.ageb <- base::subset(data.output.ageb, MUN!="000")} else {}
-if (totalmunicipio == FALSE) {data.output.ageb <- base::subset(data.output.ageb, LOC!="0000")} else {}
+if (totalestado == FALSE) {data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$MUN!="000")} else {}
+if (totalmunicipio == FALSE) {data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$LOC!="0000")} else {}
 if (totalageb == FALSE) {
-  data.output.ageb <- base::subset(data.output.ageb, MZA!="000")
-  data.output.ageb <- base::subset(data.output.ageb, AGEB!="0000")} else {}
+  data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$MZA!="000")
+  data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$AGEB!="0000")} else {}
 
 return(data.output.ageb)
 }

@@ -6,12 +6,11 @@
 #'
 
 sig_caminos_extrae <- function(. = NA, year = NA, conjunto = NA){
-  library(rgdal)
   # Generales -----------------------------------------------------------------
   #if (conjunto == ){shell.exec("https://www.inegi.org.mx/temas/mapas/viascomunicacion/")}
 
 # Informacion de la funcion
-message("sig_caminos_extrae() Versión 1.0.
+message("sig_caminos_extrae() Versiu00f3n 1.0.
          \rConjuntos de datos (shapeflies) disponibles:
          \n
          \r2018: estructura, localidad, maniobra_prohibida, plaza_cobro,
@@ -28,14 +27,14 @@ else if (year == 2014) {rutaarchivo = ""}
 
   # Unzip and open
   print("Descomprimiendo archivo...")
-  temp_sigdir = unzip(.)
+  temp_sigdir = utils::unzip(.)
   #list_sigfiles = as.list(temp_sigdir)
   #path_conjunto  = paste0("./conjunto_de_datos/", "localidad")
   #lista_conjunto = Filter(function (x) str_detect(x, path_conjunto), data)
   #temp = str_replace_all(temp, "^./(.+)/", "./folder/")
 
   print("Obteniendo Shapefile...")
-  map_outputs = readOGR(dsn = rutaarchivo, layer = conjunto)
+  map_output = rgdal::readOGR(dsn = rutaarchivo, layer = conjunto)
   return(map_output)
 
 } # End of Function

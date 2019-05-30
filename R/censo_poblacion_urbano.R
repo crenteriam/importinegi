@@ -20,12 +20,11 @@
 #' @family conteo_poblacion_entorno()
 
 censo_poblacion_urbano <- function(year = "2010", estado = NA, totalestado = FALSE, totalmunicipio = FALSE){
-  library(foreign) # Importar archivos dbf.
 
   # Informacion de la version
-  message("censo_poblacion_urbano() Versión 1.0.0
-          \rResultados sobre infraestructura y características del entorno urbano
-          \rAño disponible: 2010.
+  message("censo_poblacion_urbano() Version 1.0.0
+          \rResultados sobre infraestructura y caracteristicas del entorno urbano.
+          \rA\u00f1o disponible: 2010.
           \r\n")
 
   # Objetos generales
@@ -66,7 +65,7 @@ censo_poblacion_urbano <- function(year = "2010", estado = NA, totalestado = FAL
   else if (estado == "Yucatan") { censo.state = "31"}
   else if (estado == "Zacatecas"){censo.state = "32"}
   else if (estado == "Nacional") {censo.state = "00"}
-  else {stop("Argumento requerido: nombra un estado o 'Nacional'")}
+  else {stop("Argumento requerido: nombra un estado o Nacional")}
 
 
 
@@ -78,7 +77,7 @@ censo_poblacion_urbano <- function(year = "2010", estado = NA, totalestado = FAL
 
 #2 Descarga archivo temporal
   censo.temp.eu = base::tempfile()
-  download.file(censo.url.eu, censo.temp.eu)
+  utils::download.file(censo.url.eu, censo.temp.eu)
 
 #3 Unzip, read file and fix missing. Unlink temporary file
   data.output.eu = foreign::read.dbf((utils::unzip(censo.temp.eu)), as.is = TRUE)

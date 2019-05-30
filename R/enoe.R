@@ -1,7 +1,6 @@
 # opciones: trim1, trim2, trim3, trim4
 
 enoe = function(year = NA, trimestre = NA, integrar = FALSE){
-library(foreign)
 if (is.na(year) & is.na(trimestre)) {shell.exec("https://www.inegi.org.mx/programas/enoe/15ymas/")}
 # Temp files
 fformat = "dbf"

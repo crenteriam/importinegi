@@ -7,9 +7,9 @@ sig_caminos_descarga <- function(year = NA){
 # shell.exec("https://www.inegi.org.mx/temas/mapas/viascomunicacion/")
 
   # Informacion de la version
-message("sig_caminos() Versión 1.0.
+message("sig_caminos() Versiu00f3n 1.0.
         \rRed Nacional de Caminos
-        \rAños disponible: 2018, 2017 y 2016.
+        \rA\u00f1os disponible: 2018, 2017 y 2016.
         \r\n")
 
 # Objetos generales
@@ -33,7 +33,7 @@ else {stop(print("Solo an~os 2018, 2017, 2016, 2015 y 2014 estan disponibles."))
 # Download the file
 #url.caminos = paste0("http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2018/", codigo.year, ".zip")
 tempcaminos = tempfile()
-download.file(url.caminos, tempcaminos)
+utils::download.file(url.caminos, tempcaminos)
 
 return(tempcaminos)
 #output_conjunto = list_sigfiles[c(1, 2, 3, 4, 5)]

@@ -21,13 +21,12 @@
 #' @family conteo_poblacion_iter()
 
 censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunicipio = FALSE, totallocalidad = FALSE){
-  library(foreign) # Importar archivos dbf.
 
 # Informacion de la version
-message("censo_poblacion_iter() Versión 1.0.0
+message("censo_poblacion_iter() Versiu00f3n 1.0.0
         \rPrincipales resultados por localidad (ITER)
-        \rAños disponibles: 1990, 2000 y 2010.
-        \nPara los an~os 2015, 2005 y 1995 usar conteo_poblacion_iter().
+        \rA\u00f1os disponibles: 1990, 2000 y 2010.
+        \nPara los a\u00f1os 2015, 2005 y 1995 usar conteo_poblacion_iter().
         \r\n")
 
 # Objetos generales
@@ -79,20 +78,20 @@ censo.url.iter  = paste0(inegi.base, year, "/microdatos/iter/", censo.state, "_"
 
 #2 Descarga archivo temporal
 censo.temp.iter = base::tempfile()
-download.file(censo.url.iter, censo.temp.iter)
+utils::download.file(censo.url.iter, censo.temp.iter)
 
 #3 Unzip, read file and fix missing. Unlink temporary file
 data.output.iter = foreign::read.dbf((utils::unzip(censo.temp.iter)), as.is = TRUE)
 data.output.iter[data.output.iter=="*"]<-NA  # Crea datos perdidos
 
 #4 TOTALENT - Total Entidad Federativa
-if (totalestado == FALSE) { data.output.iter <- base::subset(data.output.iter, MUN!="000")} else {}
+if (totalestado == FALSE) { data.output.iter <- base::subset(data.output.iter, data.output.iter$MUN!="000")} else {}
 
 #5 TOTALMUN - Total Municipio
-if (totalmunicipio == FALSE) {data.output.iter <- base::subset(data.output.iter, LOC!="0000")} else {}
+if (totalmunicipio == FALSE) {data.output.iter <- base::subset(data.output.iter, data.output.iter$LOC!="0000")} else {}
 
 #NOLOC -> No extraer valores para localidades
-if (totallocalidad == TRUE) {data.output.iter <- base::subset(data.output.iter, MUN=="000" | LOC=="0000")} else {}
+if (totallocalidad == TRUE) {data.output.iter <- base::subset(data.output.iter, data.output.iter$MUN=="000" | data.output.iter$LOC=="0000")} else {}
 
 base::unlink(censo.temp.iter)
 return(data.output.iter)

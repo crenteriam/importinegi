@@ -20,8 +20,6 @@
 
 censo_poblacion_muestra <- function(year = "2010", estado = NA, muestra = NA){
 
-library(foreign) # Importar archivos dbf.
-
 # Debug.
 if ((muestra!="Personas" | muestra!= "Migrantes" | muestra!="Viviendas") & year!="1990"){
   stop("La funcion no reconoce la muestra requerida.
@@ -29,9 +27,9 @@ if ((muestra!="Personas" | muestra!= "Migrantes" | muestra!="Viviendas") & year!
        \rEl Censo 1990 no requiere tipo de muestra, ya que existe una sola base de datos disponible.")} else{}
 
 # Informacion de la version
-  message("conteo_poblacion_muestra() Versión 1.0.0
+  message("conteo_poblacion_muestra() Versi\u00f3n 1.0.0
           \rMuestra (cuestionario ampliado)
-          \rAño disponible: 2010.
+          \rA\u00f1o disponible: 2010.
           \r\n")
 
   # Objetos generales
@@ -89,7 +87,7 @@ censo.url.muestra =  paste0(inegi.base, year, "/microdatos/cgpv90p_", censo.stat
 
 #2 DOWNLOAD TEMPORARY FILE
 censo.temp.muestra = base::tempfile()
-download.file(censo.url.muestra, censo.temp.muestra)
+utils::download.file(censo.url.muestra, censo.temp.muestra)
 
 #3 Unzip, read file and fix missing. Unlink temporary file
 zipdir = tempfile()

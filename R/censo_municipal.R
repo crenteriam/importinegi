@@ -19,7 +19,6 @@
 #' @seealso Consulta la relacion entre fuentes y datos en el articulo \href{link}{TODO::VIGNETTE}.
 
 censo_municipal = function(fuente = NA, year = NA, datos = NA){
-library(foreign)
 
 # Open Metadata
 if (is.na(fuente) & is.na(year) & is.na(datos)) {shell.exec("http://www3.inegi.org.mx/rnm/index.php/catalog/208")}
@@ -250,7 +249,7 @@ else {}
 
   # Read all .dbf files in the folder
   for (i in list_dataraw) {
-    Object = read.dbf(paste0(zipdir, folder.complemento, i), as.is = TRUE)
+    Object = foreign::read.dbf(paste0(zipdir, folder.complemento, i), as.is = TRUE)
     Object$UBIC_GEO = paste0(formatC(as.character(Object$UBIC_GEO), width=5, flag="0"))
     assign(paste0("dt.", tools::file_path_sans_ext(i)), Object)
   }

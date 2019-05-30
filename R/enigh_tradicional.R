@@ -39,7 +39,6 @@ enigh = function(year = NA, hogares = FALSE, concentrado = FALSE, erogaciones = 
 
   ### NEST_2 - HOGARES ##########################################################
   if (hogares == TRUE) {
-    library(dplyr)
     if (year ==2010 | year == 2008){} else {
       hog = "NCV_Hogares_"
       url.hog = paste0(url.base, hog, year, "_concil_2010_", fformat, ".zip")

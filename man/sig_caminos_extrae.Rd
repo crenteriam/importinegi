@@ -2,7 +2,7 @@
 % Please edit documentation in R/sig_caminos_extrae.R
 \name{sig_caminos_extrae}
 \alias{sig_caminos_extrae}
-\title{Red Nacional de Caminos II}
+\title{Red Nacional de Caminos - Extrae Shapefiles}
 \usage{
 sig_caminos_extrae(. = NA, year = NA, conjunto = NA)
 }
@@ -14,5 +14,5 @@ sig_caminos_extrae(. = NA, year = NA, conjunto = NA)
 \item{conjunto}{Capa de Shapefile a descargar. Disponibles: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.}
 }
 \description{
-Red Nacional de Caminos II
+Red Nacional de Caminos - Extrae Shapefiles
 }
