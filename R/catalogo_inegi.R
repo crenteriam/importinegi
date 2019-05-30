@@ -4,7 +4,7 @@
 #'
 #' La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos a consultar, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo abajo).
 #'
-#' @param id Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico. El identificador unico se puede consultar al acceder a la lista del repositorio (ver ejemplo abajo).
+#' @param id Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar al acceder a la lista del repositorio (ver ejemplo abajo).
 #'
 #' @examples
 #'

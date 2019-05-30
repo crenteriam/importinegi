@@ -7,7 +7,7 @@
 catalogo_inegi(id = NA)
 }
 \arguments{
-\item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico. El identificador unico se puede consultar al acceder a la lista del repositorio (ver ejemplo abajo).}
+\item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar al acceder a la lista del repositorio (ver ejemplo abajo).}
 }
 \description{
 Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de una base de datos en particular.
