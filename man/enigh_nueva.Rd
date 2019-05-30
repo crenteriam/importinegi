@@ -33,8 +33,6 @@ enigh_nueva(year = NA, hogares = FALSE, concentrado = FALSE,
 \item{agro}{Esta tabla muestra la información de los trabajadores independientes, mayores de 12 años que tienen en el hogar negocios dedicados a las actividades agrícolas, forestales y de tala, además de actividades de cría, explotación y productos derivados de la pesca y caza.}
 
 \item{noagro}{Esta tabla muestra a los trabajadores independientes mayores de 12 años, que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.}
-
-\item{construccion}{Modelo de cuestionario del INEGI. Las opciones son: "Nueva" o "Tradicional". El modelo "Nueva Serie" para la encuesta de 2016 no está actualmente disponible.}
 }
 \description{
 ENIGH Nueva Construccion (2008-2014)

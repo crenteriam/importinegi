@@ -12,7 +12,6 @@
 #' @param trabajos Esta tabla muestra la condición de actividad de los integrantes del hogar de 12 o más años y algunas características ocupacionales durante el periodo de referencia.
 #' @param agro Esta tabla muestra la información de los trabajadores independientes, mayores de 12 años que tienen en el hogar negocios dedicados a las actividades agrícolas, forestales y de tala, además de actividades de cría, explotación y productos derivados de la pesca y caza.
 #' @param noagro Esta tabla muestra a los trabajadores independientes mayores de 12 años, que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.
-#' @param construccion Modelo de cuestionario del INEGI. Las opciones son: "Nueva" o "Tradicional". El modelo "Nueva Serie" para la encuesta de 2016 no está actualmente disponible.
 
 # Tengo que arreglar hard-coding (construcción) em Viviendas y Hogares.
 enigh_nueva = function(year = NA, hogares = FALSE, concentrado = FALSE, erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE, poblacion = FALSE, ingresos = FALSE, gastopersona = FALSE, trabajos = FALSE, agro = FALSE, noagro = FALSE){

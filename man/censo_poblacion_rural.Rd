@@ -20,13 +20,4 @@ Censo de Poblacion y Vivienda. Resultados sobre localidades con menos de 5 mil h
 \details{
 Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 }
-\examples{
-
-# Consulta los datos sobre localidades rurales del Censo de Poblacion y Vivienda
-censo_poblacion_rural()
-
-# Descarga los datos de San Luis Potosi de 2010.
-dt.rural.sanluis2010 = censo_poblacion_rural(year = 2010, estado = "San Luis Potosi")
-
-}
 \concept{conteo_poblacion_rural()}

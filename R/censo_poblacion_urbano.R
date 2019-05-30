@@ -7,15 +7,15 @@
 #' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.
 #' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.
-#' @param totalmunicipiopio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
+#' @param totalmunicipio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
 #'
 #' @examples
 #'
 #' # Consulta los datos del entorno urbano del Censo de Poblacion y Vivienda
-#' censo_poblacion_entorno()
+#' \dontrun{censo_poblacion_entorno()}
 #'
 #' # Descarga los datos de San Luis Potosi de 2010.
-#' dt.entorno.sanluis2010 = censo_poblacion_entorno(year = 2010, estado = "San Luis Potosi")
+#' \dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
 #'
 #' @family conteo_poblacion_entorno()
 

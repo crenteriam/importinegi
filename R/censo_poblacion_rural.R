@@ -11,10 +11,10 @@
 #' @examples
 #'
 #' # Consulta los datos sobre localidades rurales del Censo de Poblacion y Vivienda
-#' censo_poblacion_rural()
+#' \dontrun{censo_poblacion_rural()}
 #'
 #' # Descarga los datos de San Luis Potosi de 2010.
-#' dt.rural.sanluis2010 = censo_poblacion_rural(year = 2010, estado = "San Luis Potosi")
+#' vdt.rural.sanluis2010 = censo_poblacion_rural(year = 2010, estado = "San Luis Potosi")}
 #'
 #' @family conteo_poblacion_rural()
 

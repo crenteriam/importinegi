@@ -7,16 +7,16 @@
 #' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 2000, 2005, 2010 y 2015.
 #' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.
-#' @param totalmunicipiopio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
+#' @param totalmunicipio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
 #' @param totallocalidad Resultados agregados a nivel localidad. \code{FALSE} omite los resultados a nivel localidad.
 #'
 #' @examples
 #'
 #' # Consulta los datos ITER del Censo de Poblacion y Vivienda
-#' censo_poblacion_iter()
+#' \dontrun{censo_poblacion_iter()}
 #'
 #' # Descarga los datos de San Luis Potosi de 2010.
-#' dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")
+#' \dontrun{dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")}
 #'
 #' @family conteo_poblacion_iter()
 

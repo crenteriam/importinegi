@@ -11,10 +11,10 @@
 #' @examples
 #'
 #' # Consulta los metadatos del Censo Nacional de Gobiernos Municipales y Delegacionales
-#' censo_municipal()
+#' \dontrun{censo_municipal()}
 #'
 #' # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-#' .dt.estructura2011 <- censo_municipal(fuente = "ayuntamiento", "estructura", year = 2011)
+#' \dontrun{dt.estructura2011 <- censo_municipal(fuente = "ayuntamiento", "estructura", year = 2011)}
 #'
 #' @seealso Consulta la relacion entre fuentes y datos en el articulo \href{link}{TODO::VIGNETTE}.
 

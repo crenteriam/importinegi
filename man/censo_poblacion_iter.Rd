@@ -15,9 +15,9 @@ censo_poblacion_iter(year = "2010", estado = "Nacional",
 
 \item{totalestado}{Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.}
 
-\item{totallocalidad}{Resultados agregados a nivel localidad. \code{FALSE} omite los resultados a nivel localidad.}
+\item{totalmunicipio}{Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.}
 
-\item{totalmunicipiopio}{Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.}
+\item{totallocalidad}{Resultados agregados a nivel localidad. \code{FALSE} omite los resultados a nivel localidad.}
 }
 \description{
 Censo de Poblacion y Vivienda. Principales resultados por localidad (ITER)
@@ -28,10 +28,10 @@ Esta base de datos tiene dos niveles de agregacion: entidades federativas y muni
 \examples{
 
 # Consulta los datos ITER del Censo de Poblacion y Vivienda
-censo_poblacion_iter()
+\dontrun{censo_poblacion_iter()}
 
 # Descarga los datos de San Luis Potosi de 2010.
-dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")
+\dontrun{dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")}
 
 }
 \concept{conteo_poblacion_iter()}

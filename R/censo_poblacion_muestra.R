@@ -10,11 +10,12 @@
 #'
 #' @examples
 #'
-#' # Consulta los metadatos de la muestra del Censo de Poblacion y Vivienda
-#' censo_poblacion_muestra()
+#' # Consulta los metadatos de la muestra
+#' # > del Censo de Poblacion y Vivienda.
+#' \dontrun{censo_poblacion_muestra()}
 #'
 #' # Descarga los datos de San Luis Potosi de 2010.
-#' dt.muestra.sanluis2010 = censo_poblacion_muestra(year = 2010, estado = "San Luis Potosi", muestra = "Personas")
+#' \dontrun{dt.muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
 #'
 #' @family conteo_poblacion_muestra()
 

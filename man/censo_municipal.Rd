@@ -22,10 +22,10 @@ Los microdatos del censo contienen información de 2,454 gobiernos municipales y
 \examples{
 
 # Consulta los metadatos del Censo Nacional de Gobiernos Municipales y Delegacionales
-censo_municipal()
+\dontrun{censo_municipal()}
 
 # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-.dt.estructura2011 <- censo_municipal(fuente = "ayuntamiento", "estructura", year = 2011)
+\dontrun{dt.estructura2011 <- censo_municipal(fuente = "ayuntamiento", "estructura", year = 2011)}
 
 }
 \seealso{

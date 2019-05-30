@@ -8,11 +8,12 @@
 #'
 #' @examples
 #'
-#' # Accede al repositorio de la Red Nacional de Metadatos de INEGI y almacenalo como una base de datos.
-#' dt.catalogo <- catalogo_inegi()
+#' # Accede al repositorio de la Red Nacional de Metadatos
+#' # > de INEGI y almacenalo como una base de datos.
+#' \dontrun{dt.catalogo <- catalogo_inegi()}
 #'
 #' # Consulta metadatos de una base de datos.
-#' catalogo_inegi(id = 489)
+#' \dontrun{catalogo_inegi(id = 489)}
 #'
 #' @seealso Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
 

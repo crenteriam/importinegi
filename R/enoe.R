@@ -1,4 +1,8 @@
-# opciones: trim1, trim2, trim3, trim4
+#' Title
+#'
+#' @param year Año de levantamiento de la encuesta
+#' @param trimestre Opciones.
+#' @param integrar Text.
 
 enoe = function(year = NA, trimestre = NA, integrar = FALSE){
 if (is.na(year) & is.na(trimestre)) {shell.exec("https://www.inegi.org.mx/programas/enoe/15ymas/")}

@@ -27,10 +27,10 @@ Esta base de datos tiene tres niveles de agregacion: entidades federativas, muni
 \examples{
 
 # Consulta los datos del Censo de Poblacion y Vivienda a nivel AGEB y manzana urbana.
-censo_poblacion_ageb()
+\dontrun{censo_poblacion_ageb()}
 
 # Descarga los datos de San Luis Potosi de 2010.
-dt.ageb.sanluis2010 = censo_poblacion_ageb(year = 2010, estado = "San Luis Potosi")
+\dontrun{dt.ageb.sanluis2010 = censo_poblacion_ageb(year = 2010, estado = "San Luis Potosi")}
 
 }
 \concept{conteo_poblacion_ageb()}
