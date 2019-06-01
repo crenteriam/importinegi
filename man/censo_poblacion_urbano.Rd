@@ -4,17 +4,12 @@
 \alias{censo_poblacion_urbano}
 \title{Censo de Poblacion - Entorno urbano}
 \usage{
-censo_poblacion_urbano(year = "2010", estado = NA,
-  totalestado = FALSE, totalmunicipio = FALSE)
+censo_poblacion_urbano(year = 2010, estado = NA)
 }
 \arguments{
 \item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.}
 
 \item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
-
-\item{totalestado}{Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.}
-
-\item{totalmunicipio}{Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.}
 }
 \description{
 Censo de Poblacion y Vivienda. Resultados sobre infraestructura y características del entorno urbano.
@@ -27,8 +22,6 @@ Esta base de datos tiene dos niveles de agregacion: entidades federativas y muni
 # Consulta los datos del entorno urbano del Censo de Poblacion y Vivienda
 \dontrun{censo_poblacion_entorno()}
 
-# Descarga los datos de San Luis Potosi de 2010.
+# Descarga los datos de CDMX de 2010.
 \dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
-
 }
-\concept{conteo_poblacion_entorno()}

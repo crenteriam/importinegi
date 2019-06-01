@@ -2,7 +2,7 @@
 #'
 #' Descarga los microdatos del Censo Nacional de Gobiernos Municipales y Delegacionales (2011, 2013, 2015 y 2017).
 #'
-#' Los microdatos del censo contienen informació\on de 2,454 gobiernos municipales y gobiernos delegacionales de la CDMX. Si conoces el \code{id} de la base de datos a consultar, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo abajo).
+#' Los microdatos del censo contienen informacion de 2,454 gobiernos municipales y gobiernos delegacionales de la CDMX. Si conoces el \code{id} de la base de datos a consultar, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo abajo).
 #'
 #' @param fuente Fuente de datos de las instituciones publicas de municipales y delegacionales en formato alfanumerico. Las opciones son: ayuntamiento, administracion, seguridad, justicia.
 #' @param year Año del levantamiento del censo en formato numerico. Los años disponibles son 2011, 2013, 2015 y 2017.
@@ -14,7 +14,7 @@
 #' \dontrun{censo_municipal()}
 #'
 #' # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-#' \dontrun{dt.estructura2011 <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
+#' \dontrun{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
 #'
 #' @seealso Consulta la relacion entre fuentes y datos tecleando \code{censo_municipal()} en la consola.
 

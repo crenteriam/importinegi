@@ -17,8 +17,8 @@
 #' # Consulta los datos del Censo de Poblacion y Vivienda a nivel AGEB y manzana urbana.
 #' \dontrun{censo_poblacion_ageb()}
 #'
-#' # Descarga los datos de San Luis Potosi de 2010.
-#' \dontrun{dt.ageb.sanluis2010 = censo_poblacion_ageb(year = 2010, estado = "San Luis Potosi")}
+#' # Descarga los datos de CDMX de 2010.
+#' \dontrun{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
 
 
 censo_poblacion_ageb <- function(year = 2010, estado = "Nacional" , totalestado = FALSE, totalmunicipio = FALSE, totallocalidad = FALSE, totalageb = FALSE, manzana = TRUE) {

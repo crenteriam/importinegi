@@ -4,9 +4,9 @@
 #'
 #' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 #'
-#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: XXXXXXX.
+#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 1995, 2005 y 2010.
 #' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
-#' @param muestra Utilizar "Migrantes", "Personas", o "Viviendas" según el tipo de base de datos requerida.
+#' @param muestra Bases de datos disponibles "Migrantes" (1995, 2000 y 2010), "Personas" (1995, 2000, 2005 y 2010), "Viviendas" (2000, 2005 y 2010), "Hogar" (2005) y NA (1990).
 #'
 #' @examples
 #'
@@ -14,18 +14,17 @@
 #' # > del Censo de Poblacion y Vivienda.
 #' \dontrun{censo_poblacion_muestra()}
 #'
-#' # Descarga los datos de San Luis Potosi de 2010.
-#' \dontrun{dt.muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
+#' # Descarga los datos de CDMX de 2010.
+#' \dontrun{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
 #'
 #' @family conteo_poblacion_muestra()
 
-censo_poblacion_muestra <- function(year = "2010", estado = NA, muestra = NA){
+censo_poblacion_muestra <- function(year =2010, estado = NA, muestra = NA){
 
 # Debug.
-if ((muestra!="Personas" | muestra!= "Migrantes" | muestra!="Viviendas") & year!="1990"){
-  stop("La funcion no reconoce la muestra requerida.
-       \rLas muestras validas son: \"Personas\", \"Viviendas\" y \"Migrantes\".
-       \rEl Censo 1990 no requiere tipo de muestra, ya que existe una sola base de datos disponible.")} else{}
+if ((muestra!="Personas" & muestra!= "Migrantes" & muestra!="Viviendas" & muestra!="Hogar") & year!=1990){
+  stop("La funcion no reconoce la muestra.
+       \r Nota: El Censo 1990 no requiere tipo de muestra, ya que existe una sola base de datos disponible.")} else{}
 
 # Informacion de la version
   message("conteo_poblacion_muestra() Versi\u00f3n 1.0.0
@@ -70,17 +69,21 @@ if ((muestra!="Personas" | muestra!= "Migrantes" | muestra!="Viviendas") & year!
   else if (estado == "Veracruz"){ censo.state = "30"}
   else if (estado == "Yucatan") { censo.state = "31"}
   else if (estado == "Zacatecas"){censo.state = "32"}
-  else if (estado == "Nacional") {censo.state = "00"}
-  else {stop("La funcion no reconoce el nombre del estado.
-             \rUsa letras capitales y espacios. Por ejemplo, Quintana Roo.")}
+  else {stop("La funcion no reconoce el nombre del estado.")}
 
 
 #1 Obtener URL  ----------------------------------------------------------------
 if (year == "2010") {
 censo.url.muestra =  paste0(inegi.base, year, "/microdatos/mpv/MC", year, "_", censo.state, "_", formato_archivo, ".zip")
 }
+else if (year == "2005") {
+  censo.url.muestra =  paste0(inegi.base, year, "/microdatos/muestra/cpv", year, "_", censo.state, "_", formato_archivo, ".zip")
+}
 else if (year == "2000") {
 censo.url.muestra =  paste0(inegi.base, year, "/microdatos/muestra/cgpv", year, "_", censo.state, "_", formato_archivo, ".zip")
+}
+else if (year == "1995") {
+  censo.url.muestra =  paste0(inegi.base, year, "/microdatos/cpv95_", censo.state, "_", formato_archivo, ".zip")
 }
 else if (year == "1990"){
 censo.url.muestra =  paste0(inegi.base, year, "/microdatos/cgpv90p_", censo.state, "_", formato_archivo, ".zip")
@@ -95,9 +98,21 @@ zipdir = tempfile()
 utils::unzip(censo.temp.muestra, exdir = zipdir)
 zipped_file = dir(zipdir)
 
+# YEAR 2010  ------------------------------------------------------------------------
 if (year == "2010"){
 raw.muestra = paste0(zipdir, "\\", muestra, "_", censo.state, ".", formato_archivo)
 } # End of Unzip for year 2010
+
+# YEAR 2005  ------------------------------------------------------------------------
+if (year == "2005"){
+  if      (muestra == "Hogar")    {muestra_2005 = "trhmue" }
+  else if (muestra == "Personas") {muestra_2005 = "trpmue" }
+  else if (muestra == "Viviendas"){muestra_2005 = "trvmue" }
+  else {}
+  raw.muestra = paste0(zipdir, "\\cpv2005", "_", censo.state, "_", formato_archivo, "\\", muestra_2005, censo.state, ".", formato_archivo)
+} # End of Unzip for year 2005
+
+# YEAR 2000  ------------------------------------------------------------------------
 if (year == "2000"){
 if      (muestra == "Migrantes"){muestra_2000 = "MIN_F" }
 else if (muestra == "Personas") {muestra_2000 = "PER_F" }
@@ -105,6 +120,16 @@ else if (muestra == "Viviendas"){muestra_2000 = "VHO_F" }
 else {}
 raw.muestra = paste0(zipdir, "\\", muestra_2000, censo.state, ".", formato_archivo)
 } # End of Unzip for year 2000
+
+# YEAR 1995  ------------------------------------------------------------------------
+if (year == "1995"){
+  if      (muestra == "Migrantes"){muestra_1995 = "migint95" }
+  else if (muestra == "Personas"){muestra_1995 = "datgen95" }
+  else {}
+  raw.muestra = paste0(zipdir, "\\", muestra_1995, ".", formato_archivo)
+} # End of Unzip for year 1995
+
+# YEAR 1990  ------------------------------------------------------------------------
 if (year == "1990"){
 raw.muestra = paste0(zipdir, "\\", zipped_file)
 } else {} # End of Unzip for year 1990

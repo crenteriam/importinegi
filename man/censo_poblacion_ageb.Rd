@@ -4,11 +4,12 @@
 \alias{censo_poblacion_ageb}
 \title{Censo de Poblacion - AGEB}
 \usage{
-censo_poblacion_ageb(year = "2010", estado = NA, totalestado = FALSE,
-  totalmunicipio = FALSE, totalageb = FALSE)
+censo_poblacion_ageb(year = 2010, estado = "Nacional",
+  totalestado = FALSE, totalmunicipio = FALSE,
+  totallocalidad = FALSE, totalageb = FALSE, manzana = TRUE)
 }
 \arguments{
-\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.}
+\item{year}{Año del levantamiento del censo en formato numerico. El unio año disponible en INEGI (incluyendo los conteos) para esta base de datos es 2010.}
 
 \item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 
@@ -16,7 +17,11 @@ censo_poblacion_ageb(year = "2010", estado = NA, totalestado = FALSE,
 
 \item{totalmunicipio}{Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.}
 
-\item{totalageb}{Resultados agregados a nivel AGEB. \code{FALSE} omite los resultados a nivel AGEB.}
+\item{totallocalidad}{Resultados agregados a nivel localidad urbana. \code{FALSE} omite los resultados a nivel municipio.}
+
+\item{totalageb}{Resultados agregados a nivel AGEB urbana. \code{FALSE} omite los resultados a nivel AGEB.}
+
+\item{manzana}{Si se requiere conservar unicamente los resultados a nivel agregado (p. ej. estado, municipio o localidad), \code{FALSE} eliminara las observaciones por manzana.}
 }
 \description{
 Descarga los datos del Censo de Poblacion y Vivienda al nivel de desagregacion AGEB y manzana urbana.
@@ -29,8 +34,6 @@ Esta base de datos tiene tres niveles de agregacion: entidades federativas, muni
 # Consulta los datos del Censo de Poblacion y Vivienda a nivel AGEB y manzana urbana.
 \dontrun{censo_poblacion_ageb()}
 
-# Descarga los datos de San Luis Potosi de 2010.
-\dontrun{dt.ageb.sanluis2010 = censo_poblacion_ageb(year = 2010, estado = "San Luis Potosi")}
-
+# Descarga los datos de CDMX de 2010.
+\dontrun{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
 }
-\concept{conteo_poblacion_ageb()}

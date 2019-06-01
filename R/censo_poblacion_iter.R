@@ -8,15 +8,15 @@
 #' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.
 #' @param totalmunicipio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
-#' @param localidad Si se requiere conservar unicamente los resultados a nivel agregado (estado o municipio), \code{FALSE} eliminara las observaciones por localidad.
+#' @param localidades Si se requiere conservar unicamente los resultados a nivel agregado (estado o municipio), \code{FALSE} eliminara las observaciones por localidad.
 #'
 #' @examples
 #'
 #' # Consulta los datos ITER del Censo de Poblacion y Vivienda
 #' \dontrun{censo_poblacion_iter()}
 #'
-#' # Descarga los datos de San Luis Potosi de 2010.
-#' \dontrun{dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")}
+#' # Descarga los datos de CDMX de 2010.
+#' \dontrun{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
 #'
 #' @family conteo_poblacion_iter()
 

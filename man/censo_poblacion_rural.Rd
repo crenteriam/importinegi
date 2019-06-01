@@ -4,15 +4,12 @@
 \alias{censo_poblacion_rural}
 \title{Censo de Poblacion - Localidades rurales}
 \usage{
-censo_poblacion_rural(year = "2010", estado = "Nacional",
-  totalestado = FALSE)
+censo_poblacion_rural(year = 2010, estado = "Nacional")
 }
 \arguments{
-\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 2000, 2005, 2010 y 2015.}
+\item{year}{Año del levantamiento del censo en formato numerico. El unico año disponible en INEGI (incluyendo los conteos) es 2010.}
 
 \item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
-
-\item{totalestado}{Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa}
 }
 \description{
 Censo de Poblacion y Vivienda. Resultados sobre localidades con menos de 5 mil habitantes
@@ -20,4 +17,3 @@ Censo de Poblacion y Vivienda. Resultados sobre localidades con menos de 5 mil h
 \details{
 Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 }
-\concept{conteo_poblacion_rural()}

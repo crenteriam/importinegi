@@ -5,11 +5,10 @@
 \title{Censo de Poblacion - ITER}
 \usage{
 censo_poblacion_iter(year = "2010", estado = "Nacional",
-  totalestado = FALSE, totalmunicipio = FALSE,
-  totallocalidad = FALSE)
+  totalestado = FALSE, totalmunicipio = FALSE, localidades = TRUE)
 }
 \arguments{
-\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 2000, 2005, 2010 y 2015.}
+\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 1995, 2000, 2005, 2010 y 2015}
 
 \item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 
@@ -17,7 +16,7 @@ censo_poblacion_iter(year = "2010", estado = "Nacional",
 
 \item{totalmunicipio}{Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.}
 
-\item{totallocalidad}{Resultados agregados a nivel localidad. \code{FALSE} omite los resultados a nivel localidad.}
+\item{localidades}{Si se requiere conservar unicamente los resultados a nivel agregado (estado o municipio), \code{FALSE} eliminara las observaciones por localidad.}
 }
 \description{
 Censo de Poblacion y Vivienda. Principales resultados por localidad (ITER)
@@ -30,8 +29,8 @@ Esta base de datos tiene dos niveles de agregacion: entidades federativas y muni
 # Consulta los datos ITER del Censo de Poblacion y Vivienda
 \dontrun{censo_poblacion_iter()}
 
-# Descarga los datos de San Luis Potosi de 2010.
-\dontrun{dt.iter.sanluis2010 = censo_poblacion_iter(year = 2010, estado = "San Luis Potosi")}
+# Descarga los datos de CDMX de 2010.
+\dontrun{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
 
 }
 \concept{conteo_poblacion_iter()}

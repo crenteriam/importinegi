@@ -4,14 +4,14 @@
 \alias{censo_poblacion_muestra}
 \title{Censo de Poblacion - Muestra}
 \usage{
-censo_poblacion_muestra(year = "2010", estado = NA, muestra = NA)
+censo_poblacion_muestra(year = 2010, estado = NA, muestra = NA)
 }
 \arguments{
-\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: XXXXXXX.}
+\item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 1995, 2005 y 2010.}
 
 \item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 
-\item{muestra}{Utilizar "Migrantes", "Personas", o "Viviendas" según el tipo de base de datos requerida.}
+\item{muestra}{Bases de datos disponibles "Migrantes" (1995, 2000 y 2010), "Personas" (1995, 2000, 2005 y 2010), "Viviendas" (2000, 2005 y 2010), "Hogar" (2005) y NA (1990).}
 }
 \description{
 Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado)
@@ -25,8 +25,8 @@ Esta base de datos tiene dos niveles de agregacion: entidades federativas y muni
 # > del Censo de Poblacion y Vivienda.
 \dontrun{censo_poblacion_muestra()}
 
-# Descarga los datos de San Luis Potosi de 2010.
-\dontrun{dt.muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
+# Descarga los datos de CDMX de 2010.
+\dontrun{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
 
 }
 \concept{conteo_poblacion_muestra()}
