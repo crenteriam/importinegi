@@ -2,11 +2,11 @@
 #'
 #' Descarga los microdatos del Censo Nacional de Gobiernos Municipales y Delegacionales (2011, 2013, 2015 y 2017).
 #'
-#' Los microdatos del censo contienen información de 2,454 gobiernos municipales y gobiernos delegacionales de la CDMX. Si conoces el \code{id} de la base de datos a consultar, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo abajo).
+#' Los microdatos del censo contienen informació\on de 2,454 gobiernos municipales y gobiernos delegacionales de la CDMX. Si conoces el \code{id} de la base de datos a consultar, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo abajo).
 #'
 #' @param fuente Fuente de datos de las instituciones publicas de municipales y delegacionales en formato alfanumerico. Las opciones son: ayuntamiento, administracion, seguridad, justicia.
-#' @param year A\n{~}o del levantamiento del censo en formato numerico. Los años disponibles son 2011, 2013, 2015 y 2017.
-#' @param datos Base de datos producida por cada fuente de datos en formato alfanumerico. Las opciones pueden ser, segun la fuente de datos: comision, estructura, funciones, marco, participacion, recursos, tramites, transparencia, ejercicio, infraestructura, y recursos.
+#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles son 2011, 2013, 2015 y 2017.
+#' @param datos Base de datos producida por cada fuente de datos en formato alfanumerico. Las opciones pueden ser, segun la fuente de datos: comision, estructura, integrantes, actividades, funciones, marco, participacion, recursos, tramites, transparencia, ejercicio, infraestructura, y recursos.
 #'
 #' @examples
 #'
@@ -16,12 +16,18 @@
 #' # Descarga los microdatos de la estructura de los ayuntamientos en 2011
 #' \dontrun{dt.estructura2011 <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
 #'
-#' @seealso Consulta la relacion entre fuentes y datos en el articulo \href{link}{TODO::VIGNETTE}.
+#' @seealso Consulta la relacion entre fuentes y datos tecleando \code{censo_municipal()} en la consola.
 
+# ====================================================================================================
 censo_municipal = function(fuente = NA, year = NA, datos = NA){
 
 # Open Metadata
-if (is.na(fuente) & is.na(year) & is.na(datos)) {shell.exec("http://www3.inegi.org.mx/rnm/index.php/catalog/208")}
+if (is.na(fuente) & is.na(year) & is.na(datos)) {shell.exec("https://www.inegi.org.mx/programas/cngmd/2011/")}
+else if (fuente != "ayuntamiento" & fuente != "administracion"
+       & fuente != "seguridad" & fuente != "justicia") {stop(print("Fuente de datos no reconocida"))}
+else if (datos != "comision" & datos != "estructura" & datos != "funciones" & datos != "marco" & datos != "participacion" &
+         datos != "recursos" & datos != "tramites" & datos != "transparencia" & datos != "ejercicio" &
+        datos != "infraestructura" & datos != "recursos" & datos !="integrantes" & datos!="actividades")  {stop(print("Nombre de datos no reconocido"))}
 else {}
 
 # Renombrar carpetas y URL  ---------------------------------------------------------------------------
@@ -165,42 +171,111 @@ else if (year == 2015) {
   folder.jmrec = "//Bases_de_datos/"
 }
 else if (year == 2017) {
-  url.datos.comis = "m1/Actividad_ayuntami_cngmd"
-  url.datos.estru = "m1/Integrantes_ayuntami_cngmd"
-  url.datos.apest = ""
+  url.datos.integ = "m1/Integrantes_ayuntami_cngmd"
+  url.datos.activ = "m1/Actividad_ayuntami_cngmd"
+  url.datos.apest = "m2/Estruc_organizacional_cngmd"
   url.datos.apfun = ""
-  url.datos.apmar = ""
-  url.datos.appar = ""
+  url.datos.apmar = "m2/Marco_regulatorio_cngmd"
+  url.datos.appar = "m2/Participacion_ciudada_cngmd"
   url.datos.aprec = ""
-  url.datos.aptra = ""
-  url.datos.aptrn = ""
-  url.datos.speje = ""
-  url.datos.spinf = ""
-  url.datos.sprec = ""
-  url.datos.jmeje = ""
-  url.datos.jminf = ""
-  url.datos.jmrec = ""
-  folder.comis = paste0("/Com_ini_aytto_cngmd", year, "_dbf/Bases_de_datos/")
-  folder.estru = paste0("/Estruct_aytto_cngmd", year, "_dbf/Bases_de_datos/")
-  folder.apest = "//Bases_de_datos/"
-  folder.apfun = "//Bases_de_datos/"
-  folder.apmar = "//Bases_de_datos/"
-  folder.appar = "//Bases_de_datos/"
-  folder.aprec = "//Bases_de_datos/"
-  folder.aptra = "//Bases_de_datos/"
-  folder.aptrn = "//Bases_de_datos/"
-  folder.speje = "//Bases_de_datos/"
-  folder.spinf = "//Bases_de_datos/"
-  folder.sprec = "//Bases_de_datos/"
-  folder.jmeje = "//Bases_de_datos/"
-  folder.jminf = "//Bases_de_datos/"
-  folder.jmrec = "//Bases_de_datos/"
+  url.datos.aptra = "m2/Tramites_servicios_cngmd"
+  url.datos.aptrn = "m2/Transparencia_cngmd"
+  url.datos.speje = "m3/Ejercicio_func_espec_cngmd"
+  url.datos.spinf = "m3/Infraestructura_SP_cngmd"
+  url.datos.sprec = "m3/Recursos_SP_cngmd"
+  url.datos.jmeje = "m4/Ejercicio_funcion_cngmd"
+  url.datos.jminf = "m4/Infraestructura_cngmd"
+  url.datos.jmrec = "m4/Recursos_humanos_cngmd"
+  # Nuevas Bases de Datos 2017
+  # ADMINISTRACION PUBLICA  ----------------------------------
+  # m2/Rec_presupuestal_cngmd
+  # m2/Rec_materiales_cngmd
+  # m2/Gobierno_electronico_cngmd
+  # m2/Activ_estadist_geogra_cngmd
+  # m2/Planea_evaluacion_cngmd
+  # m2/Proteccion_civil_cngmd
+  # m2/Recpresu_trans_accpro_cngmd
+  # m2/Solic_acceso_protecc_cngmd
+  # m2/Capac_trans_accprot_cngmd
+  # m2/Admon_archivo_gestion_cngmd
+  # m2/Capac_admon_gestion_cngmd
+  # m2/Rec_admon_gestiondoc_cngmd
+  # m2/Recpres_admon_gestion_cngmd
+  # m2/Planea_admon_gestion_cngmd
+  # m2/Sist_instituc_archivo_cngmd
+  # m2/Documento_electronico_cngmd
+  # m2/Sist_gestion_control_cngmd
+  # m2/Servicios_publicos_cngmd
+  # m2/Ctrl_inter_anticor_cngmd
+  # CATASTRO  ------------------------------------------------
+  # m2/Estruc_organ_catastro_cngmd
+  # m2/Capacitacion_catastro_cngmd
+  # m2/Prog_moderni_catastral_cngmd
+  # m2/Tecno_infor_catastral_cngmd
+  # m2/Resguar_inf_catastral_cngmd
+  # m2/Procesos_catastrales_cngmd
+  # m2/Padron_catastral_cngmd
+  # m2/Cartografia_catastral_cngmd
+  # m2/Inspecciones_campo_cngmd
+  # m2/Impuesto_predial_cngmd
+  # m2/Valuacion_catastral_cngmd
+  # m2/Vinculacion_catastral_cngmd
+  # PLANEACION Y GESTION TERRITORIAL  -----------------------
+  # m2/Admin_pub_territorio_cngmd
+  # m2/Marco_regulatorio_ter_cngmd
+  # m2/Reserv_territoriales_cngmd
+  # m2/Asent_human_irregu_cngmd
+  # m2/Asen_hum_zona_riesg_cngmd
+  # m2/Desarr_urbano_ecc_cngmd
+  # m2/Coordininst_intercinf_cngmd
+  # SEGURIDAD PUBLICA  --------------------------------------
+  # m3/Infoestadistica_SP_cngmd
+  # m3/Interven_policiamun_cngmd
+  # m3/Presunta_infracdelito_cngmd
+  # m3/Probable_victima_reg_cngmd
+  # m3/Probable_infractor_cngmd
+  # m3/Mando_unico_policial_cngmd
+  # M7 - AGUA POTABLE Y SANEAMIENTO  -----------------------------
+  # m5/Serv_agua_red_cngmd
+  # m5/Capta_agua_public_cngmd
+  # m5/Plantas_pot_cngmd
+  # m5/Admin_agua_red_cngmd
+  # m5/Drenaje_alcant_cngmd
+  # m5/Trat_aguas_resid_cngmd
+  # m5/Aguas_sintrat_cngmd
+  # m5/Prog_gest_aguapot_cngmd
+  # m5/Difus_gest_agua_cngmd
+  # M8 - RESIDUOS SOLIDOS URBANOS  -------------------------------
+  # m6/Rec_RSU_cngmd
+  # m6/Trat_RSU_cngmd
+  # m6/Disp_final_RSU_cngmd
+  # m6/Est_gen_comp_RSU_cngmd
+  # Est_gen_comp_RSU_cngmd
+  # m6/Prog_gest_int_RSU_cngmd
+  # m6/Part_ciud_RSU_cngmd
+  folder.integ = "//Bases_Datos/"
+  folder.activ = "//Bases_Datos/"
+  folder.apest = "//Bases_Datos/"
+  folder.apfun = "//Bases_Datos/"
+  folder.apmar = "//Bases_Datos/"
+  folder.appar = "//Bases_Datos/"
+  folder.aprec = "//Bases_Datos/"
+  folder.aptra = "//Bases_Datos/"
+  folder.aptrn = "//Bases_Datos/"
+  folder.speje = "//Bases_Datos/"
+  folder.spinf = "//Bases_Datos/"
+  folder.sprec = "//Bases_Datos/"
+  folder.jmeje = "//Bases_Datos/"
+  folder.jminf = "//Bases_Datos/"
+  folder.jmrec = "//Bases_Datos/"
 }
 else {}
 
 # URL Por fuente y datos
 if      (fuente == "ayuntamiento" & datos == "comision")     {url.complemento = url.datos.comis}
 else if (fuente == "ayuntamiento" & datos == "estructura")   {url.complemento = url.datos.estru}
+else if (fuente == "ayuntamiento" & datos == "integrantes")   {url.complemento = url.datos.integ}
+else if (fuente == "ayuntamiento" & datos == "actividades")   {url.complemento = url.datos.activ}
 else if (fuente == "administracion" & datos == "estructura") {url.complemento = url.datos.apest}
 else if (fuente == "administracion" & datos == "funciones")  {url.complemento = url.datos.apfun}
 else if (fuente == "administracion" & datos == "marco")      {url.complemento = url.datos.apmar}
@@ -218,6 +293,8 @@ else if (fuente == "justicia" & datos == "recursos")            {url.complemento
 # Folders por fuente y datos
 if      (fuente == "ayuntamiento" & datos == "comision")       {folder.complemento = folder.comis}
 else if (fuente == "ayuntamiento" & datos == "estructura")     {folder.complemento = folder.estru}
+else if (fuente == "ayuntamiento" & datos == "integrantes")     {folder.complemento = folder.integ}
+else if (fuente == "ayuntamiento" & datos == "actividades")     {folder.complemento = folder.activ}
 else if (fuente == "administracion" & datos == "estructura") {folder.complemento = folder.apest}
 else if (fuente == "administracion" & datos == "funciones")  {folder.complemento = folder.apfun}
 else if (fuente == "administracion" & datos == "marco")      {folder.complemento = folder.apmar}
@@ -257,4 +334,5 @@ else {}
 
 # Return Object
 return(list_dataclean)
+  print("Se ha creado una lista con varias bases de datos")
 } # End of Function

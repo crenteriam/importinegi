@@ -4,11 +4,11 @@
 #'
 #' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 #'
-#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 2000, 2005, 2010 y 2015.
+#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 1995, 2000, 2005, 2010 y 2015
 #' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.
 #' @param totalmunicipio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
-#' @param totallocalidad Resultados agregados a nivel localidad. \code{FALSE} omite los resultados a nivel localidad.
+#' @param localidad Si se requiere conservar unicamente los resultados a nivel agregado (estado o municipio), \code{FALSE} eliminara las observaciones por localidad.
 #'
 #' @examples
 #'
@@ -20,13 +20,12 @@
 #'
 #' @family conteo_poblacion_iter()
 
-censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunicipio = FALSE, totallocalidad = FALSE){
+censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunicipio = FALSE, localidades = TRUE){
 
 # Informacion de la version
-message("censo_poblacion_iter() Versiu00f3n 1.0.0
+message("censo_poblacion_iter() Versi\u00f3n 1.0.0
         \rPrincipales resultados por localidad (ITER)
-        \rA\u00f1os disponibles: 1990, 2000 y 2010.
-        \nPara los a\u00f1os 2015, 2005 y 1995 usar conteo_poblacion_iter().
+        \rA\u00f1os disponibles: 1990, 1995, 2000, 2005, 2010 y 2015.
         \r\n")
 
 # Objetos generales
@@ -84,14 +83,11 @@ utils::download.file(censo.url.iter, censo.temp.iter)
 data.output.iter = foreign::read.dbf((utils::unzip(censo.temp.iter)), as.is = TRUE)
 data.output.iter[data.output.iter=="*"]<-NA  # Crea datos perdidos
 
-#4 TOTALENT - Total Entidad Federativa
-if (totalestado == FALSE) { data.output.iter <- base::subset(data.output.iter, data.output.iter$MUN!="000")} else {}
+#4 Elimina totales
+if (totalestado == FALSE)    {data.output.iter <- base::subset(data.output.iter, data.output.iter$MUN!="000")} else {}
+if (totalmunicipio == FALSE) {data.output.iter <- base::subset(data.output.iter, (data.output.iter$LOC!="0000" | data.output.iter$MUN=="000" ))} else {}
+if (localidades == FALSE)    {data.output.iter <- base::subset(data.output.iter, (data.output.iter$LOC=="0000" | data.output.iter$LOC=="9998" | data.output.iter$LOC=="9999"))} else {}
 
-#5 TOTALMUN - Total Municipio
-if (totalmunicipio == FALSE) {data.output.iter <- base::subset(data.output.iter, data.output.iter$LOC!="0000")} else {}
-
-#NOLOC -> No extraer valores para localidades
-if (totallocalidad == TRUE) {data.output.iter <- base::subset(data.output.iter, data.output.iter$MUN=="000" | data.output.iter$LOC=="0000")} else {}
 
 base::unlink(censo.temp.iter)
 return(data.output.iter)

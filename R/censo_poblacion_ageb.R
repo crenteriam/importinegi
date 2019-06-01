@@ -4,11 +4,13 @@
 #'
 #' Esta base de datos tiene tres niveles de agregacion: entidades federativas, municipios, agebs y manzanas (en zonas urbanas).
 #'
-#' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.
+#' @param year Año del levantamiento del censo en formato numerico. El unio año disponible en INEGI (incluyendo los conteos) para esta base de datos es 2010.
 #' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #' @param totalestado Resultados agregados a nivel entidad federativa. \code{FALSE} omite los resultados a nivel entidad federativa.
 #' @param totalmunicipio Resultados agregados a nivel municipio. \code{FALSE} omite los resultados a nivel municipio.
-#' @param totalageb Resultados agregados a nivel AGEB. \code{FALSE} omite los resultados a nivel AGEB.
+#' @param totallocalidad Resultados agregados a nivel localidad urbana. \code{FALSE} omite los resultados a nivel municipio.
+#' @param totalageb Resultados agregados a nivel AGEB urbana. \code{FALSE} omite los resultados a nivel AGEB.
+#' @param manzana Si se requiere conservar unicamente los resultados a nivel agregado (p. ej. estado, municipio o localidad), \code{FALSE} eliminara las observaciones por manzana.
 #'
 #' @examples
 #'
@@ -17,11 +19,9 @@
 #'
 #' # Descarga los datos de San Luis Potosi de 2010.
 #' \dontrun{dt.ageb.sanluis2010 = censo_poblacion_ageb(year = 2010, estado = "San Luis Potosi")}
-#'
-#' @family conteo_poblacion_ageb()
 
 
-censo_poblacion_ageb <- function(year = "2010", estado = NA , totalestado = FALSE, totalmunicipio = FALSE, totalageb = FALSE){
+censo_poblacion_ageb <- function(year = 2010, estado = "Nacional" , totalestado = FALSE, totalmunicipio = FALSE, totallocalidad = FALSE, totalageb = FALSE, manzana = TRUE) {
 
 # Informacion de la version
 message("censo_poblacion_ageb() Versi\u00f3n 1.0.0
@@ -67,7 +67,7 @@ else if (estado == "Veracruz"){ censo.state = "30"}
 else if (estado == "Yucatan") { censo.state = "31"}
 else if (estado == "Zacatecas"){censo.state = "32"}
 else if (estado == "Nacional") {censo.state = "00"}
-else {stop("Argumento requerido: nombra un estado o 'Nacional'")}
+else {stop("Nombre del estdo no reconocido.")}
 
 #1 Obtener URL  --------------------------------------------------
 censo.url.ageb =  paste0(inegi.base, year, "/microdatos/iter/ageb_manzana/",
@@ -81,12 +81,12 @@ utils::download.file(censo.url.ageb, censo.temp.ageb)
 data.output.ageb = foreign::read.dbf((utils::unzip(censo.temp.ageb)), as.is = TRUE)
 data.output.ageb[data.output.ageb=="*"]<-NA
 
-#4 Eliminate totals
-if (totalestado == FALSE) {data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$MUN!="000")} else {}
-if (totalmunicipio == FALSE) {data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$LOC!="0000")} else {}
-if (totalageb == FALSE) {
-  data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$MZA!="000")
-  data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$AGEB!="0000")} else {}
+#4 Elimina totales
+if (totalestado == FALSE)    {data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$MUN!="000")} else {}
+if (totalmunicipio == FALSE) {data.output.ageb <- base::subset(data.output.ageb, (data.output.ageb$LOC!="0000" | data.output.ageb$MUN=="000" ))} else {}
+if (totallocalidad == FALSE) {data.output.ageb <- base::subset(data.output.ageb, (data.output.ageb$AGEB!="0000" | data.output.ageb$LOC=="0000" | data.output.ageb$MUN=="000"))} else {}
+if (totalageb == FALSE)      {data.output.ageb <- base::subset(data.output.ageb, (data.output.ageb$MZA!="000" | data.output.ageb$AGEB=="0000" | data.output.ageb$LOC=="0000" | data.output.ageb$MUN=="000"))} else {}
+if (manzana == FALSE)        {data.output.ageb <- base::subset(data.output.ageb, data.output.ageb$MZA=="000")} else {}
 
 return(data.output.ageb)
 }
