@@ -23,12 +23,6 @@
 
 censo_poblacion_ageb <- function(year = 2010, estado = "Nacional" , totalestado = FALSE, totalmunicipio = FALSE, totallocalidad = FALSE, totalageb = FALSE, manzana = TRUE) {
 
-# Informacion de la version
-message("censo_poblacion_ageb() Versi\u00f3n 1.0.0
-        \rPrincipales resultados por AGEB y manzana urbana
-        \rA\u00f1os disponibles: 2010.
-        \r\n")
-
 # Objetos generales
 formato_archivo = "dbf"
 inegi.base      = "http://www.inegi.org.mx/contenidos/programas/ccpv/"

@@ -1,23 +1,18 @@
 #' Red Nacional de Caminos - Extrae Shapefiles
 #'
-#' @param . Objeto (inserta el objeto creado con sig_caminos())
-#' @param year An~o de la version de la Red Nacional de Caminos (disponibles 2014-2018)
-#' @param conjunto Capa de Shapefile a descargar. Disponibles: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.
+#' Esta funcion extrae cada uno de los Shapefiles de la Red Nacional de Caminos descargados con la funcion \code{sig_caminos_extrae()}.
 #'
+#' @param . Inserta el nombre del objecto creado con la funcion \code{sig_caminos_extrae()}.
+#' @param year Año de referencia del mapa, en formato numerico (2014-2018).
+#' @param capa Capa (Shpafile) en formato alfanumerico. Las opciones son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.
+#'
+#' @example
+#'
+#' # Extrae el Shapefile plaza_cobro del objeto mapamx
+#' \dontrun{mapamx = sig_caminos_descarga(year = 2014)}
+#' \dontrun{mapamx.pzacobro = sig_caminos_extrae(mapamx, year = 2014, capa = "plaza_cobro")}
 
-sig_caminos_extrae <- function(. = NA, year = NA, conjunto = NA){
-  # Generales -----------------------------------------------------------------
-  #if (conjunto == ){shell.exec("https://www.inegi.org.mx/temas/mapas/viascomunicacion/")}
-
-# Informacion de la funcion
-message("sig_caminos_extrae() Versiu00f3n 1.0.
-         \rConjuntos de datos (shapeflies) disponibles:
-         \n
-         \r2018: estructura, localidad, maniobra_prohibida, plaza_cobro,
-         \rposte_de_referencia, puente, red_vial, sitio_de_interes,
-         \rtarifas, transbordador, tred_localidad, tred_sitio_de_interes,
-         \runion.
-         \r\n")
+sig_caminos_extrae <- function(. = NA, year = NA, capa = NA){
 
 if      (year == 2018) {rutaarchivo = ""}
 else if (year == 2017) {rutaarchivo = ""}
@@ -34,7 +29,7 @@ else if (year == 2014) {rutaarchivo = ""}
   #temp = str_replace_all(temp, "^./(.+)/", "./folder/")
 
   print("Obteniendo Shapefile...")
-  map_output = rgdal::readOGR(dsn = rutaarchivo, layer = conjunto)
+  map_output = rgdal::readOGR(dsn = rutaarchivo, layer = capa)
   return(map_output)
 
 } # End of Function

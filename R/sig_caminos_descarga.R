@@ -1,25 +1,25 @@
 #' Red Nacional de Caminos - Descarga Datos
 #'
-#' @param year An`o de la version de la Red Nacional de Caminos (disponibles 2016, 2017, 2018)
+#' #' Esta funcion descarga un una lista todos los Shapefiles de la Red Nacional de Caminos para un año especifico. El objeto resultante de esta funcion es necesario para extraer cada Shapefile con la funcion \code{sig_caminos_extrae()}.
+#'
+#' @param year Año de referencia del mapa, en formato numerico (2014-2018).
+#'
+#' @example
+#'
+#' # Extrae el Shapefile plaza_cobro del objeto mapamx
+#' \dontrun{mapamx = sig_caminos_descarga(year = 2014)}
+
 
 sig_caminos_descarga <- function(year = NA){
-# Generales -----------------------------------------------------------------
-# shell.exec("https://www.inegi.org.mx/temas/mapas/viascomunicacion/")
-
-  # Informacion de la version
-message("sig_caminos() Versiu00f3n 1.0.
-        \rRed Nacional de Caminos
-        \rA\u00f1os disponible: 2018, 2017 y 2016.
-        \r\n")
 
 # Objetos generales
 base.caminos = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/"
 
-# Definir an~o
+# Definir a\u00f1o
 #if (year==2018){codigo.year="889463674641_s"}
 #else if (year==2017) {codigo.year="889463171836_s"}
 #else if (year==2016) {codigo.year="702825219000_s"}
-#else {stop(print("Solo an~os 2918, 2017 y 2016 disponibles."))}
+#else {stop(print("Solo a\u00f1os 2918, 2017 y 2016 disponibles."))}
 
 # URL Completa (de datos.gob.mx)
 if (year==2018){codigo.year= "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2018/889463674641_s.zip"}
@@ -27,7 +27,7 @@ else if (year==2017) {url.caminos="http://internet.contenidos.inegi.org.mx/conte
 else if (year==2016) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2016/702825219000_s.zip"}
 else if (year==2015) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2015/702825209575_s.zip"}
 else if (year==2014) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/702825278724.zip"}
-else {stop(print("Solo an~os 2018, 2017, 2016, 2015 y 2014 estan disponibles."))}
+else {stop(print("Solo a\u00f1os 2018, 2017, 2016, 2015 y 2014 estan disponibles."))}
 
 # Inicio --------------------------------------------------------------------
 # Download the file

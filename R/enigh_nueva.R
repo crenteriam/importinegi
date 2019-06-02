@@ -1,20 +1,22 @@
 #' ENIGH Nueva Construccion (2008-2014)
 #'
-#' @param year Año de levantamiento de la encuesta
-#' @param hogares En esta tabla se encuentran contenidas las características de los hogares que habitan los integrantes de los mismos.
-#' @param concentrado Principales variables por hogar. En esta tabla se encuentran las variables construidas a partir de las otras tablas de la base de datos. Registra el resumen concentrado por hogar, de ingresos y gastos en toda modalidad posible. Además todos los ingresos y gastos registrados en esta tabla son trimestrales.
-#' @param erogaciones Esta tabla permite identificar las erogaciones financieras y de capital realizadas por hogar.
-#' @param gastohogar 	Esta tabla permite identificar los gastos monetarios y no monetarios del hogar.
-#' @param gastotarjetas Esta tabla permite identificar en qué medida los hogares se auxilian del financiamiento que les ofrece la tarjeta de crédito bancaria o comercial para cubrir algunas necesidades básicas.
-#' @param poblacion Esta tabla proviene de la tabla HOGARES. Identifica las características sociodemográficas de los integrantes del hogar; y el acceso a las instituciones de salud que tienen los integrantes del hogar.
-#' @param ingresos Esta tabla permite identificar los ingresos y percepciones financieras y de capital de cada uno de los integrantes del hogar, por diversos conceptos.
-#' @param gastopersona Esta tabla permite identificar los gastos realizados por cada integrante del hogar en educación, transporte público y remuneraciones en especie.
-#' @param trabajos Esta tabla muestra la condición de actividad de los integrantes del hogar de 12 o más años y algunas características ocupacionales durante el periodo de referencia.
-#' @param agro Esta tabla muestra la información de los trabajadores independientes, mayores de 12 años que tienen en el hogar negocios dedicados a las actividades agrícolas, forestales y de tala, además de actividades de cría, explotación y productos derivados de la pesca y caza.
-#' @param noagro Esta tabla muestra a los trabajadores independientes mayores de 12 años, que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.
+#' Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH). Nueva Construccion (2008-2014).
+#'
+#' @param year Año de levantamiento de la encuesta en formato numerico. Los años disponibles son 2008, 2010, 2012 y 2014
+#' @param hogares Características de los hogares que habitan los integrantes de los mismos.
+#' @param concentrado Principales variables por hogar. Contiene un resumen de variables de otras tablas.
+#' @param erogaciones Erogaciones financieras y de capital realizadas por hogar.
+#' @param gastohogar 	Gastos monetarios y no monetarios del hogar.
+#' @param gastotarjetas Financiamiento de tarjeta de crédito bancaria o comercial.
+#' @param poblacion Características sociodemográficas de los integrantes del hogar.
+#' @param ingresos Ingresos y percepciones financieras y de capital de cada uno de los integrantes del hogar, por diversos conceptos.
+#' @param gastopersona Gastos realizados por cada integrante del hogar en educación, transporte público y remuneraciones en especie.
+#' @param trabajos Actividad de los integrantes del hogar de 12 o más años.
+#' @param agro Información de los trabajadores independientes dedicados a las actividades agrícolas, pesca, caza, etc.
+#' @param noagro Informacion de los trabajadores independientes que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.
 
-# Tengo que arreglar hard-coding (construcción) em Viviendas y Hogares.
-enigh_nueva = function(year = NA, hogares = FALSE, concentrado = FALSE, erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE, poblacion = FALSE, ingresos = FALSE, gastopersona = FALSE, trabajos = FALSE, agro = FALSE, noagro = FALSE){
+
+enigh_nuevaconstruccion = function(year = NA, hogares = FALSE, concentrado = FALSE, erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE, poblacion = FALSE, ingresos = FALSE, gastopersona = FALSE, trabajos = FALSE, agro = FALSE, noagro = FALSE){
 # General
 enigh.nueva.base = "https://www.inegi.org.mx/contenidos/programas/enigh/nc/"
 nuevaconstruccion = "NCV"

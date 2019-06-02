@@ -1,8 +1,20 @@
-#' Title
+#' ENOE
 #'
-#' @param year Año de levantamiento de la encuesta
-#' @param trimestre Opciones.
-#' @param integrar Text.
+#' Encuesta Nacional de Ocupación y Empleo (ENOE), población de 15 años y más de edad.
+#'
+#' La Encuesta Nacional de Ocupación y Empleo (ENOE) es la principal fuente de información sobre el mercado laboral mexicano al ofrecer datos mensuales y trimestrales de la fuerza de trabajo, la ocupación, la informalidad laboral, la subocupación y la desocupación. Constituye también el proyecto estadístico continuo más grande del país al proporcionar cifras nacionales y de cuatro tamaños de localidad, de cada una de las 32 entidades federativas y para un total de 36 ciudades.
+#'
+#' @param year Año de levantamiento de la encuesta en formato numerico.
+#' @param trimestre Trimestre de levantamiento de la encuesta en formato alfanumerico. Las opciones son: "trim1", "trim2", "trim3" y "trim4".
+#' @param integrar \code{FALSE}: descarga en una lista las cinco bases de datos, por separado, que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, emparejando por el identificador unico del entrevistado.
+#'
+#' @examples
+#'
+#' # Descarga las bases de datos de la ENOE 2009, Trimestre 1, sin integrar.
+#' \dontrun{enoe(year = 2009, trimestre = "trim1")}
+#'
+#' # Descarga las bases de datos de la ENOE 2009, Trimestre 1, integradas
+#' \dontrun{enoe(year = 2009, trimestre = "trim1", integrar = TRUE)}
 
 enoe = function(year = NA, trimestre = NA, integrar = FALSE){
 if (is.na(year) & is.na(trimestre)) {shell.exec("https://www.inegi.org.mx/programas/enoe/15ymas/")}
