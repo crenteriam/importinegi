@@ -7,8 +7,8 @@
 sig_caminos_descarga(year = NA)
 }
 \arguments{
-\item{year}{An`o de la version de la Red Nacional de Caminos (disponibles 2016, 2017, 2018)}
+\item{year}{Año de referencia del mapa, en formato numerico (2014-2018).}
 }
 \description{
-Red Nacional de Caminos - Descarga Datos
+#' Esta funcion descarga un una lista todos los Shapefiles de la Red Nacional de Caminos para un año especifico. El objeto resultante de esta funcion es necesario para extraer cada Shapefile con la funcion \code{sig_caminos_extrae()}.
 }

@@ -7,12 +7,20 @@
 sig_marcogeo(year = NA, capa = NA, version = NA)
 }
 \arguments{
-\item{year}{An~o (1995-2018)}
+\item{year}{Año de referencia del mapa, en formato numerico (1995-2018).}
 
-\item{capa}{Opciones: entidades, municipios, ageb, urbano, rural}
+\item{capa}{Capa (Shpafile) en formato alfanumerico. Las opciones son: entidades, municipios, ageb, urbano, y rural.}
 
-\item{version}{Algunos an~ tienen multiples versiones. Si no la sabes, el mensaje de error te dara las opcines.}
+\item{version}{Especificar, en formato alfanumerico, la version para los años 2010 (4.3, 5.0, 5.0.A), 2017 (2010.0 o dejar en blanco) y 2018 (2010.0 o dejar en blanco). Para el resto de los años, dejar en blanco.}
 }
 \description{
-Marco Geoestadistico Nacional
+El Marco Geoestadístico es un sistema único y de carácter nacional diseñado por el INEGI, el cual presenta la división del territorio nacional en diferentes niveles de desagregación para referir geográficamente la información estadística de los censos y encuestas institucionales
+}
+\examples{
+
+# Consulta los metadatos del Marco Geoestadistico Macional
+\dontrun{sig_marcogeo()}
+
+# Descarga el mapa de munucipios para 2009
+\dontrun{mapa09 = sig_marcogeo(year = 2009, capa = "municipios")}
 }
