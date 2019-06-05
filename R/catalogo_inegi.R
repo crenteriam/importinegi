@@ -18,7 +18,7 @@
 #' @seealso Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
 
 catalogo_inegi = function(id = NA){
-  open.id = paste0("http://www3.inegi.org.mx/rnm/index.php/catalog/", "id", "/data_dictionary")
+  open.id = paste0("http://www3.inegi.org.mx/rnm/index.php/catalog/", id)
   if (!is.na(id)) {base::shell.exec(open.id)}
 ### Catálgo General ---------------------------------------------------------
   else {
