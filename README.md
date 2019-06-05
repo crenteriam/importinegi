@@ -11,12 +11,6 @@ Encuesta Nacional de Ocupación y Empleo (ENOE) (2005-2018)
 - Shapefiles de la Red Nacional Carretera (2014-2016)
 - Shapefiles del Marco Geoestadistico Nacional (1995-2018)
 
-## Ejemplo
-
-Descarga la base de datos ITER del censo 2010 para el estado de Jalisco.
-```
-censo.jalisco10 = censo_poblacion_iter(year = 2010, estado = "Jalisco")
-```
 ## Instalacion
 
 Instalacion de la ultima version estable a traves del CRAN:
@@ -32,7 +26,12 @@ install.packages("devtools")
 devtools::install_github("crenteriam/importinegi")
 library(importinegi)
 ```
+## Ejemplo
 
+Descarga la base de datos ITER del censo 2010 para el estado de Jalisco.
+```
+censo.jalisco10 = censo_poblacion_iter(year = 2010, estado = "Jalisco")
+```
 ## Otros paquetes
 
 Otros paquetes para descargar dato del INEGI:
