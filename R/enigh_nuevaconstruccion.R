@@ -14,6 +14,7 @@
 #' @param trabajos Actividad de los integrantes del hogar de 12 o más años.
 #' @param agro Información de los trabajadores independientes dedicados a las actividades agrícolas, pesca, caza, etc.
 #' @param noagro Informacion de los trabajadores independientes que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.
+#' @export
 
 
 enigh_nuevaconstruccion = function(year = NA, hogares = FALSE, concentrado = FALSE, erogaciones = FALSE, gastohogar = FALSE, gastotarjetas = FALSE, poblacion = FALSE, ingresos = FALSE, gastopersona = FALSE, trabajos = FALSE, agro = FALSE, noagro = FALSE){

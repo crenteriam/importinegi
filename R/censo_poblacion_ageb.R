@@ -19,6 +19,7 @@
 #'
 #' # Descarga los datos de CDMX de 2010.
 #' \dontrun{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
+#' @export
 
 
 censo_poblacion_ageb <- function(year = 2010, estado = "Nacional" , totalestado = FALSE, totalmunicipio = FALSE, totallocalidad = FALSE, totalageb = FALSE, manzana = TRUE) {

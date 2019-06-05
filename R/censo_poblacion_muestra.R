@@ -18,6 +18,7 @@
 #' \dontrun{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
 #'
 #' @family conteo_poblacion_muestra()
+#' @export
 
 censo_poblacion_muestra <- function(year =2010, estado = NA, muestra = NA){
 

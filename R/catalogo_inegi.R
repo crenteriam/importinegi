@@ -16,6 +16,7 @@
 #' \dontrun{catalogo_inegi(id = 489)}
 #'
 #' @seealso Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
+#' @export
 
 catalogo_inegi = function(id = NA){
   open.id = paste0("http://www3.inegi.org.mx/rnm/index.php/catalog/", id)

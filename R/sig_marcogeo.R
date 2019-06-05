@@ -13,6 +13,7 @@
 #'
 #' # Descarga el mapa de munucipios para 2009
 #' \dontrun{mapa09 = sig_marcogeo(year = 2009, capa = "municipios")}
+#' @export
 
 
 sig_marcogeo <- function(year = NA, capa = NA, version = NA){

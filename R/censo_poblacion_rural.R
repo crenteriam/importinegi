@@ -14,6 +14,7 @@
 #'
 #' # Descarga los datos de CDMX de 2010.
 #' rural = censo_poblacion_rural(year = 2010, estado = "CDMX")}
+#' @export
 
 
 censo_poblacion_rural <- function(year = 2010, estado = "Nacional"){

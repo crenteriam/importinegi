@@ -15,6 +15,7 @@
 #'
 #' # Descarga las bases de datos de la ENOE 2009, Trimestre 1, integradas
 #' \dontrun{enoe(year = 2009, trimestre = "trim1", integrar = TRUE)}
+#' @export
 
 enoe = function(year = NA, trimestre = NA, integrar = FALSE){
 if (is.na(year) & is.na(trimestre)) {shell.exec("https://www.inegi.org.mx/programas/enoe/15ymas/")}

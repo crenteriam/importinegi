@@ -14,6 +14,7 @@
 #'
 #' # Descarga los datos de CDMX de 2010.
 #' \dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
+#' @export
 
 censo_poblacion_urbano <- function(year = 2010, estado = NA){
 

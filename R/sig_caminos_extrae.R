@@ -11,6 +11,7 @@
 #' # Extrae el Shapefile plaza_cobro del objeto mapamx
 #' \dontrun{mapamx = sig_caminos_descarga(year = 2014)}
 #' \dontrun{mapamx.pzacobro = sig_caminos_extrae(mapamx, year = 2014, capa = "plaza_cobro")}
+#' @export
 
 sig_caminos_extrae <- function(. = NA, year = NA, capa = NA){
 

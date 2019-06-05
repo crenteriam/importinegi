@@ -19,6 +19,7 @@
 #' \dontrun{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
 #'
 #' @family conteo_poblacion_iter()
+#' @export
 
 censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunicipio = FALSE, localidades = TRUE){
 

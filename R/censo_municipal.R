@@ -17,6 +17,7 @@
 #' \dontrun{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
 #'
 #' @seealso Consulta la relacion entre fuentes y datos tecleando \code{censo_municipal()} en la consola.
+#' @export
 
 # ====================================================================================================
 censo_municipal = function(fuente = NA, year = NA, datos = NA){
