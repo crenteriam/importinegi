@@ -1,10 +1,11 @@
 Package: importinegi
-Title: Paquete para importar datos de INEGI en
+Title: Descargar y gestionar bases de datos del INEGI
 Version: 1.0.0
 Authors@R: person("Cesar", "Renteria", email = "crenteria@albany.edu", role = c("aut", "cre"))
 Author: Cesar Renteria [aut, cre]
 Maintainer: Cesar Renteria <crenteria@albany.edu>
-Description: Paquete de R para la importacion de datos de INEGI. La version 1.0 del paquete se concentra en los principales censos, encuestas y mapas.
+Description: Paquete de R para descargar y gestionar bases de datos del INEGI.
+BugReports: https://github.com/crenteriam/importinegi/issues
 Depends:  R (>= 3.3.0)
 License: CC0
 Encoding: UTF-8
