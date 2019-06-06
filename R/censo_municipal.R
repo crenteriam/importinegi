@@ -20,10 +20,11 @@
 #' @export
 
 # ====================================================================================================
-censo_municipal = function(fuente = NA, year = NA, datos = NA){
+censo_municipal = function(year = NA, fuente = NA, datos = NA){
 
 # Open Metadata
 if (is.na(fuente) & is.na(year) & is.na(datos)) {shell.exec("https://www.inegi.org.mx/programas/cngmd/2011/")}
+if (is.na(fuente) & is.na(year) & is.na(datos)) {stop(print("Cargando pagina..."))}
 else if (fuente != "ayuntamiento" & fuente != "administracion"
        & fuente != "seguridad" & fuente != "justicia") {stop(print("Fuente de datos no reconocida"))}
 else if (datos != "comision" & datos != "estructura" & datos != "funciones" & datos != "marco" & datos != "participacion" &

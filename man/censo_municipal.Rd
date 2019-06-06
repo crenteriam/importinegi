@@ -4,12 +4,12 @@
 \alias{censo_municipal}
 \title{Microdatos del Censo Nacional de Gobiernos Municipales y Delegacionales}
 \usage{
-censo_municipal(fuente = NA, year = NA, datos = NA)
+censo_municipal(year = NA, fuente = NA, datos = NA)
 }
 \arguments{
-\item{fuente}{Fuente de datos de las instituciones publicas de municipales y delegacionales en formato alfanumerico. Las opciones son: ayuntamiento, administracion, seguridad, justicia.}
-
 \item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles son 2011, 2013, 2015 y 2017.}
+
+\item{fuente}{Fuente de datos de las instituciones publicas de municipales y delegacionales en formato alfanumerico. Las opciones son: ayuntamiento, administracion, seguridad, justicia.}
 
 \item{datos}{Base de datos producida por cada fuente de datos en formato alfanumerico. Las opciones pueden ser, segun la fuente de datos: comision, estructura, integrantes, actividades, funciones, marco, participacion, recursos, tramites, transparencia, ejercicio, infraestructura, y recursos.}
 }

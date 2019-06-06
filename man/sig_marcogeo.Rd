@@ -7,9 +7,9 @@
 sig_marcogeo(year = NA, capa = NA, version = NA)
 }
 \arguments{
-\item{year}{Año de referencia del mapa, en formato numerico (1995-2018).}
+\item{year}{Año de referencia del mapa, en formato numerico. Años disponibles: 1995, 2000, 2005, 2007, 2009, 2010 y 2013.}
 
-\item{capa}{Capa (Shpafile) en formato alfanumerico. Las opciones son: entidades, municipios, ageb, urbano, y rural.}
+\item{capa}{Capa (Shapefile) en formato alfanumerico. Las opciones son: entidades, municipios, ageb, urbano, y rural.}
 
 \item{version}{Especificar, en formato alfanumerico, la version para los años 2010 (4.3, 5.0, 5.0.A), 2017 (2010.0 o dejar en blanco) y 2018 (2010.0 o dejar en blanco). Para el resto de los años, dejar en blanco.}
 }

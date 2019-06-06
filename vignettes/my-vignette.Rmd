@@ -18,9 +18,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-PAR Parrafo 1 de seccion El Paquete Inegi.
+El paquete de R `importinegi` fue creado para facilitar la descarga y uso de las bases de datos publicas del INEGI. Entre otras ventajas, este paquete permite integrar múltiples bases de  datos con un identificador único en común, consolidar los datos en diferentes niveles de agregación (p. ej. vivienda, localidad, municipio o entidad federativa), o automatizar la codificación de valores perdidos en el sistema de R `NA`).
+
+La version `1.0.0` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
+
+* Censo y Conteo de Poblacion y Vivienda
+* Censo Nacional de Gobiernos Municipales y Delegacionales
+* Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH)
+* Encuesta Nacional de Ocupación y Empleo (ENOE)
 
 # Sintaxis
+
+
 
 ## Censo Nacional de Poblacion y Vivienda
 

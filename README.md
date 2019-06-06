@@ -34,6 +34,6 @@ censo.jalisco10 = censo_poblacion_iter(year = 2010, estado = "Jalisco")
 ```
 ## Otros paquetes
 
-Otros paquetes para descargar dato del INEGI:
+Otros paquetes para gestionar datos del INEGI:
 - [INEGI API](https://www.diegovalle.net/mxmaps/articles/articles/inegi_api.html)
 - [inegiR](https://github.com/Eflores89/inegiR/)
