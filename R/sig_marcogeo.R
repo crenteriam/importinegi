@@ -1,6 +1,8 @@
 #' Marco Geoestadistico Nacional
 #'
-#' El Marco Geoestadístico es un sistema único y de carácter nacional diseñado por el INEGI, el cual presenta la división del territorio nacional en diferentes niveles de desagregación para referir geográficamente la información estadística de los censos y encuestas institucionales
+#' Extrae los mapas del Marco Geoestadistico Nacional.
+#'
+#' El Marco Geoestadistico Nacional (MGN) es un proyecto geoestadistico que presenta informacion sobre la division política del territorio mexicano en sus diferentes niveles de gobierno (nacional, estatal y municipal), asi como otras formas de clasificacion del territorio nacional.
 #'
 #' @param year Año de referencia del mapa, en formato numerico. Años disponibles: 1995, 2000, 2005, 2007, 2009, 2010 y 2013.
 #' @param mapa Mapa en formato alfanumerico. Las opciones son: entidades, municipios, ageb, urbano, y rural.
@@ -8,10 +10,10 @@
 #'
 #' @examples
 #'
-#' # Consulta los metadatos del Marco Geoestadistico Macional
+#' # Consultar los metadatos del Marco Geoestadistico Nacional
 #' \dontrun{sig_marcogeo()}
 #'
-#' # Descarga el mapa de munucipios para 2009
+#' # Descargar el mapa de munucipios para 2009
 #' \dontrun{mapa09 = sig_marcogeo(year = 2009, mapa = "municipios")}
 #' @export
 

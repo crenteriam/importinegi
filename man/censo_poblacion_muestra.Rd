@@ -9,24 +9,19 @@ censo_poblacion_muestra(year = 2010, estado = NA, muestra = NA)
 \arguments{
 \item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 1995, 2005 y 2010.}
 
-\item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
+\item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 
-\item{muestra}{Bases de datos disponibles "Migrantes" (1995, 2000 y 2010), "Personas" (1995, 2000, 2005 y 2010), "Viviendas" (2000, 2005 y 2010), "Hogar" (2005) y NA (1990).}
+\item{muestra}{Bases de datos disponibles \code{Migrantes} (1995, 2000 y 2010), \code{Personas} (1995, 2000, 2005 y 2010), \code{Viviendas} (2000, 2005 y 2010), \code{Hogar} (2005) y \code{NA} (1990).}
 }
 \description{
-Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado)
+Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado).
 }
 \details{
-Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+En la muestra del Censo la unidad de analisis puede ser personas, viviendas o migrantes. Por lo tanto, ademas del año y el estado, un tercer parametro requerido es \code{muestra}, que representa la unidad de analisis. Las unidades de analisis en este parámetro pueden ser \code{Migrantes}, \code{Personas}, \code{Viviendas} u \code{Hogar}.
 }
 \examples{
-
-# Consulta los metadatos de la muestra
-# > del Censo de Poblacion y Vivienda.
-\dontrun{censo_poblacion_muestra()}
 
 # Descarga los datos de CDMX de 2010.
 \dontrun{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
 
 }
-\concept{conteo_poblacion_muestra()}

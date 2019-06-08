@@ -1,23 +1,18 @@
 #' Censo de Poblacion - Muestra
 #'
-#' Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado)
+#' Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado).
 #'
-#' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+#' En la muestra del Censo la unidad de analisis puede ser personas, viviendas o migrantes. Por lo tanto, ademas del año y el estado, un tercer parametro requerido es \code{muestra}, que representa la unidad de analisis. Las unidades de analisis en este parámetro pueden ser \code{Migrantes}, \code{Personas}, \code{Viviendas} u \code{Hogar}.
 #'
 #' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 1995, 2005 y 2010.
-#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
-#' @param muestra Bases de datos disponibles "Migrantes" (1995, 2000 y 2010), "Personas" (1995, 2000, 2005 y 2010), "Viviendas" (2000, 2005 y 2010), "Hogar" (2005) y NA (1990).
+#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
+#' @param muestra Bases de datos disponibles \code{Migrantes} (1995, 2000 y 2010), \code{Personas} (1995, 2000, 2005 y 2010), \code{Viviendas} (2000, 2005 y 2010), \code{Hogar} (2005) y \code{NA} (1990).
 #'
 #' @examples
-#'
-#' # Consulta los metadatos de la muestra
-#' # > del Censo de Poblacion y Vivienda.
-#' \dontrun{censo_poblacion_muestra()}
 #'
 #' # Descarga los datos de CDMX de 2010.
 #' \dontrun{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
 #'
-#' @family conteo_poblacion_muestra()
 #' @export
 
 censo_poblacion_muestra <- function(year =2010, estado = NA, muestra = NA){
@@ -26,12 +21,6 @@ censo_poblacion_muestra <- function(year =2010, estado = NA, muestra = NA){
 if ((muestra!="Personas" & muestra!= "Migrantes" & muestra!="Viviendas" & muestra!="Hogar") & year!=1990){
   stop("La funcion no reconoce la muestra.
        \r Nota: El Censo 1990 no requiere tipo de muestra, ya que existe una sola base de datos disponible.")} else{}
-
-# Informacion de la version
-  message("conteo_poblacion_muestra() Versi\u00f3n 1.0.0
-          \rMuestra (cuestionario ampliado)
-          \rA\u00f1o disponible: 2010.
-          \r\n")
 
   # Objetos generales
   formato_archivo = "dbf"

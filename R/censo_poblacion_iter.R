@@ -1,6 +1,6 @@
 #' Censo de Poblacion - ITER
 #'
-#' Censo de Poblacion y Vivienda. Principales resultados por localidad (ITER)
+#' Censo de Poblacion y Vivienda. Principales resultados por localidad (ITER).
 #'
 #' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 #'
@@ -12,22 +12,14 @@
 #'
 #' @examples
 #'
-#' # Consulta los datos ITER del Censo de Poblacion y Vivienda
+#' # Consultar los datos ITER del Censo de Poblacion y Vivienda
 #' \dontrun{censo_poblacion_iter()}
 #'
-#' # Descarga los datos de CDMX de 2010.
+#' # Descargar los datos de CDMX de 2010.
 #' \dontrun{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
-#'
-#' @family conteo_poblacion_iter()
 #' @export
 
 censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado = FALSE, totalmunicipio = FALSE, localidades = TRUE){
-
-# Informacion de la version
-message("censo_poblacion_iter() Versi\u00f3n 1.0.0
-        \rPrincipales resultados por localidad (ITER)
-        \rA\u00f1os disponibles: 1990, 1995, 2000, 2005, 2010 y 2015.
-        \r\n")
 
 # Objetos generales
 formato_archivo = "dbf"

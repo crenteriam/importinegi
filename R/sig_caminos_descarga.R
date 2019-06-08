@@ -1,13 +1,15 @@
-#' Red Nacional de Caminos - Descarga Datos
+#' Red Nacional de Caminos - Descarga datos
 #'
-#' #' Esta funcion descarga un una lista todos los Shapefiles de la Red Nacional de Caminos para un año especifico. El objeto resultante de esta funcion es necesario para extraer cada Shapefile con la funcion \code{sig_caminos_extrae()}.
+#' Descarga un una lista con todos los mapas de la Red Nacional de Caminos para un año especifico. El objeto resultante de esta funcion es necesario para extraer, por separado, cada mapa con la funcion \code{sig_caminos_extrae()}.
+#'
+#' La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las vias de comunicacion inter-urbana e intra-urbana. Adicionalmente, contiene informacion sobre la infraestructura publica urbana (p. ej. tuneles, puentes, plazas de cobro, marcas de kilometraje, etc.), y la infraestructura de otros medios de transporte (p. ej. transbordadores, aeropuertos, puertos y estaciones de ferrocarril).
 #'
 #' @param year Año de referencia del mapa, en formato numerico (2014-2018).
 #'
-#' @example
+#' @examples
 #'
-#' # Extrae el Shapefile plaza_cobro del objeto mapamx
-#' \dontrun{mapamx = sig_caminos_descarga(year = 2014)}
+#' # Descargar mapas de la RNC
+#' \dontrun{mapas.rnc = sig_caminos_descarga(year = 2014)}
 #' @export
 
 

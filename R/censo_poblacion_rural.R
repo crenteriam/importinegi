@@ -5,25 +5,17 @@
 #' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 #'
 #' @param year Año del levantamiento del censo en formato numerico. El unico año disponible en INEGI (incluyendo los conteos) es 2010.
-#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
+#' @param estado Define el nombre de la entidad federativa para descargar los datos en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #'
 #' @examples
 #'
-#' # Consulta los datos sobre localidades rurales del Censo de Poblacion y Vivienda
-#' \dontrun{censo_poblacion_rural()}
-#'
-#' # Descarga los datos de CDMX de 2010.
+#' # Descargar los datos de CDMX de 2010.
 #' rural = censo_poblacion_rural(year = 2010, estado = "CDMX")}
 #' @export
 
 
-censo_poblacion_rural <- function(year = 2010, estado = "Nacional"){
-
-  # Informacion de la version
-  message("censo_poblacion_rural() Versi\u00f3n 1.0.0
-          \rResultados sobre localidades con menos de 5 mil habitantes
-          \rA\u00f1o disponible: 2010.
-          \r\n")
+censo_poblacion_rural <- function(year = NA, estado = "Nacional"){
+  if (year == NA) {stop(print("Definir a\u00f1o"))} else {}
 
   # Objetos generales
   formato_archivo = "dbf"

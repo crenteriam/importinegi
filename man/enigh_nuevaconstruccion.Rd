@@ -13,28 +13,31 @@ enigh_nuevaconstruccion(year = NA, hogares = FALSE,
 \arguments{
 \item{year}{Año de levantamiento de la encuesta en formato numerico. Los años disponibles son 2008, 2010, 2012 y 2014}
 
-\item{hogares}{Características de los hogares que habitan los integrantes de los mismos.}
+\item{hogares}{Base de datos: caracteristicas de los hogares que habitan los integrantes de los mismos.}
 
-\item{concentrado}{Principales variables por hogar. Contiene un resumen de variables de otras tablas.}
+\item{concentrado}{Base de datos: principales variables por hogar. Contiene un resumen de variables de otras tablas.}
 
-\item{erogaciones}{Erogaciones financieras y de capital realizadas por hogar.}
+\item{erogaciones}{Base de datos: erogaciones financieras y de capital realizadas por hogar.}
 
-\item{gastohogar}{Gastos monetarios y no monetarios del hogar.}
+\item{gastohogar}{Base de datos: gGastos monetarios y no monetarios del hogar.}
 
-\item{gastotarjetas}{Financiamiento de tarjeta de crédito bancaria o comercial.}
+\item{gastotarjetas}{Base de datos: financiamiento de tarjeta de credito bancaria o comercial.}
 
-\item{poblacion}{Características sociodemográficas de los integrantes del hogar.}
+\item{poblacion}{Base de datos: caracteristicas sociodemograficas de los integrantes del hogar.}
 
-\item{ingresos}{Ingresos y percepciones financieras y de capital de cada uno de los integrantes del hogar, por diversos conceptos.}
+\item{ingresos}{Base de datos: ingresos y percepciones financieras y de capital de cada uno de los integrantes del hogar, por diversos conceptos.}
 
-\item{gastopersona}{Gastos realizados por cada integrante del hogar en educación, transporte público y remuneraciones en especie.}
+\item{gastopersona}{Base de datos: gastos realizados por cada integrante del hogar en educacion, transporte publico y remuneraciones en especie.}
 
-\item{trabajos}{Actividad de los integrantes del hogar de 12 o más años.}
+\item{trabajos}{Base de datos: actividad de los integrantes del hogar de 12 o mas años.}
 
-\item{agro}{Información de los trabajadores independientes dedicados a las actividades agrícolas, pesca, caza, etc.}
+\item{agro}{Base de datos: informacion de los trabajadores independientes dedicados a las actividades agricolas, pesca, caza, etc.}
 
-\item{noagro}{Informacion de los trabajadores independientes que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.}
+\item{noagro}{Base de datos: informacion de los trabajadores independientes que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.}
 }
 \description{
-Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH). Nueva Construccion (2008-2014).
+Descarga datos de la Encuesta Nacional de Ingreso y Gasto de los Hogares, Nueva Construccion (2008-2014).
+}
+\details{
+La ENIGH provee informacion estadisticas sobre los ingresos y gastos de los hogares en cuanto a su monto, procedencia y distribucion. Adicionalmente, la ENIGH provee informacion sobre las caracteristicas socio-demograficas de los integrantes del hogar.
 }

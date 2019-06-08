@@ -4,24 +4,24 @@
 \alias{censo_poblacion_urbano}
 \title{Censo de Poblacion - Entorno urbano}
 \usage{
-censo_poblacion_urbano(year = 2010, estado = NA)
+censo_poblacion_urbano(year = NA, estado = NA)
 }
 \arguments{
 \item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.}
 
-\item{estado}{Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
+\item{estado}{Define el nombre de la entidad federativa para descargar los datos en formato alfanumerico. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 }
 \description{
-Censo de Poblacion y Vivienda. Resultados sobre infraestructura y características del entorno urbano.
+Censo de Poblacion y Vivienda. Resultados sobre infraestructura y caracteristicas del entorno urbano.
 }
 \details{
 Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 }
 \examples{
 
-# Consulta los datos del entorno urbano del Censo de Poblacion y Vivienda
+# Consultar los datos del entorno urbano del Censo de Poblacion y Vivienda
 \dontrun{censo_poblacion_entorno()}
 
-# Descarga los datos de CDMX de 2010.
+# Descargar los datos de CDMX de 2010.
 \dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
 }

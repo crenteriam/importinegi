@@ -2,7 +2,7 @@
 % Please edit documentation in R/censo_municipal.R
 \name{censo_municipal}
 \alias{censo_municipal}
-\title{Microdatos del Censo Nacional de Gobiernos Municipales y Delegacionales}
+\title{Censo Nacional de Gobiernos Municipales y Delegacionales}
 \usage{
 censo_municipal(year = NA, fuente = NA, datos = NA)
 }
@@ -14,10 +14,10 @@ censo_municipal(year = NA, fuente = NA, datos = NA)
 \item{datos}{Base de datos producida por cada fuente de datos en formato alfanumerico. Las opciones pueden ser, segun la fuente de datos: comision, estructura, integrantes, actividades, funciones, marco, participacion, recursos, tramites, transparencia, ejercicio, infraestructura, y recursos.}
 }
 \description{
-Descarga los microdatos del Censo Nacional de Gobiernos Municipales y Delegacionales (2011, 2013, 2015 y 2017).
+Descarga los datos del Censo Nacional de Gobiernos Municipales y Delegacionales (CNGMD),
 }
 \details{
-Los microdatos del censo contienen informacion de 2,454 gobiernos municipales y gobiernos delegacionales de la CDMX. Si conoces el \code{id} de la base de datos a consultar, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo abajo).
+El CNGMD es un proyecto estadistico sobre la gestion y desempeño de las entidades gubernamentales mexicanas a nivel municipal. El CNGMD cubre cuatro tematicas: ayuntamiento, administracion publica municipal, seguridad y justicia.
 }
 \examples{
 
@@ -26,8 +26,4 @@ Los microdatos del censo contienen informacion de 2,454 gobiernos municipales y 
 
 # Descarga los microdatos de la estructura de los ayuntamientos en 2011
 \dontrun{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
-
-}
-\seealso{
-Consulta la relacion entre fuentes y datos tecleando \code{censo_municipal()} en la consola.
 }

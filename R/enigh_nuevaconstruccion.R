@@ -1,19 +1,21 @@
 #' ENIGH Nueva Construccion (2008-2014)
 #'
-#' Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH). Nueva Construccion (2008-2014).
+#' Descarga datos de la Encuesta Nacional de Ingreso y Gasto de los Hogares, Nueva Construccion (2008-2014).
+#'
+#' La ENIGH provee informacion estadisticas sobre los ingresos y gastos de los hogares en cuanto a su monto, procedencia y distribucion. Adicionalmente, la ENIGH provee informacion sobre las caracteristicas socio-demograficas de los integrantes del hogar.
 #'
 #' @param year Año de levantamiento de la encuesta en formato numerico. Los años disponibles son 2008, 2010, 2012 y 2014
-#' @param hogares Características de los hogares que habitan los integrantes de los mismos.
-#' @param concentrado Principales variables por hogar. Contiene un resumen de variables de otras tablas.
-#' @param erogaciones Erogaciones financieras y de capital realizadas por hogar.
-#' @param gastohogar 	Gastos monetarios y no monetarios del hogar.
-#' @param gastotarjetas Financiamiento de tarjeta de crédito bancaria o comercial.
-#' @param poblacion Características sociodemográficas de los integrantes del hogar.
-#' @param ingresos Ingresos y percepciones financieras y de capital de cada uno de los integrantes del hogar, por diversos conceptos.
-#' @param gastopersona Gastos realizados por cada integrante del hogar en educación, transporte público y remuneraciones en especie.
-#' @param trabajos Actividad de los integrantes del hogar de 12 o más años.
-#' @param agro Información de los trabajadores independientes dedicados a las actividades agrícolas, pesca, caza, etc.
-#' @param noagro Informacion de los trabajadores independientes que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.
+#' @param hogares Base de datos: caracteristicas de los hogares que habitan los integrantes de los mismos.
+#' @param concentrado Base de datos: principales variables por hogar. Contiene un resumen de variables de otras tablas.
+#' @param erogaciones Base de datos: erogaciones financieras y de capital realizadas por hogar.
+#' @param gastohogar 	Base de datos: gGastos monetarios y no monetarios del hogar.
+#' @param gastotarjetas Base de datos: financiamiento de tarjeta de credito bancaria o comercial.
+#' @param poblacion Base de datos: caracteristicas sociodemograficas de los integrantes del hogar.
+#' @param ingresos Base de datos: ingresos y percepciones financieras y de capital de cada uno de los integrantes del hogar, por diversos conceptos.
+#' @param gastopersona Base de datos: gastos realizados por cada integrante del hogar en educacion, transporte publico y remuneraciones en especie.
+#' @param trabajos Base de datos: actividad de los integrantes del hogar de 12 o mas años.
+#' @param agro Base de datos: informacion de los trabajadores independientes dedicados a las actividades agricolas, pesca, caza, etc.
+#' @param noagro Base de datos: informacion de los trabajadores independientes que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.
 #' @export
 
 

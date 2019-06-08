@@ -29,41 +29,178 @@ La version `1.0.0` permite descargar y gestionar las bases de datos de los sigui
 
 # Sintaxis
 
+El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `censo_municipal()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de cinco tipos formatos de microdatos, siendo ITER una de ellas. Por lo tanto, las funciones del Censo tienen una palabra clave adicional indicando el formato de microdatos. Para acceder al formato ITER, por ejemplo, la función es `censo_poblacion_iter()`.
 
+En el caso de la información georreferenciada, el nombre de la funcion comienza con las siglas Sistema de Información Georreferenciada (SIG). Estas siglas son sucedidas por una palabra clave del proyecto geoestadístico. Por ejemplo, la función para acceder a lo datos de la Red Nacional de Caminos es `sig_caminos()`.
+
+Existe una función especial, `catalogo_inegi()`, que permite explorar el catálogo de proyectos estadísticos del INEGI, así como la documentación completa de cada base de datos y proyecto estadístico del INEGI. La función accede a la Red Nacional de Metadatos (RNM), que es una plataforma de difusión y consulta de los metadatos de cada proyecto estadístico del INEGI. La sintaxis de esta función es sencilla. El único parámetro requerido es el número del proyecto estadístico a consultar (`id`). En el siguiente bloque de código, se accede (a través del navegador por default del sistema operativo) a la documentación del proyecto estadístico "Censo Nacional de Derechos Humanos Estatal 2018" a través de su número de proyecto estadístico.
+
+```{r, eval = FALSE}
+# Accede a la documentacion del Censo Nacional de Derechos Humanos Estatal 2018
+catalogo_inegi(id = 443)
+```
+
+Tecleando la función `catalogo_inegi()` (sin incluir nada en el paréntesis) se puede descargar y almacenar en un objeto de R una base de datos con el catálogo de proyectos del INEGI. Dicha base de datos provee el número de proyecto estadístico (`id`), el nombre del proyecto, los años en que se comenzó y finalizó el levantamiento de los datos, la fecha de creación de los metadatos en la RNM y la fecha de última actualización de los metadatos. El siguiente bloque de código ilustra la descarga de la base de datos del catálogo de proyectos del INEGI y su almacenamiento en un objeto de R.
+
+```{r, eval = FALSE}
+# Descarga y almacena el catalogo de proyectos estadisticos del INEGI
+catalogoINEGI = catalogo_inegi()
+```
 
 ## Censo Nacional de Poblacion y Vivienda
 
-PAR
+Todas las funciones para los cinco tipos de microdatos de los censos tienen la misma sintaxis. Aunque las funciones varían en los parámetros requeridos, todas comparten tres parámetros indispensables.
 
-Example.
+El primer parámetro indispensable es el año (`year`) en formato numérico. Los datos disponibles comienzan a partir de 1990 (e incluyen los Conteos), pero no todos los tipos de microdatos están disponibles para todos los años censales. La documentación de cada función provee los años disponibles para cada tipo de microdatos del censo.
+
+El segundo parámetro indispensable es la entidad federativa (`estado`) en formato alfanumérico. La selección por default es `Nacional`, que provee los datos para todos los estados. Los estados se deben escribir con letra capital y los estados con múltiples palabras se escriben espaciados y sin acentos (p. ej. `San Luis Potosi`). La Ciudad de México (anteriormente Distrito Federal) se escribe `CDMX`. 
+
+El resto de los parámetros varía entre funciones. El primer grupo de parámetros (`totalestado`, `totalmunicipio`, `totallocalidad` y `totalageb`) requiere información lógica (`TRUE` o `FALSE`), donde `FALSE` es el default y significa que la base de datos excluye los resultados agregados a nivel estado, municipio, localidad o AGEB, respectivamente. El segundo grupo de parámetros (`localidades` y `manzana`) también requiere información lógica, donde `TRUE` es el default y significa que la base de datos incluye información a nivel manzana o localidad, respectivamente.
+
+El objetivo de los parámetros lógicos es ofrecer flexibilidad al usuario en la descarga de los datos. Al manipular estos parámetros, el usuario puede limitar la descarga de datos a sólo uno de los niveles de gobierno o cualquier combinación de múltiples niveles de gobierno. En el siguiente bloque de código se presentan cuatro ejemplos de descarga de datos entre diversos niveles de gobierno.
+
+```{r, eval = FALSE}
+# Default: a nivel localidad, pero sin datos a nivel estado ni municipio
+censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Jalisco")
+
+# Datos a nivel estado, municipio y localidad
+censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Jalisco", totalestado = TRUE, totalmunicipio = TRUE)
+
+# Datos a nivel estado y municipio, pero sin datos a nivel localidad
+censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)
+
+# Datos a nivel nacional
+censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Nacional")
+```
+
+Finalmente, en la muestra del Censo la unidad de análisis puede ser personas, viviendas o migrantes. Por lo tanto, además del año y el estado, un tercer parámetro requerido es `muestra`, que representa la unidad de análisis. Las unidades de análisis en este parámetro pueden ser `Migrantes`, `Personas`, `Viviendas` u `Hogar`. En el siguiente bloque de código se ilustra la descarga del cuestionario de personas para el Censo 2010 en el estado de Jalisco.
+
+```{r, eval = FALSE}
+# Descarga cuestionario de personas
+muestra.jalisco = censo_poblacion_muestra(year = 2010, estado = "Jalisco", muestra = "Personas")
+```
 
 ## Censo de Gobiernos Municipales y Delegacionales
 
-PAR
+La función `censo_municipal()` descarga las bases de datos de las cuatro temáticas y tiene tres parámetros indispensables. Primero, se debe establece en formato numérico el año del levantamiento del CNGMD, que puede ser 2011, 2013, 2015 ó 2017. En el parámetro `fuente`, se debe definir en formato alfanumérico la temática o fuente de la base de datos requerida. Finalmente, en el parámetro `datos`, se debe definir en formato alfanumérico el conjunto de bases de datos.
 
-Example
+La relación entre los datos, conjunto de datos y fuentes puede ser complicada, especialmente a partir del CNGDM de 2015. Se recomienda consultar directamente en la documentación en linea del INEGI la disponibilidad de datos por cada fuente, conjunto de datos y año de levantamiento. Se puede acceder a dicha documentación directamente al teclear la función `censo_municial()` (sin incluir nada entre los paréntesis), como se muestra en el siguiente bloque de código.
+
+```{r, eval = FALSE}
+# Acceder a la documentacion en linea del CNGDM
+censo_municipal()
+```
+
+Al elegir una fuente y conjunto de datos específicos, la función descarga una lista de R con el conjunto de bases de datos correspondiente. En el siguiente bloque de código, se ilustra la descarga del conjunto de datos `comision`, de la fuente `ayuntamiento`. El resultado de la descarga es una lista de R con cinco bases de datos (ACT_AYUN, COM_AYUN, COM_TASU, IN_TEASU, INI_AYUN). 
+
+```{r, eval = FALSE}
+# Descargar conjunto de datos "comision" del censo 2011
+datos.comision = censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "comision")
+```
+
+Esta lista, sin embargo, no es útil para el análisis estadístico; cada base de datos debe extraerse de la lista y almacenarse en un objeto de R distinto. Esto se logra, primero, identificando la posición de la base de datos en la lista con la función `summary()`. Posteriormente, debe extraer la base de datos, utilizando su posición dentro de la lista, como se ilustra en el siguiente bloque de código.
+
+```{r, eval = FALSE}
+# Explorar la posición de cada base de datos en la lista
+summary(datos.comision)
+
+# Extraer la base de datos ACT_AYUN, en la posición 1
+datos.actas = datos.comision[[1]]
+```
+
 
 ## ENIGH
 
+La función `enigh_nuevaconstruccion()` descarga las bases de datos de la ENIGH Nueva Construcción (2008-2014). La ENIGH Cuenta con diversas bases de datos en tres unidades de análisis (vivienda, hogar y personas). La ENIGH se compone de varias cadenas de bases de datos subordinadas. Por ejemplo la base de datos "trabajos" tiene dos bases de datos subordinadas ("agro" y "no agro") y la base de datos "hogares" tiene tres bases de datos subordinadas ("gasto hogar", "erogaciones" y "gasto tarjeta"). Todas contienen información que puede ser integrable en una sola matriz de datos, aunque esta labor puede resultar compleja. La principal ventaja de esta función es que está diseñada para descargar e integrar todas estas bases de datos en una sola.
+
+La función requiere el parámetro del año del levantamiento de la ENIGH, que puede ser 2008, 2010, 2012 ó 2014. La función descarga, por default, la base de datos `viviendas`, a la que el resto de las bases de datos se subordinan. A partir de esta base de dato, al agregar parámetros lógicos, se descargan e incorporan bases de datos adicionales en una única matriz de datos. Para incorporar bases de datos subordinadas, cada parámetro debe ser activado con el valor `TRUE`. El siguiente bloque de código provee varios ejemplos del uso de esta función para descargar datos de la ENIGH 2010, Nueva Construcción.
+
+```{r, eval = FALSE}
+# Default: descargar datos de viviendas
+viviendas10 = enigh_nuevaconstruccion(year = 2010)
+
+# Descargar datos de hogares
+hogares10 = enigh_nuevaconstruccion(year = 2010,  hogares = TRUE)
+
+# Descargar datos de erogaciones
+erogaciones10 = enigh_nuevaconstruccion(year = 2010, hogares = TRUE, erogaciones = TRUE)
+
+# Descargar datos de agro
+agro10 = enigh_nuevaconstruccion(year = 2010, hogares = TRUE, poblacion = TRUE, trabajos = TRUE, agro = TRUE)
+```
+
 ## ENOE
+
+La función `enoe()` descarga las bases de datos trimestrales de la ENOE desde 2005. La sintaxis de la función tiene tres parámetros, de los cuales los dos primeros son indispensables. Primero, se debe especificar el año de levantamiento de los datos en formato numérico. Posteriormente se debe especificar el trimestre del año en formato alfanumérico, los cuales pueden ser `trim1`, `trim2`, `trim3`, o `trim4`. La función descarga por separado las cinco bases de datos que componen la ENOE. Sin embargo, el tercer parámetro, `integrar`, que se describe al final de esta sub-sección, integra las cinco bases de datos en una sola matriz de datos.
+
+Cuando el parámetro `integrar` esta (por default) en `FALSE`, la función descarga una lista de R con cinco bases de datos separadas. La función `summary` provee un resumen de las cinco bases de datos (nombre, tamaño y tipo de objeto) y permite identificar la posición de cada base de datos en la lista. En el siguiente bloque de código, se extrae la base de datos del cuestionario de hogares de la ENOE 2005, Trimestre I.
+
+```{r, eval = FALSE}
+# Crear un objeto con las cinco bases de datos de la ENOE, separadas.
+lista.enoe05 = enoe(year = 2005, trimestre = "trim1")
+```
+
+Esta lista, sin embargo, no es útil para el análisis estadístico; cada base de datos debe extraerse de la lista y almacenarse en un objeto de R distinto. Esto se logra, primero, identificando la posición de la base de datos en la lista con la función `summary()`, como se muestra en el siguiente bloque de código.
+
+```{r, eval = FALSE}
+#  Resumen de las cinco bases de datos
+summary(lista.enoe05)
+```
+
+Posteriormente, se debe extraer la base de datos, utilizando su posición dentro de la lista. En el siguiente bloque de código, se ilustra la descarga de la base de datos hogares, que se encuentra en la tercera posición de la lista.
+
+```{r, eval = FALSE}
+# Identificar y extraer base de datos del cuestionario hogares
+dt.hog105 = dt.enoe05[[3]]
+```
+
+Como se explicó, el parámetro por defecto `integrar = FALSE`, descarga las bases de datos por separado. Sin embargo, estas bases de datos pueden integrarse directamente en una sola matriz de datos utilizando la opción `integrar = TRUE`. Esta opción conecta todas las bases de datos mediante el identificador único que tienen en común. El siguiente bloque de código ilustra la descarga e integración de las bases de datos de la ENOE Trimestre I.
+
+```{r, eval = FALSE}
+# Descargar e integrar datos de la ENOE Trimestre I datos de la ENOE, integradas.
+lista.enoe = enoe(year = 2005, trimestre = "trim1", integrar = TRUE)
+```
 
 ## Marco Geoestadistico Nacional
 
+La función `sig_marcogeo()` descarga los mapas del MGN desde 1995 hasta 2013. Esta función utiliza el paquete `rdgal` para descargar y gestionar archivos de información georreferenciada. Se puede acceder a la documentación en línea del MGN tecleando la función (sin incluir nada entre los paréntesis) `sig_marcogeo()`.
+
+La sintaxis de la función tiene tres parámetros, de los cuales dos son indispensables. Primero, se debe especificar el año del mapa en formato numérico; los años disponibles se encuentran en la documentación de la función. El segundo parámetro indispensable es el mapa. El MGN provee cinco mapas diferentes: `entidades`, `municipios`, `ageb`, `urbano`, y `rural`, aunque la dispobilidad de algunos mapas varía entre años. El tercer parámetro, `version`, solo es necesario en los años que cuentan con múltiples versiones. Por ejemplo, el año 2010 cuenta las versiones `4.3`, `5.0`, ó `5.0.A`.
+
+El mapa descargado debe ser almacenado en un objeto de R. El resultado es un objeto espacial de la clase `SpatialPolygonsDataFrame`, a partir del cual se puede realizar análisis espacial y estadístico. En el siguiente bloque de código se ejemplifica la descarga del mapa de estados del MGN de 1995 y se utilizan dos funciones para su visualización.
+
+```{r, eval = FALSE}
+# Descargar el MGN de 1995
+mapa.estados95 <- sig_marcogeo(year = 1995, mapa = "entidades")
+
+# Visualizar mapa basico
+plot(mapa.estados95)
+
+# Visualizar mapa con ggmap
+install.packages("ggmap")
+ggmap::ggmap(mapa.estados95)
+```
+
 ## Red Nacional de Caminos
 
+Para utilizar los mapas de la RNC se necesitan dos funciones. La primera función, `sig_caminos_descarga()`, descarga los mapas de la RNC publicados entre 2014 y 2018. Esta función almacena en un objeto de R los trece mapas que componen el conjunto de datos de la RNC. En el siguiente bloque de código, se ilustra la descarga del conjunto de mapas de la RNC para el año 2014.
+
+```{r, eval = FALSE}
+# Descargar mapas de la RNC de 2014
+mapas.rnc <- sig_caminos_descarga(year = 2014)
+```
+
+La ventaja de la función `sig_caminos_descarga()` es que descarga y almacena los trece mapas de la RNC en una lista de objetos espaciales de R. Sin embargo, la desventaja es que esta lista no es útil para el análisis espacial; cada mapa debe extraerse de la lista y almacenarse en un objeto espacial de R distinto. La segunda función, `sig_caminos_extrae()` cumple este propósito. 
+
+Para extraer cada mapa, es necesario especificar primero el objeto con la lista de mapas previamente creado con la función `sig_caminos_descarga()`. En el segundo parámetro, se debe especificar el año del mapa de la RNC. Finalmente, en el tercer parámetro, se debe especificar el mapa que se desea extraer de la lista. Los trece mapas disponibles son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, red_localidad, red_sitio_de_interes, y union. También, la lista de mapas se puede consultar utilizando la función `summary()` sobre el objeto creado con la función `sig_caminos_descarga()`. En el siguiente bloque de código, se ilustra la extracción del mapa `puentes`, que contiene información de la ubicación geográfica de puentes carreteros.
+
+```{r, eval = FALSE}
+# Obtener un mapa de puentes
+mapa.puentes <- sig_caminos_extrae(mapas.rnc, year = 2014, conjunto = "puentes")
+```
 
 Poner un mapa aqui. Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
 
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+```{r, eval = FALSE}
+mapa.puentes <- sig_caminos_extrae(mapas.rnc, year = 2014, conjunto = "puentes")
 ```
-
-
-Summary statistics tables. You can write tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
-
-

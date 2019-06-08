@@ -1,28 +1,23 @@
 #' Censo de Poblacion - Entorno urbano
 #'
-#' Censo de Poblacion y Vivienda. Resultados sobre infraestructura y características del entorno urbano.
+#' Censo de Poblacion y Vivienda. Resultados sobre infraestructura y caracteristicas del entorno urbano.
 #'
 #' Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
 #'
 #' @param year Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 2000, 2005, 2010 y 2015.
-#' @param estado Define el nombre de la entidad federativa para descargar los datos, en formato alfanumerico. Utiliza "Nacional" para descargarlos a nivel nacional. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
+#' @param estado Define el nombre de la entidad federativa para descargar los datos en formato alfanumerico. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".
 #'
 #' @examples
 #'
-#' # Consulta los datos del entorno urbano del Censo de Poblacion y Vivienda
+#' # Consultar los datos del entorno urbano del Censo de Poblacion y Vivienda
 #' \dontrun{censo_poblacion_entorno()}
 #'
-#' # Descarga los datos de CDMX de 2010.
+#' # Descargar los datos de CDMX de 2010.
 #' \dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
 #' @export
 
-censo_poblacion_urbano <- function(year = 2010, estado = NA){
-
-  # Informacion de la version
-  message("censo_poblacion_urbano() Version 1.0.0
-          \rResultados sobre infraestructura y caracteristicas del entorno urbano.
-          \rA\u00f1o disponible: 2010.
-          \r\n")
+censo_poblacion_urbano <- function(year = NA, estado = NA){
+  if (year == NA) {stop(print("Definir a\u00f1o"))} else {}
 
   # Objetos generales
   formato_archivo = "dbf"
@@ -63,11 +58,6 @@ censo_poblacion_urbano <- function(year = 2010, estado = NA){
   else if (estado == "Zacatecas"){censo.state = "32"}
   else if (estado == "Nacional") {censo.state = "00"}
   else {stop("Argumento requerido: nombra un estado o Nacional")}
-
-
-
-
-
 
 #1 Obtener URL  ----------------------------------------------
   censo.url.eu =  paste0(inegi.base, year, "/microdatos/urbano/MANZANA_EU_", censo.state, "_", formato_archivo, ".zip")

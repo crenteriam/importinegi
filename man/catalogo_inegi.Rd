@@ -2,18 +2,18 @@
 % Please edit documentation in R/catalogo_inegi.R
 \name{catalogo_inegi}
 \alias{catalogo_inegi}
-\title{Catalogo INEGI}
+\title{Catalogo de proyectos estadisticos del INEGI}
 \usage{
 catalogo_inegi(id = NA)
 }
 \arguments{
-\item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar al acceder a la lista del repositorio (ver ejemplo abajo).}
+\item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar en el catalogo de proyectos estadisticos del INEGI (ver ejemplo).}
 }
 \description{
-Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de una base de datos en particular.
+Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
 }
 \details{
-La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos a consultar, utilizalo en el parametro para obtener el libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo abajo).
+La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos, utilizalo en el parametro para acceder al libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo).
 }
 \examples{
 

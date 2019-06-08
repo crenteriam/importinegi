@@ -31,9 +31,9 @@ Esta base de datos tiene tres niveles de agregacion: entidades federativas, muni
 }
 \examples{
 
-# Consulta los datos del Censo de Poblacion y Vivienda a nivel AGEB y manzana urbana.
+# Consultar los datos del Censo a nivel AGEB y manzana urbana.
 \dontrun{censo_poblacion_ageb()}
 
-# Descarga los datos de CDMX de 2010.
+# Descargar los datos de CDMX de 2010.
 \dontrun{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
 }
