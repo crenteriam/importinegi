@@ -4,14 +4,14 @@
 \alias{sig_caminos_extrae}
 \title{Red Nacional de Caminos - Extrae Shapefiles}
 \usage{
-sig_caminos_extrae(. = NA, year = NA, capa = NA)
+sig_caminos_extrae(. = NA, year = NA, mapa = NA)
 }
 \arguments{
 \item{.}{Inserta el nombre del objecto creado con la funcion \code{sig_caminos_extrae()}.}
 
 \item{year}{Año de referencia del mapa, en formato numerico (2014-2018).}
 
-\item{capa}{Capa (Shpafile) en formato alfanumerico. Las opciones son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.}
+\item{mapa}{Mapa en formato alfanumerico. Las opciones son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.}
 }
 \description{
 Esta funcion extrae cada uno de los Shapefiles de la Red Nacional de Caminos descargados con la funcion \code{sig_caminos_extrae()}.
