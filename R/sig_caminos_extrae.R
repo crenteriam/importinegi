@@ -4,16 +4,16 @@
 #'
 #' @param . Inserta el nombre del objecto creado con la funcion \code{sig_caminos_extrae()}.
 #' @param year Año de referencia del mapa, en formato numerico (2014-2018).
-#' @param capa Capa (Shpafile) en formato alfanumerico. Las opciones son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.
+#' @param mapa Mapa en formato alfanumerico. Las opciones son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.
 #'
 #' @example
 #'
 #' # Extrae el Shapefile plaza_cobro del objeto mapamx
 #' \dontrun{mapamx = sig_caminos_descarga(year = 2014)}
-#' \dontrun{mapamx.pzacobro = sig_caminos_extrae(mapamx, year = 2014, capa = "plaza_cobro")}
+#' \dontrun{mapamx.pzacobro = sig_caminos_extrae(mapamx, year = 2014, mapa = "plaza_cobro")}
 #' @export
 
-sig_caminos_extrae <- function(. = NA, year = NA, capa = NA){
+sig_caminos_extrae <- function(. = NA, year = NA, mapa = NA){
 
 if      (year == 2018) {rutaarchivo = ""}
 else if (year == 2017) {rutaarchivo = ""}
@@ -30,7 +30,7 @@ else if (year == 2014) {rutaarchivo = ""}
   #temp = str_replace_all(temp, "^./(.+)/", "./folder/")
 
   print("Obteniendo Shapefile...")
-  map_output = rgdal::readOGR(dsn = rutaarchivo, layer = capa)
+  map_output = rgdal::readOGR(dsn = rutaarchivo, layer = mapa)
   return(map_output)
 
 } # End of Function
