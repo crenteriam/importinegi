@@ -24,7 +24,7 @@ sig_marcogeo <- function(year = NA, mapa = NA, version = NA){
 if ((mapa != "entidades" | mapa != "municipios" | mapa != "ageb" | mapa != "urbano" | mapa != "rural") & !is.na(mapa)) {stop(print("Nombre de mapa no reconocido."))} else {}
 
 # Get Help and More Information
-if (is.na(year) & is.na(mapa) & is.na(version)) {base::shell.exec("https://www.inegi.org.mx/temas/mg/")}
+if (is.na(year) & is.na(mapa) & is.na(version)) {shell.exec("https://www.inegi.org.mx/temas/mg/")}
 else if (is.na(year)) {stop("Debes introducir el a\u00f1o del mapa")}
 else if (is.na(mapa)) {stop("Debes introducir el nombre del mapaa")}
 else if (year == 2010 & is.na(version)) {stop("Para el a\u00f1o 2010, debes especificar la version. Las versiones disponibles son \"4.3\", \"5.0\" y \"5.0.A\" ")}

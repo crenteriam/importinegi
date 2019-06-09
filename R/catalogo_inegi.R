@@ -20,7 +20,7 @@
 
 catalogo_inegi = function(id = NA){
   open.id = paste0("http://www3.inegi.org.mx/rnm/index.php/catalog/", id)
-  if (!is.na(id)) {base::shell.exec(open.id)}
+  if (!is.na(id)) {shell.exec(open.id)}
 ### Catálgo General ---------------------------------------------------------
   else {
   Catalogo = tempfile()
