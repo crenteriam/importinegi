@@ -20,13 +20,10 @@
 
 sig_marcogeo <- function(year = NA, mapa = NA, version = NA){
 
-# Basic errors
-if ((mapa != "entidades" | mapa != "municipios" | mapa != "ageb" | mapa != "urbano" | mapa != "rural") & !is.na(mapa)) {stop(print("Nombre de mapa no reconocido."))} else {}
-
 # Get Help and More Information
 if (is.na(year) & is.na(mapa) & is.na(version)) {shell.exec("https://www.inegi.org.mx/temas/mg/")}
 else if (is.na(year)) {stop("Debes introducir el a\u00f1o del mapa")}
-else if (is.na(mapa)) {stop("Debes introducir el nombre del mapaa")}
+else if (is.na(mapa)) {stop("Debes introducir el nombre del mapa")}
 else if (year == 2010 & is.na(version)) {stop("Para el a\u00f1o 2010, debes especificar la version. Las versiones disponibles son \"4.3\", \"5.0\" y \"5.0.A\" ")}
 else if (year == 2017 & is.na(version)) {warning("El a\u00f1o 2017 contiene dos versiones: 2017 (deja la version en blanco) y \"2010.0\" ")}
 else if (year == 2018 & is.na(version)) {warning("El a\u00f1o 2018 contiene dos versiones: 2018 (deja la version en blanco) y \"2010.0\" ")}
@@ -36,7 +33,9 @@ else if (year == 1995 & (mapa == "ageb" | mapa == "urbano" | mapa == "rural")) {
   else if (year == 2000 & (mapa == "urbano" | mapa == "rural")) {stop("Los mapas urbano o rural no estan disponibles para el a\u00f1o 2000.")}
   else if (year == 2005 & (mapa == "urbano" | mapa == "rural")) {stop("Los mapas urbano o rural no estan disponibles para el a\u00f1o 2005.")}
   else if (year == 2010 & mapa == "ageb" & version == "5.0.A") {stop("El mapa ageb no esta disponible para el a\u00f1o 2010 5.0.A")}
-  # Inicio --------------------------------------------------------------------
+  #else if (mapa != "entidades" | mapa != "municipios" | mapa != "ageb" | mapa != "urbano" | mapa != "rural") {stop(print("Nombre de mapa no reconocido."))}
+
+# Inicio --------------------------------------------------------------------
 
 # Links:
 url_base = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/marc_geo/"
@@ -127,9 +126,11 @@ else if (year == 2010 & mapa == "ageb_urbana" & version == "5.0") {nombre_mapa =
   else {}
 
   # Extract Map
-  if (year == 2010 & version == "5.0") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year, "_5"))}
-  else if (year == 2010 & version == "5.0.A") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = nombre_mapa)}
-  else {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year))}
+  if (year == 2010 & version == "5.0") {map_output = sf::read_sf(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year, "_5"))}
+  else if (year == 2010 & version == "5.0.A") {map_output = sf::read_sf(dsn = zipdir_level, layer = nombre_mapa)}
+  else {map_output = sf::read_sf(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year))}
 
+  # Transform to SpatialPolygons object
+  map_output = sf::as_Spatial(map_output)
   return(map_output)
 } # End of Function
