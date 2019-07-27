@@ -1,3 +1,7 @@
+<!-- badges: start -->
+  [![Travis build status](https://travis-ci.org/crenteriam/importinegi.svg?branch=master)](https://travis-ci.org/crenteriam/importinegi)
+<!-- badges: end -->
+  
 ## Introduccion
 
 `importinegi` es un paquete de R para descargar y gestionar bases de datos abiertas del INEGI. El paquete contribuye a facilitar la búsqueda, descarga y gestión de los datos abiertos del INEGI. La version `1.0.0` del paquete permite descargar y gestionar los datos de los siguientes proyectos estadisticos:
