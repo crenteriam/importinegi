@@ -126,11 +126,9 @@ else if (year == 2010 & mapa == "ageb_urbana" & version == "5.0") {nombre_mapa =
   else {}
 
   # Extract Map
-  if (year == 2010 & version == "5.0") {map_output = sf::read_sf(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year, "_5"))}
-  else if (year == 2010 & version == "5.0.A") {map_output = sf::read_sf(dsn = zipdir_level, layer = nombre_mapa)}
-  else {map_output = sf::read_sf(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year))}
+  if (year == 2010 & version == "5.0") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year, "_5"))}
+  else if (year == 2010 & version == "5.0.A") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = nombre_mapa)}
+  else {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year))}
 
-  # Transform to SpatialPolygons object
-  map_output = sf::as_Spatial(map_output)
   return(map_output)
 } # End of Function

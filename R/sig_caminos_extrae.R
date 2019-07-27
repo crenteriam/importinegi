@@ -34,10 +34,8 @@ else if (year == 2014) {rutaarchivo = ""}
   #temp = str_replace_all(temp, "^./(.+)/", "./folder/")
 
   print("Obteniendo Shapefile...")
-  map_output = sf::read_sf(dsn = rutaarchivo, layer = mapa)
+  map_output = rgdal::readOGR(dsn = rutaarchivo, layer = mapa)
 
-  # Transform to SpatialPolygons object
-  map_output = sf::as_Spatial(map_output)
   return(map_output)
 
 } # End of Function
