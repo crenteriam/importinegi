@@ -4,7 +4,7 @@ Version: 1.0.0
 Authors@R: person("Cesar", "Renteria", email = "crenteria@albany.edu", role = c("aut", "cre"))
 Author: Cesar Renteria [aut, cre]
 Maintainer: Cesar Renteria <crenteria@albany.edu>
-Description: Package to download and manage data sets from Instituto Nacional de Estadistica y Geografia (INEGI). See <https://www.inegi.org.mx/>
+Description: Package to download and manage data sets from Instituto Nacional de Estadistica y Geografia (INEGI). See <https://www.inegi.org.mx/>.
 BugReports: https://github.com/crenteriam/importinegi/issues
 Depends:  R (>= 3.3.0)
 License: CC0
