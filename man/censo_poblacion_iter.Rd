@@ -18,6 +18,9 @@ censo_poblacion_iter(year = "2010", estado = "Nacional",
 
 \item{localidades}{Si se requiere conservar unicamente los resultados a nivel agregado (estado o municipio), \code{FALSE} eliminara las observaciones por localidad.}
 }
+\value{
+Data.frame
+}
 \description{
 Censo de Poblacion y Vivienda. Principales resultados por localidad (ITER).
 }
@@ -27,8 +30,8 @@ Esta base de datos tiene dos niveles de agregacion: entidades federativas y muni
 \examples{
 
 # Consultar los datos ITER del Censo de Poblacion y Vivienda
-\dontrun{censo_poblacion_iter()}
+\donttest{censo_poblacion_iter()}
 
 # Descargar los datos de CDMX de 2010.
-\dontrun{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
+\donttest{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
 }

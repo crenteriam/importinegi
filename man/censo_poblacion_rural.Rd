@@ -11,9 +11,17 @@ censo_poblacion_rural(year = NA, estado = "Nacional")
 
 \item{estado}{Define el nombre de la entidad federativa para descargar los datos en formato alfanumerico. La funcion, por defecto utiliza la palabra "Nacional" para descargar los datos de todos los estados. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 }
+\value{
+Data.frame
+}
 \description{
 Censo de Poblacion y Vivienda. Resultados sobre localidades con menos de 5 mil habitantes
 }
 \details{
 Esta base de datos tiene dos niveles de agregacion: entidades federativas y municipios.
+}
+\examples{
+
+# Descargar los datos de CDMX de 2010.
+\donttest{rural = censo_poblacion_rural(year = 2010, estado = "CDMX")}
 }

@@ -13,6 +13,9 @@ censo_municipal(year = NA, fuente = NA, datos = NA)
 
 \item{datos}{Base de datos producida por cada fuente de datos en formato alfanumerico. Las opciones pueden ser, segun la fuente de datos: comision, estructura, integrantes, actividades, funciones, marco, participacion, recursos, tramites, transparencia, ejercicio, infraestructura, y recursos.}
 }
+\value{
+Data.frame
+}
 \description{
 Descarga los datos del Censo Nacional de Gobiernos Municipales y Delegacionales (CNGMD),
 }
@@ -22,8 +25,8 @@ El CNGMD es un proyecto estadistico sobre la gestion y desempeño de las entidad
 \examples{
 
 # Consulta los metadatos del Censo Nacional de Gobiernos Municipales y Delegacionales
-\dontrun{censo_municipal()}
+\donttest{censo_municipal()}
 
 # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-\dontrun{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
+\donttest{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
 }

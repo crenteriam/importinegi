@@ -11,6 +11,9 @@ censo_poblacion_urbano(year = NA, estado = NA)
 
 \item{estado}{Define el nombre de la entidad federativa para descargar los datos en formato alfanumerico. Los nombres de los estados deben ir capitalizados (y en su caso, con espacios), por ejemplo: "Aguascalientes", "CDMX", "San Luis Potosi".}
 }
+\value{
+Data.frame
+}
 \description{
 Censo de Poblacion y Vivienda. Resultados sobre infraestructura y caracteristicas del entorno urbano.
 }
@@ -20,8 +23,8 @@ Esta base de datos tiene dos niveles de agregacion: entidades federativas y muni
 \examples{
 
 # Consultar los datos del entorno urbano del Censo de Poblacion y Vivienda
-\dontrun{censo_poblacion_entorno()}
+\donttest{censo_poblacion_entorno()}
 
 # Descargar los datos de CDMX de 2010.
-\dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
+\donttest{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
 }

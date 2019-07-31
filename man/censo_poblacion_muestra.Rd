@@ -13,6 +13,9 @@ censo_poblacion_muestra(year = 2010, estado = NA, muestra = NA)
 
 \item{muestra}{Bases de datos disponibles \code{Migrantes} (1995, 2000 y 2010), \code{Personas} (1995, 2000, 2005 y 2010), \code{Viviendas} (2000, 2005 y 2010), \code{Hogar} (2005) y \code{NA} (1990).}
 }
+\value{
+Data.frame
+}
 \description{
 Censo de Poblacion y Vivienda. Muestra (cuestionario ampliado).
 }
@@ -22,6 +25,5 @@ En la muestra del Censo la unidad de analisis puede ser personas, viviendas o mi
 \examples{
 
 # Descarga los datos de CDMX de 2010.
-\dontrun{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
-
+\donttest{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
 }

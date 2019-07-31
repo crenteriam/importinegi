@@ -9,21 +9,14 @@ catalogo_inegi(id = NA)
 \arguments{
 \item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar en el catalogo de proyectos estadisticos del INEGI (ver ejemplo).}
 }
+\value{
+Data.frame
+}
 \description{
 Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
 }
 \details{
 La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos, utilizalo en el parametro para acceder al libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo).
-}
-\examples{
-
-# Accede al repositorio de la Red Nacional de Metadatos
-# > de INEGI y almacenalo como una base de datos.
-\dontrun{dt.catalogo <- catalogo_inegi()}
-
-# Consulta metadatos de una base de datos.
-\dontrun{catalogo_inegi(id = 489)}
-
 }
 \seealso{
 Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}

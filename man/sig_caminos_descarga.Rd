@@ -9,6 +9,9 @@ sig_caminos_descarga(year = NA)
 \arguments{
 \item{year}{Año de referencia del mapa, en formato numerico (2014-2018).}
 }
+\value{
+Data.frame
+}
 \description{
 Descarga un una lista con todos los mapas de la Red Nacional de Caminos para un año especifico. El objeto resultante de esta funcion es necesario para extraer, por separado, cada mapa con la funcion \code{sig_caminos_extrae()}.
 }
@@ -18,5 +21,5 @@ La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las v
 \examples{
 
 # Descargar mapas de la RNC
-\dontrun{mapas.rnc = sig_caminos_descarga(year = 2014)}
+\donttest{mapas.rnc = sig_caminos_descarga(year = 2014)}
 }

@@ -13,6 +13,9 @@ enoe(year = NA, trimestre = NA, integrar = FALSE)
 
 \item{integrar}{\code{FALSE}: descarga por separado y en una lista las cinco bases de datos que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, utilizando el identificador unico del entrevistado.}
 }
+\value{
+Data.frame
+}
 \description{
 Encuesta Nacional de Ocupacion y Empleo (ENOE)
 }
@@ -22,8 +25,8 @@ La ENOE es un proyecto estadistico de encuestas en hogares especializado en info
 \examples{
 
 # Descargar las bases de datos de la ENOE 2009, Trimestre 1, sin integrar.
-\dontrun{enoe(year = 2009, trimestre = "trim1")}
+\donttest{enoe(year = 2009, trimestre = "trim1")}
 
 # Descargar las bases de datos de la ENOE 2009, Trimestre 1, integradas
-\dontrun{enoe(year = 2009, trimestre = "trim1", integrar = TRUE)}
+\donttest{enoe(year = 2009, trimestre = "trim1", integrar = TRUE)}
 }

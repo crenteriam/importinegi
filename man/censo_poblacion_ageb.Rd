@@ -23,6 +23,9 @@ censo_poblacion_ageb(year = 2010, estado = "Nacional",
 
 \item{manzana}{Si se requiere conservar unicamente los resultados a nivel agregado (p. ej. estado, municipio o localidad), \code{FALSE} eliminara las observaciones por manzana.}
 }
+\value{
+Data.frame
+}
 \description{
 Descarga los datos del Censo de Poblacion y Vivienda al nivel de desagregacion AGEB y manzana urbana.
 }
@@ -32,8 +35,8 @@ Esta base de datos tiene tres niveles de agregacion: entidades federativas, muni
 \examples{
 
 # Consultar los datos del Censo a nivel AGEB y manzana urbana.
-\dontrun{censo_poblacion_ageb()}
+\donttest{censo_poblacion_ageb()}
 
 # Descargar los datos de CDMX de 2010.
-\dontrun{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
+\donttest{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
 }
