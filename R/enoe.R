@@ -12,10 +12,11 @@
 #' @examples
 #'
 #' # Descargar las bases de datos de la ENOE 2009, Trimestre 1, sin integrar.
-#' \dontrun{enoe(year = 2009, trimestre = "trim1")}
+#' \donttest{enoe(year = 2009, trimestre = "trim1")}
 #'
 #' # Descargar las bases de datos de la ENOE 2009, Trimestre 1, integradas
-#' \dontrun{enoe(year = 2009, trimestre = "trim1", integrar = TRUE)}
+#' \donttest{enoe(year = 2009, trimestre = "trim1", integrar = TRUE)}
+#' @return Data.frame
 #' @export
 
 enoe = function(year = NA, trimestre = NA, integrar = FALSE){

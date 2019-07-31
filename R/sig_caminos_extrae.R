@@ -11,10 +11,11 @@
 #' @examples
 #'
 #' # Descargar mapas de la RNC
-#' \dontrun{mapas.rnc = sig_caminos_descarga(year = 2014)}
+#' \donttest{mapas.rnc = sig_caminos_descarga(year = 2014)}
 #'
 #' # Extraer el mapa de las plazas de cobro
-#' \dontrun{mapa.pzacobro = sig_caminos_extrae(mapas.rnc, year = 2014, mapa = "plaza_cobro")}
+#' \donttest{mapa.pzacobro = sig_caminos_extrae(mapas.rnc, year = 2014, mapa = "plaza_cobro")}
+#' @return Data.frame
 #' @export
 
 sig_caminos_extrae <- function(. = NA, year = NA, mapa = NA){
@@ -26,14 +27,14 @@ else if (year == 2015) {rutaarchivo = "./red_nacional_de_caminos_2015/conjunto_d
 else if (year == 2014) {rutaarchivo = ""}
 
   # Unzip and open
-  print("Descomprimiendo archivo...")
+  message("Descomprimiendo archivo...")
   temp_sigdir = utils::unzip(.)
   #list_sigfiles = as.list(temp_sigdir)
   #path_conjunto  = paste0("./conjunto_de_datos/", "localidad")
   #lista_conjunto = Filter(function (x) str_detect(x, path_conjunto), data)
   #temp = str_replace_all(temp, "^./(.+)/", "./folder/")
 
-  print("Obteniendo Shapefile...")
+  message("Obteniendo Shapefile...")
   map_output = rgdal::readOGR(dsn = rutaarchivo, layer = mapa)
 
   return(map_output)

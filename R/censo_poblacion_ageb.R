@@ -15,10 +15,11 @@
 #' @examples
 #'
 #' # Consultar los datos del Censo a nivel AGEB y manzana urbana.
-#' \dontrun{censo_poblacion_ageb()}
+#' \donttest{censo_poblacion_ageb()}
 #'
 #' # Descargar los datos de CDMX de 2010.
-#' \dontrun{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
+#' \donttest{ageb = censo_poblacion_ageb(year = 2010, estado = "CDMX")}
+#' @return Data.frame
 #' @export
 
 

@@ -158,7 +158,7 @@ names(data.enigh) = tolower(names(data.enigh))
         else if (year == 2010 | year == 2008) {ruta_nest3 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), Poblacion, year, "_concil_2010_", toupper(formato_archivo))}
         data.enigh.N3 = foreign::read.dbf(paste0(ruta_nest3, ".", formato_archivo), as.is = TRUE)
         names(data.enigh.N3) = tolower(names(data.enigh.N3))
-        if (hogares == FALSE) {stop(print("Hogares debe ser TRUE"))}
+        if (hogares == FALSE) {stop(message("Hogares debe ser TRUE"))}
         data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog"))[data.table::data.table(data.enigh.N3,key=c("folioviv", "foliohog")), allow.cartesian=TRUE]
 
         ### Nest 4: Poblacion -> Ingresos  ---------------------------------------------------
@@ -177,7 +177,7 @@ names(data.enigh) = tolower(names(data.enigh))
           else if (year == 2010 | year == 2008) {ruta_nest4 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), n4_ingresos, year, "_concil_2010_", toupper(formato_archivo), ".", formato_archivo)} else {}
           data.enigh.N4 = foreign::read.dbf(ruta_nest4, as.is = TRUE)
           names(data.enigh.N4) = tolower(names(data.enigh.N4))
-          if (hogares == FALSE | poblacion == FALSE) {stop(print("Hogares y Poblacion deben ser TRUE"))}
+          if (hogares == FALSE | poblacion == FALSE) {stop(message("Hogares y Poblacion deben ser TRUE"))}
           data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren"))[data.table::data.table(data.enigh.N4,key=c("folioviv", "foliohog", "numren")), allow.cartesian=TRUE]
           if (poblacion == FALSE) {data.enigh = data.enigh.N4}
         } # End of Nest_4 Ingresos
@@ -197,7 +197,7 @@ names(data.enigh) = tolower(names(data.enigh))
           else if (year == 2010 | year == 2008) {ruta_nest4 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), n4_gastopersona, year, "_concil_2010_", toupper(formato_archivo), ".", formato_archivo)} else {}
           data.enigh.N4 = foreign::read.dbf(ruta_nest4, as.is = TRUE)
           names(data.enigh.N4) = tolower(names(data.enigh.N4))
-          if (hogares == FALSE | poblacion == FALSE) {stop(print("Hogares y Poblacion deben ser TRUE"))}
+          if (hogares == FALSE | poblacion == FALSE) {stop(message("Hogares y Poblacion deben ser TRUE"))}
           data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren"))[data.table::data.table(data.enigh.N4,key=c("folioviv", "foliohog", "numren")), allow.cartesian=TRUE]
         } # End of Nest_4 Gasto Persona
 
@@ -217,7 +217,7 @@ names(data.enigh) = tolower(names(data.enigh))
           data.enigh.N4 = foreign::read.dbf(ruta_nest4, as.is = TRUE)
           names(data.enigh.N4) = tolower(names(data.enigh.N4))
           data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren"))[data.table::data.table(data.enigh.N4,key=c("folioviv", "foliohog", "numren")), allow.cartesian=TRUE]
-          if (hogares == FALSE | poblacion == FALSE) {stop(print("Hogares o Poblacion deben ser TRUE"))}
+          if (hogares == FALSE | poblacion == FALSE) {stop(message("Hogares o Poblacion deben ser TRUE"))}
 
           #data.enigh$fk_trabajo = paste0(as.character(data.enigh$id_renglon), as.character(data.enigh$id_trabajo))
 
@@ -238,7 +238,7 @@ names(data.enigh) = tolower(names(data.enigh))
               data.enigh.N5 = foreign::read.dbf(ruta_nest5, as.is = TRUE)
               names(data.enigh.N5) = tolower(names(data.enigh.N5))
               data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren", "id_trabajo"))[data.table::data.table(data.enigh.N5,key=c("folioviv", "foliohog", "numren", "id_trabajo")), allow.cartesian=TRUE]
-              if (trabajos == FALSE) {stop(print("Trabajos debe ser TRUE"))}
+              if (trabajos == FALSE) {stop(message("Trabajos debe ser TRUE"))}
             } # End of Nest 5: Agro
 
            ### Nest 5: Poblacion -> Trabajos -> NoAgro  --------------------------------
@@ -257,7 +257,7 @@ names(data.enigh) = tolower(names(data.enigh))
               data.enigh.N5 = foreign::read.dbf(ruta_nest5, as.is = TRUE)
               names(data.enigh.N5) = tolower(names(data.enigh.N5))
               data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren", "id_trabajo"))[data.table::data.table(data.enigh.N5,key=c("folioviv", "foliohog", "numren", "id_trabajo")), allow.cartesian=TRUE]
-              if (trabajos == FALSE) {stop(print("Trabajos debe ser TRUE"))}
+              if (trabajos == FALSE) {stop(message("Trabajos debe ser TRUE"))}
             } # End of Nest 5: NoAgro
         } # End Nest 4: Poblacion - > Trabajos
       } #End of Nest 3: Poblacion

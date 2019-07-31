@@ -9,7 +9,8 @@
 #' @examples
 #'
 #' # Descargar mapas de la RNC
-#' \dontrun{mapas.rnc = sig_caminos_descarga(year = 2014)}
+#' \donttest{mapas.rnc = sig_caminos_descarga(year = 2014)}
+#' @return Data.frame
 #' @export
 
 
@@ -22,7 +23,7 @@ base.caminos = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/pro
 #if (year==2018){codigo.year="889463674641_s"}
 #else if (year==2017) {codigo.year="889463171836_s"}
 #else if (year==2016) {codigo.year="702825219000_s"}
-#else {stop(print("Solo a\u00f1os 2918, 2017 y 2016 disponibles."))}
+#else {stop(message("Solo a\u00f1os 2918, 2017 y 2016 disponibles."))}
 
 # URL Completa (de datos.gob.mx)
 if (year==2018){codigo.year= "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2018/889463674641_s.zip"}
@@ -30,7 +31,7 @@ else if (year==2017) {url.caminos="http://internet.contenidos.inegi.org.mx/conte
 else if (year==2016) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2016/702825219000_s.zip"}
 else if (year==2015) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2015/702825209575_s.zip"}
 else if (year==2014) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/702825278724.zip"}
-else {stop(print("Solo a\u00f1os 2018, 2017, 2016, 2015 y 2014 estan disponibles."))}
+else {stop(message("Solo a\u00f1os 2018, 2017, 2016, 2015 y 2014 estan disponibles."))}
 
 # Inicio --------------------------------------------------------------------
 # Download the file

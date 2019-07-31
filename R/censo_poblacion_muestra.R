@@ -11,8 +11,8 @@
 #' @examples
 #'
 #' # Descarga los datos de CDMX de 2010.
-#' \dontrun{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
-#'
+#' \donttest{muestra = censo_poblacion_muestra(year = 2010, estado = "CDMX", muestra = "Personas")}
+#' @return Data.frame
 #' @export
 
 censo_poblacion_muestra <- function(year =2010, estado = NA, muestra = NA){

@@ -10,14 +10,15 @@
 #' @examples
 #'
 #' # Consultar los datos del entorno urbano del Censo de Poblacion y Vivienda
-#' \dontrun{censo_poblacion_entorno()}
+#' \donttest{censo_poblacion_entorno()}
 #'
 #' # Descargar los datos de CDMX de 2010.
-#' \dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
+#' \donttest{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
+#' @return Data.frame
 #' @export
 
 censo_poblacion_urbano <- function(year = NA, estado = NA){
-  if (year == NA) {stop(print("Definir a\u00f1o"))} else {}
+  if (is.na(year)) {stop(message("Definir a\u00f1o"))} else {}
 
   # Objetos generales
   formato_archivo = "dbf"

@@ -11,10 +11,11 @@
 #' @examples
 #'
 #' # Consulta los metadatos del Censo Nacional de Gobiernos Municipales y Delegacionales
-#' \dontrun{censo_municipal()}
+#' \donttest{censo_municipal()}
 #'
 #' # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-#' \dontrun{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
+#' \donttest{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
+#' @return Data.frame
 #' @export
 
 # ====================================================================================================
@@ -22,12 +23,12 @@ censo_municipal = function(year = NA, fuente = NA, datos = NA){
 
 # Open Metadata
 if (is.na(fuente) & is.na(year) & is.na(datos)) {shell.exec("https://www.inegi.org.mx/programas/cngmd/2011/")}
-if (is.na(fuente) & is.na(year) & is.na(datos)) {stop(print("Cargando pagina..."))}
+if (is.na(fuente) & is.na(year) & is.na(datos)) {stop(message("Cargando pagina..."))}
 else if (fuente != "ayuntamiento" & fuente != "administracion"
-       & fuente != "seguridad" & fuente != "justicia") {stop(print("Fuente de datos no reconocida"))}
+       & fuente != "seguridad" & fuente != "justicia") {stop(message("Fuente de datos no reconocida"))}
 else if (datos != "comision" & datos != "estructura" & datos != "funciones" & datos != "marco" & datos != "participacion" &
          datos != "recursos" & datos != "tramites" & datos != "transparencia" & datos != "ejercicio" &
-        datos != "infraestructura" & datos != "recursos" & datos !="integrantes" & datos!="actividades")  {stop(print("Nombre de datos no reconocido"))}
+        datos != "infraestructura" & datos != "recursos" & datos !="integrantes" & datos!="actividades")  {stop(message("Nombre de datos no reconocido"))}
 else {}
 
 # Renombrar carpetas y URL  ---------------------------------------------------------------------------
@@ -334,5 +335,5 @@ else {}
 
 # Return Object
 return(list_dataclean)
-  print("Se ha creado una lista con varias bases de datos")
+  message("Se ha creado una lista con varias bases de datos")
 } # End of Function

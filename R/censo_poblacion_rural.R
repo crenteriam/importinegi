@@ -10,12 +10,13 @@
 #' @examples
 #'
 #' # Descargar los datos de CDMX de 2010.
-#' rural = censo_poblacion_rural(year = 2010, estado = "CDMX")}
+#' \donttest{rural = censo_poblacion_rural(year = 2010, estado = "CDMX")}
+#' @return Data.frame
 #' @export
 
 
 censo_poblacion_rural <- function(year = NA, estado = "Nacional"){
-  if (year == NA) {stop(print("Definir a\u00f1o"))} else {}
+  if (is.na(year)) {stop(message("Definir a\u00f1o"))} else {}
 
   # Objetos generales
   formato_archivo = "dbf"

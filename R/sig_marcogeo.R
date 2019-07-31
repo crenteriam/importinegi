@@ -11,10 +11,11 @@
 #' @examples
 #'
 #' # Consultar los metadatos del Marco Geoestadistico Nacional
-#' \dontrun{sig_marcogeo()}
+#' \donttest{sig_marcogeo()}
 #'
 #' # Descargar el mapa de munucipios para 2009
-#' \dontrun{mapa09 = sig_marcogeo(year = 2009, mapa = "municipios")}
+#' \donttest{mapa09 = sig_marcogeo(year = 2009, mapa = "municipios")}
+#' @return Data.frame
 #' @export
 
 
@@ -33,7 +34,7 @@ else if (year == 1995 & (mapa == "ageb" | mapa == "urbano" | mapa == "rural")) {
   else if (year == 2000 & (mapa == "urbano" | mapa == "rural")) {stop("Los mapas urbano o rural no estan disponibles para el a\u00f1o 2000.")}
   else if (year == 2005 & (mapa == "urbano" | mapa == "rural")) {stop("Los mapas urbano o rural no estan disponibles para el a\u00f1o 2005.")}
   else if (year == 2010 & mapa == "ageb" & version == "5.0.A") {stop("El mapa ageb no esta disponible para el a\u00f1o 2010 5.0.A")}
-  #else if (mapa != "entidades" | mapa != "municipios" | mapa != "ageb" | mapa != "urbano" | mapa != "rural") {stop(print("Nombre de mapa no reconocido."))}
+  #else if (mapa != "entidades" | mapa != "municipios" | mapa != "ageb" | mapa != "urbano" | mapa != "rural") {stop(message("Nombre de mapa no reconocido."))}
 
 # Inicio --------------------------------------------------------------------
 
