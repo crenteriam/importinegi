@@ -199,7 +199,7 @@ Para extraer cada mapa, es necesario especificar primero el objeto con la lista 
 mapa.puentes <- sig_caminos_extrae(mapas.rnc, year = 2014, conjunto = "puentes")
 ```
 
-Poner un mapa aqui. Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+<!--Poner un mapa aqui. Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.-->
 
 ```{r, eval = FALSE}
 mapa.puentes <- sig_caminos_extrae(mapas.rnc, year = 2014, conjunto = "puentes")
