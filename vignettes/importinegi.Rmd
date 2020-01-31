@@ -109,29 +109,26 @@ datos.actas = datos.comision[[1]]
 ```
 
 
-## ENIGH
+## Encuesta Nacional de Ingreso y Gasto de los Hogares
 
-La función `enigh_nuevaconstruccion()` descarga las bases de datos de la ENIGH Nueva Construcción (2008-2014). La ENIGH Cuenta con diversas bases de datos en tres unidades de análisis (vivienda, hogar y personas). La ENIGH se compone de varias cadenas de bases de datos subordinadas. Por ejemplo la base de datos "trabajos" tiene dos bases de datos subordinadas ("agro" y "no agro") y la base de datos "hogares" tiene tres bases de datos subordinadas ("gasto hogar", "erogaciones" y "gasto tarjeta"). Todas contienen información que puede ser integrable en una sola matriz de datos, aunque esta labor puede resultar compleja. La principal ventaja de esta función es que está diseñada para descargar e integrar todas estas bases de datos en una sola.
+La función `enigh_nuevaconstruccion()` descarga las bases de datos de la Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH) Nueva Construcción (2008-2014). La ENIGH Cuenta con diversas bases de datos en tres unidades de análisis (vivienda, hogar y personas). La ENIGH se compone de varias cadenas de bases de datos subordinadas. Por ejemplo la base de datos "trabajos" tiene dos bases de datos subordinadas ("agro" y "no agro") y la base de datos "hogares" tiene tres bases de datos subordinadas ("gasto hogar", "erogaciones" y "gasto tarjeta"). La función descarca cada una de las bases de datos que componen la ENIGH.La función tiene dos parámetros. El primero es el año del levantamiento de la ENIGH, que puede ser 2008, 2010, 2012 ó 2014. El segundo parámetro es `datos`, que define la base de datos a descargar. Las opciones son: "viviendas", "hogares", "concentrado", "erogaciones", "gastohogar", "gastotarjetas", "poblacion", "ingresos", "gastopersona", "trabajos", "agro" y "noagro".
 
-La función requiere el parámetro del año del levantamiento de la ENIGH, que puede ser 2008, 2010, 2012 ó 2014. La función descarga, por default, la base de datos `viviendas`, a la que el resto de las bases de datos se subordinan. A partir de esta base de dato, al agregar parámetros lógicos, se descargan e incorporan bases de datos adicionales en una única matriz de datos. Para incorporar bases de datos subordinadas, cada parámetro debe ser activado con el valor `TRUE`. El siguiente bloque de código provee varios ejemplos del uso de esta función para descargar datos de la ENIGH 2010, Nueva Construcción.
+El siguiente bloque de código provee varios ejemplos del uso de esta función para descargar datos de la ENIGH 2014, Nueva Construcción.
 
 ```{r, eval = FALSE}
 # Default: descargar datos de viviendas
-viviendas10 = enigh_nuevaconstruccion(year = 2010)
+viviendas14 = enigh_nuevaconstruccion(year = 2014, datos = "viviendas")
 
 # Descargar datos de hogares
-hogares10 = enigh_nuevaconstruccion(year = 2010,  hogares = TRUE)
-
-# Descargar datos de erogaciones
-erogaciones10 = enigh_nuevaconstruccion(year = 2010, hogares = TRUE, erogaciones = TRUE)
+hogares14 = enigh_nuevaconstruccion(year = 2014,  datos = "hogares")
 
 # Descargar datos de agro
-agro10 = enigh_nuevaconstruccion(year = 2010, hogares = TRUE, poblacion = TRUE, trabajos = TRUE, agro = TRUE)
+agro14 = enigh_nuevaconstruccion(year = 2014, datos = "agro")
 ```
 
-## ENOE
+## Encuesta Nacional de Ocupacion y Empleo
 
-La función `enoe()` descarga las bases de datos trimestrales de la ENOE desde 2005. La sintaxis de la función tiene tres parámetros, de los cuales los dos primeros son indispensables. Primero, se debe especificar el año de levantamiento de los datos en formato numérico. Posteriormente se debe especificar el trimestre del año en formato alfanumérico, los cuales pueden ser `trim1`, `trim2`, `trim3`, o `trim4`. La función descarga por separado las cinco bases de datos que componen la ENOE. Sin embargo, el tercer parámetro, `integrar`, que se describe al final de esta sub-sección, integra las cinco bases de datos en una sola matriz de datos.
+La función `enoe()` descarga las bases de datos trimestrales de la Encuesta Nacional de Ocupación y Empleo (ENOE) desde 2005. La sintaxis de la función tiene tres parámetros, de los cuales los dos primeros son indispensables. Primero, se debe especificar el año de levantamiento de los datos en formato numérico. Posteriormente se debe especificar el trimestre del año en formato alfanumérico, los cuales pueden ser `trim1`, `trim2`, `trim3`, o `trim4`. La función descarga por separado las cinco bases de datos que componen la ENOE. Sin embargo, el tercer parámetro, `integrar`, que se describe al final de esta sub-sección, integra las cinco bases de datos en una sola matriz de datos.
 
 Cuando el parámetro `integrar` esta (por default) en `FALSE`, la función descarga una lista de R con cinco bases de datos separadas. La función `summary` provee un resumen de las cinco bases de datos (nombre, tamaño y tipo de objeto) y permite identificar la posición de cada base de datos en la lista. En el siguiente bloque de código, se extrae la base de datos del cuestionario de hogares de la ENOE 2005, Trimestre I.
 
@@ -196,11 +193,5 @@ Para extraer cada mapa, es necesario especificar primero el objeto con la lista 
 
 ```{r, eval = FALSE}
 # Obtener un mapa de puentes
-mapa.puentes <- sig_caminos_extrae(mapas.rnc, year = 2014, conjunto = "puentes")
-```
-
-<!--Poner un mapa aqui. Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.-->
-
-```{r, eval = FALSE}
 mapa.puentes <- sig_caminos_extrae(mapas.rnc, year = 2014, conjunto = "puentes")
 ```
