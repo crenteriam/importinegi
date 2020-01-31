@@ -4,8 +4,13 @@
 \alias{censo_poblacion_iter}
 \title{Censo de Poblacion - ITER}
 \usage{
-censo_poblacion_iter(year = "2010", estado = "Nacional",
-  totalestado = FALSE, totalmunicipio = FALSE, localidades = TRUE)
+censo_poblacion_iter(
+  year = "2010",
+  estado = "Nacional",
+  totalestado = FALSE,
+  totalmunicipio = FALSE,
+  localidades = TRUE
+)
 }
 \arguments{
 \item{year}{Año del levantamiento del censo en formato numerico. Los años disponibles (incluyendo los conteos) son: 1990, 1995, 2000, 2005, 2010 y 2015}

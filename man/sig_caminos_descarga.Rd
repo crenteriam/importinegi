@@ -7,7 +7,7 @@
 sig_caminos_descarga(year = NA)
 }
 \arguments{
-\item{year}{Año de referencia del mapa, en formato numerico (2014-2018).}
+\item{year}{Año de referencia del mapa, en formato numerico (2016-2019).}
 }
 \value{
 Data.frame
@@ -21,5 +21,5 @@ La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las v
 \examples{
 
 # Descargar mapas de la RNC
-\donttest{mapas.rnc = sig_caminos_descarga(year = 2014)}
+\donttest{mapas.rnc = sig_caminos_descarga(year = 2019)}
 }

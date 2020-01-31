@@ -4,9 +4,15 @@
 \alias{censo_poblacion_ageb}
 \title{Censo de Poblacion - AGEB}
 \usage{
-censo_poblacion_ageb(year = 2010, estado = "Nacional",
-  totalestado = FALSE, totalmunicipio = FALSE,
-  totallocalidad = FALSE, totalageb = FALSE, manzana = TRUE)
+censo_poblacion_ageb(
+  year = 2010,
+  estado = "Nacional",
+  totalestado = FALSE,
+  totalmunicipio = FALSE,
+  totallocalidad = FALSE,
+  totalageb = FALSE,
+  manzana = TRUE
+)
 }
 \arguments{
 \item{year}{Año del levantamiento del censo en formato numerico. El unio año disponible en INEGI (incluyendo los conteos) para esta base de datos es 2010.}

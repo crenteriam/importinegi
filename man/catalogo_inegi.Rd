@@ -18,6 +18,16 @@ Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de u
 \details{
 La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos, utilizalo en el parametro para acceder al libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo).
 }
+\examples{
+
+# Accede al repositorio de la Red Nacional de Metadatos
+# > de INEGI y almacenalo como una base de datos.
+\donttest{dt.catalogo <- catalogo_inegi()}
+
+# Consulta metadatos de una base de datos.
+\donttest{catalogo_inegi(id = 489)}
+
+}
 \seealso{
 Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
 }

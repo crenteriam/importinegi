@@ -4,12 +4,10 @@
 \alias{sig_caminos_extrae}
 \title{Red Nacional de Caminos - Extrae mapas}
 \usage{
-sig_caminos_extrae(. = NA, year = NA, mapa = NA)
+sig_caminos_extrae(. = NA, mapa = NA)
 }
 \arguments{
 \item{.}{Inserta el nombre del objecto previamente creado con la funcion \code{sig_caminos_descarga()}.}
-
-\item{year}{Año de referencia del mapa en formato numerico (2014-2018).}
 
 \item{mapa}{Mapa en formato alfanumerico. Las opciones son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.}
 }
@@ -25,8 +23,8 @@ La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las v
 \examples{
 
 # Descargar mapas de la RNC
-\donttest{mapas.rnc = sig_caminos_descarga(year = 2014)}
+\donttest{mapas.rnc = sig_caminos_descarga(year = 2019)}
 
 # Extraer el mapa de las plazas de cobro
-\donttest{mapa.pzacobro = sig_caminos_extrae(mapas.rnc, year = 2014, mapa = "plaza_cobro")}
+\donttest{mapa.pzacobro = sig_caminos_extrae(mapas.rnc, mapa = "puente")}
 }

@@ -13,7 +13,7 @@
 #' \donttest{dt.catalogo <- catalogo_inegi()}
 #'
 #' # Consulta metadatos de una base de datos.
-#' \donttest{catalogo_inegi(id = 489)
+#' \donttest{catalogo_inegi(id = 489)}
 #'
 #' @return Data.frame
 #' @seealso Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}

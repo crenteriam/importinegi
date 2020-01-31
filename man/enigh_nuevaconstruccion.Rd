@@ -4,40 +4,24 @@
 \alias{enigh_nuevaconstruccion}
 \title{ENIGH Nueva Construccion (2008-2014)}
 \usage{
-enigh_nuevaconstruccion(year = NA, hogares = FALSE,
-  concentrado = FALSE, erogaciones = FALSE, gastohogar = FALSE,
-  gastotarjetas = FALSE, poblacion = FALSE, ingresos = FALSE,
-  gastopersona = FALSE, trabajos = FALSE, agro = FALSE,
-  noagro = FALSE)
+enigh_nuevaconstruccion(year = NA, datos = NA)
 }
 \arguments{
 \item{year}{Año de levantamiento de la encuesta en formato numerico. Los años disponibles son 2008, 2010, 2012 y 2014}
 
-\item{hogares}{Base de datos: caracteristicas de los hogares que habitan los integrantes de los mismos.}
-
-\item{concentrado}{Base de datos: principales variables por hogar. Contiene un resumen de variables de otras tablas.}
-
-\item{erogaciones}{Base de datos: erogaciones financieras y de capital realizadas por hogar.}
-
-\item{gastohogar}{Base de datos: gGastos monetarios y no monetarios del hogar.}
-
-\item{gastotarjetas}{Base de datos: financiamiento de tarjeta de credito bancaria o comercial.}
-
-\item{poblacion}{Base de datos: caracteristicas sociodemograficas de los integrantes del hogar.}
-
-\item{ingresos}{Base de datos: ingresos y percepciones financieras y de capital de cada uno de los integrantes del hogar, por diversos conceptos.}
-
-\item{gastopersona}{Base de datos: gastos realizados por cada integrante del hogar en educacion, transporte publico y remuneraciones en especie.}
-
-\item{trabajos}{Base de datos: actividad de los integrantes del hogar de 12 o mas años.}
-
-\item{agro}{Base de datos: informacion de los trabajadores independientes dedicados a las actividades agricolas, pesca, caza, etc.}
-
-\item{noagro}{Base de datos: informacion de los trabajadores independientes que tienen negocios en el hogar dedicados a las actividades industriales, comerciales y de servicios.}
+\item{datos}{Base de datos a descargar "viviendas" "hogares" "concentrado" "erogaciones" "gastohogar" "gastotarjetas" "poblacion" "ingresos" "gastopersona" "trabajos" "agro" "noagro"}
+}
+\value{
+Data.frame
 }
 \description{
 Descarga datos de la Encuesta Nacional de Ingreso y Gasto de los Hogares, Nueva Construccion (2008-2014).
 }
 \details{
 La ENIGH provee informacion estadisticas sobre los ingresos y gastos de los hogares en cuanto a su monto, procedencia y distribucion. Adicionalmente, la ENIGH provee informacion sobre las caracteristicas socio-demograficas de los integrantes del hogar.
+}
+\examples{
+
+# Descargar datos de hogares
+\donttest{hogares14 = enigh_nuevaconstruccion(year = 2014,  datos = "hogares")}
 }

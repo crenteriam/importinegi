@@ -6,6 +6,11 @@
 #'
 #' @param year Año de levantamiento de la encuesta en formato numerico. Los años disponibles son 2008, 2010, 2012 y 2014
 #' @param datos Base de datos a descargar "viviendas" "hogares" "concentrado" "erogaciones" "gastohogar" "gastotarjetas" "poblacion" "ingresos" "gastopersona" "trabajos" "agro" "noagro"
+#' @examples
+#'
+#' # Descargar datos de hogares
+#' \donttest{hogares14 = enigh_nuevaconstruccion(year = 2014,  datos = "hogares")}
+#' @return Data.frame
 #' @export
 
 
