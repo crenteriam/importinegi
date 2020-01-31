@@ -1,10 +1,10 @@
 <!-- badges: start -->
-  [![Travis build status](https://travis-ci.org/crenteriam/importinegi.svg?branch=master)](https://travis-ci.org/crenteriam/importinegi)
+[![Travis build status](https://travis-ci.org/crenteriam/importinegi.svg?branch=master)](https://travis-ci.org/crenteriam/importinegi) [![](https://www.r-pkg.org/badges/version-last-release/importinegi)](https://cran.r-project.org/package=importinegi) [![](https://cranlogs.r-pkg.org/badges/importinegi)](https://cran.r-project.org/package=importinegi)
 <!-- badges: end -->
-  
+ 
 ## Introduccion
 
-`importinegi` es un paquete de R para descargar y gestionar bases de datos abiertas del INEGI. El paquete contribuye a facilitar la búsqueda, descarga y gestión de los datos abiertos del INEGI. La version `1.0.0` del paquete permite descargar y gestionar los datos de los siguientes proyectos estadisticos:
+`importinegi` es un paquete de R para descargar y gestionar bases de datos abiertas del INEGI. El paquete facilita la búsqueda, descarga y gestión de los datos abiertos del INEGI. La version `1.0.0` del paquete permite descargar y gestionar los datos de los siguientes proyectos estadisticos:
 
 - Censo (y Conteo) Poblacion y Vivienda (1990-2010)
 - Censo Nacional de Gobiernos Municipales y Delegacionales (2011-2017)
@@ -28,10 +28,3 @@ install.packages("devtools")
 devtools::install_github("crenteriam/importinegi")
 library(importinegi)
 ```
-
-## Otros paquetes
-
-Otrosp paquetes de R para descargar y gestionar datos del INEGI:
-
-- [INEGI API](https://www.diegovalle.net/mxmaps/articles/articles/inegi_api.html)
-- [inegiR](https://github.com/Eflores89/inegiR/)
