@@ -51,8 +51,8 @@ data.enigh = foreign::read.dbf(paste0(ruta_vivienda, ".", formato_archivo), as.i
 names(data.enigh) = tolower(names(data.enigh))
 
 ### 2.1.1 Hogares  ----------------------------------------------------------------
-  if (hogares == TRUE & (year ==2010 | year == 2008)) {} # Las bases de datos de vivienda y hogares estan unidas para los an~os 2010 y 2008.
-  else if (hogares == TRUE) {
+  #if (hogares == TRUE & (year ==2010 | year == 2008)) {} # Las bases de datos de vivienda y hogares estan unidas para los an~os 2010 y 2008.
+   if (hogares == TRUE) {
       hogares = "NCV_Hogares_"
       # Descargar Datos
       #Sys.sleep(sample(1:3, 1)) # Some sleeping time
@@ -63,13 +63,13 @@ names(data.enigh) = tolower(names(data.enigh))
       utils::unzip(temp.enigh, exdir = zipdir)
       data.enigh.N2 = foreign::read.dbf(paste0(zipdir, "\\\\", hogares, year, "_concil_2010_", formato_archivo, ".", formato_archivo),as.is = TRUE)
       names(data.enigh.N2) = tolower(names(data.enigh.N2))
-      data.enigh    = dplyr::full_join(data.enigh, data.enigh.N2, by="folioviv", type="left", match="all")
-} # End of Nest 2: Hogares
+      data.enigh    = merge(data.enigh, data.enigh.N2)
+   } # End Hogares
 ### 2.1.1.1 Hogares -> Concentrado Hogar  ----------------------------------------------------
-      if (concentrado == TRUE & erogaciones == FALSE & gastohogar == FALSE & gastotarjetas == FALSE & poblacion == FALSE){
+      else if (concentrado == TRUE & erogaciones == FALSE & gastohogar == FALSE & gastotarjetas == FALSE & poblacion == FALSE) {
 
         # Descargar Datos
-        Sys.sleep(sample(1:3, 1)) # Some sleeping time
+        Sys.sleep(sample(1:2, 1)) # Some sleeping time
         Concentrado = "_Concentrado_"
         url.concentrado = paste0(url.base, toupper(nuevaconstruccion), Concentrado, year, "_concil_2010_", formato_archivo, ".zip")
         utils::download.file(url.concentrado, temp.enigh)
@@ -81,8 +81,9 @@ names(data.enigh) = tolower(names(data.enigh))
         if (year == 2010 | year == 2008) {ruta_nest3 =  paste0(ruta_nest3, "_DBF")} else {}
         data.enigh.N3 = foreign::read.dbf(paste0(ruta_nest3, ".", formato_archivo), as.is = TRUE)
         names(data.enigh.N3) = tolower(names(data.enigh.N3))
-        if (hogares == TRUE) {data.enigh = dplyr::full_join(data.enigh, data.enigh.N3, by=c("folioviv", "foliohog"), type="left", match="all")}
-        else if (hogares == FALSE) {data.enigh = data.enigh.N3}
+        if (hogares == TRUE) {data.enigh = merge(data.enigh.N2, data.enigh.N3)}
+        else {data.enigh = data.enigh.N3}
+        #else {}
       } # End of Nest 3: Concentrado Hogar
 
 ### 2.1.1.2 Hogares -> Erogaciones  -----------------------------------------------------------
@@ -155,11 +156,13 @@ names(data.enigh) = tolower(names(data.enigh))
         # Unzip y abrir
         utils::unzip(temp.enigh, exdir = zipdir)
         if (year == 2014 | year == 2012) {ruta_nest3 = paste0(zipdir, "\\\\", tolower(nuevaconstruccion), tolower(Poblacion), year, "_concil_2010_", formato_archivo)}
-        else if (year == 2010 | year == 2008) {ruta_nest3 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), Poblacion, year, "_concil_2010_", toupper(formato_archivo))}
+        else if (year == 2010 | year == 2008) {ruta_nest3 = paste0(zipdir, "\\\\", toupper(nuevaconstruccion), Poblacion, year, "_concil_2010_", toupper(formato_archivo))} else {}
         data.enigh.N3 = foreign::read.dbf(paste0(ruta_nest3, ".", formato_archivo), as.is = TRUE)
         names(data.enigh.N3) = tolower(names(data.enigh.N3))
-        if (hogares == FALSE) {stop(message("Hogares debe ser TRUE"))}
-        data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog"))[data.table::data.table(data.enigh.N3,key=c("folioviv", "foliohog")), allow.cartesian=TRUE]
+        if (hogares == TRUE) {data.enigh = merge(data.enigh, data.enigh.N3)}
+        #if (hogares == TRUE) {data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog"))[data.table::data.table(data.enigh.N3,key=c("folioviv", "foliohog")), allow.cartesian=TRUE]}
+        #if (hogares == TRUE) {data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog"))[data.table::data.table(data.enigh.N3,key=c("folioviv", "foliohog")), allow.cartesian=TRUE]}
+        else if (hogares == FALSE) {data.enigh = data.enigh.N3} else {}
 
         ### Nest 4: Poblacion -> Ingresos  ---------------------------------------------------
         if (ingresos == TRUE & poblacion == FALSE) {stop(message("Poblacion debe ser TRUE"))} else {}
@@ -259,9 +262,10 @@ names(data.enigh) = tolower(names(data.enigh))
               data.enigh = data.table::data.table(data.enigh, key=c("folioviv", "foliohog", "numren", "id_trabajo"))[data.table::data.table(data.enigh.N5,key=c("folioviv", "foliohog", "numren", "id_trabajo")), allow.cartesian=TRUE]
               if (trabajos == FALSE) {stop(message("Trabajos debe ser TRUE"))}
             } # End of Nest 5: NoAgro
-        } # End Nest 4: Poblacion - > Trabajos
+        } # End Nest 4: Trabajos
       } #End of Nest 3: Poblacion
-      else if (concentrado == FALSE & erogaciones == FALSE & gastohogar == FALSE & gastotarjetas == FALSE & poblacion == FALSE) {}
-      else {stop(message("Dos o mas de los siguentes parametros no pueden ser TRUE al mismo tiempo: concentrado, erogaciones, gastohogar, gastotarjetas y poblacion."))}
+      #else if (concentrado == FALSE & erogaciones == FALSE & gastohogar == FALSE & gastotarjetas == FALSE & poblacion == FALSE) {}
+      #else {stop(message("Dos o mas de los siguentes parametros no pueden ser TRUE al mismo tiempo: concentrado, erogaciones, gastohogar, gastotarjetas y poblacion."))}
+  #} # End of Nest 2: Hogares
   return(data.enigh)
 } # End of Function
