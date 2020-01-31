@@ -4,12 +4,12 @@
 #'
 #' La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las vias de comunicacion inter-urbana e intra-urbana. Adicionalmente, contiene informacion sobre la infraestructura publica urbana (p. ej. tuneles, puentes, plazas de cobro, marcas de kilometraje, etc.), y la infraestructura de otros medios de transporte (p. ej. transbordadores, aeropuertos, puertos y estaciones de ferrocarril).
 #'
-#' @param year Año de referencia del mapa, en formato numerico (2014-2018).
+#' @param year Año de referencia del mapa, en formato numerico (2016-2019).
 #'
 #' @examples
 #'
 #' # Descargar mapas de la RNC
-#' \donttest{mapas.rnc = sig_caminos_descarga(year = 2014)}
+#' \donttest{mapas.rnc = sig_caminos_descarga(year = 2019)}
 #' @return Data.frame
 #' @export
 
@@ -26,20 +26,27 @@ base.caminos = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/pro
 #else {stop(message("Solo a\u00f1os 2918, 2017 y 2016 disponibles."))}
 
 # URL Completa (de datos.gob.mx)
-if (year==2018){codigo.year= "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2018/889463674641_s.zip"}
-else if (year==2017) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2016/702825219000_s.zip"}
-else if (year==2016) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2016/702825219000_s.zip"}
-else if (year==2015) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2015/702825209575_s.zip"}
-else if (year==2014) {url.caminos="http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/702825278724.zip"}
-else {stop(message("Solo a\u00f1os 2018, 2017, 2016, 2015 y 2014 estan disponibles."))}
+url.base = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/"
+if      (year==2019) {code.year ="/2019/889463776086_s"}
+else if (year==2018) {code.year="/2018/889463674641_s"}
+else if (year==2017) {code.year="/2016/702825219000_s"}
+else if (year==2016) {code.year="/2016/702825219000_s"}
+#else if (year==2015) {code.year="/2015/702825209575_s"}
+#else if (year==2014) {code.year="/702825278724_s"}
+else {stop(message("Solo a\u00f1os 2019, 2018, 2017, 2016, 2015 y 2014 estan disponibles."))}
+url.caminos = paste0(url.base, code.year, ".zip")
 
 # Inicio --------------------------------------------------------------------
 # Download the file
-#url.caminos = paste0("http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/2018/", codigo.year, ".zip")
 tempcaminos = tempfile()
 utils::download.file(url.caminos, tempcaminos)
 
-return(tempcaminos)
+# Unzip and open
+message("Descomprimiendo archivo...")
+zipdir = tempdir()
+utils::unzip(paste0(tempcaminos, ".zip"), exdir = zipdir, junkpaths = TRUE)
+
+return(zipdir)
 #output_conjunto = list_sigfiles[c(1, 2, 3, 4, 5)]
 #map_output = readOGR(dsn = "./conjunto_de_datos", layer = "red_vial")
 
