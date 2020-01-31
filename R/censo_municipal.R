@@ -22,8 +22,14 @@
 censo_municipal = function(year = NA, fuente = NA, datos = NA){
 
 # Open Metadata
-if (is.na(fuente) & is.na(year) & is.na(datos)) {shell.exec("https://www.inegi.org.mx/programas/cngmd/2011/")}
-if (is.na(fuente) & is.na(year) & is.na(datos)) {stop(message("Cargando pagina..."))}
+if (is.na(fuente) & is.na(year) & is.na(datos)) {
+  shell.exec("https://www.inegi.org.mx/programas/cngmd/2011/")
+  message("\n Cargando pagina... \n")
+  # Halt the function without error message
+  opt <- options(show.error.messages=FALSE)
+  on.exit(options(opt))
+  stop()
+  }
 else if (fuente != "ayuntamiento" & fuente != "administracion"
        & fuente != "seguridad" & fuente != "justicia") {stop(message("Fuente de datos no reconocida"))}
 else if (datos != "comision" & datos != "estructura" & datos != "funciones" & datos != "marco" & datos != "participacion" &

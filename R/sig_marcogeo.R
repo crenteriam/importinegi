@@ -22,7 +22,14 @@
 sig_marcogeo <- function(year = NA, mapa = NA, version = NA){
 
 # Get Help and More Information
-if (is.na(year) & is.na(mapa) & is.na(version)) {shell.exec("https://www.inegi.org.mx/temas/mg/")}
+if (is.na(year) & is.na(mapa) & is.na(version)) {
+  shell.exec("https://www.inegi.org.mx/temas/mg/")
+  message("\n Cargando pagina... \n")
+  # Halt the function without error message
+  opt <- options(show.error.messages=FALSE)
+  on.exit(options(opt))
+  stop()
+}
 else if (is.na(year)) {stop("Debes introducir el a\u00f1o del mapa")}
 else if (is.na(mapa)) {stop("Debes introducir el nombre del mapa")}
 else if (year == 2010 & is.na(version)) {stop("Para el a\u00f1o 2010, debes especificar la version. Las versiones disponibles son \"4.3\", \"5.0\" y \"5.0.A\" ")}
