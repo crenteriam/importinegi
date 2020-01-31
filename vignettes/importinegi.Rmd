@@ -164,7 +164,7 @@ La función `sig_marcogeo()` descarga los mapas del MGN desde 1995 hasta 2013. E
 
 La sintaxis de la función tiene tres parámetros, de los cuales dos son indispensables. Primero, se debe especificar el año del mapa en formato numérico; los años disponibles se encuentran en la documentación de la función. El segundo parámetro indispensable es el mapa. El MGN provee cinco mapas diferentes: `entidades`, `municipios`, `ageb`, `urbano`, y `rural`, aunque la dispobilidad de algunos mapas varía entre años. El tercer parámetro, `version`, solo es necesario en los años que cuentan con múltiples versiones. Por ejemplo, el año 2010 cuenta las versiones `4.3`, `5.0`, ó `5.0.A`.
 
-El mapa descargado debe ser almacenado en un objeto de R. El resultado es un objeto espacial de la clase `SpatialPolygonsDataFrame`, a partir del cual se puede realizar análisis espacial y estadístico. En el siguiente bloque de código se ejemplifica la descarga del mapa de estados del MGN de 1995 y se utilizan dos funciones para su visualización.
+El mapa descargado debe ser almacenado en un objeto de R. El resultado es un objeto espacial de la clase `SpatialPolygonsDataFrame`, a partir del cual se puede realizar análisis espacial y estadístico. En el siguiente bloque de código se ejemplifica la descarga del mapa de estados del MGN de 1995 y se utiliza una función para su visualización.
 
 ```{r, eval = FALSE}
 # Descargar el MGN de 1995
@@ -172,26 +172,22 @@ mapa.estados95 <- sig_marcogeo(year = 1995, mapa = "entidades")
 
 # Visualizar mapa basico
 plot(mapa.estados95)
-
-# Visualizar mapa con ggmap
-install.packages("ggmap")
-ggmap::ggmap(mapa.estados95)
 ```
 
 ## Red Nacional de Caminos
 
-Para utilizar los mapas de la RNC se necesitan dos funciones. La primera función, `sig_caminos_descarga()`, descarga los mapas de la RNC publicados entre 2014 y 2018. Esta función almacena en un objeto de R los trece mapas que componen el conjunto de datos de la RNC. En el siguiente bloque de código, se ilustra la descarga del conjunto de mapas de la RNC para el año 2014.
+Para utilizar los mapas de la RNC se necesitan dos funciones. La primera función, `sig_caminos_descarga()`, descarga los mapas de la RNC publicados entre 2016 y 2019. Esta función almacena en un objeto de R los trece mapas que componen el conjunto de datos de la RNC. En el siguiente bloque de código, se ilustra la descarga del conjunto de mapas de la RNC para el año 2019.
 
 ```{r, eval = FALSE}
-# Descargar mapas de la RNC de 2014
-mapas.rnc <- sig_caminos_descarga(year = 2014)
+# Descargar mapas de la RNC de 2019
+mapas.rnc <- sig_caminos_descarga(year = 2019)
 ```
 
 La ventaja de la función `sig_caminos_descarga()` es que descarga y almacena los trece mapas de la RNC en una lista de objetos espaciales de R. Sin embargo, la desventaja es que esta lista no es útil para el análisis espacial; cada mapa debe extraerse de la lista y almacenarse en un objeto espacial de R distinto. La segunda función, `sig_caminos_extrae()` cumple este propósito. 
 
-Para extraer cada mapa, es necesario especificar primero el objeto con la lista de mapas previamente creado con la función `sig_caminos_descarga()`. En el segundo parámetro, se debe especificar el año del mapa de la RNC. Finalmente, en el tercer parámetro, se debe especificar el mapa que se desea extraer de la lista. Los trece mapas disponibles son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, red_localidad, red_sitio_de_interes, y union. También, la lista de mapas se puede consultar utilizando la función `summary()` sobre el objeto creado con la función `sig_caminos_descarga()`. En el siguiente bloque de código, se ilustra la extracción del mapa `puentes`, que contiene información de la ubicación geográfica de puentes carreteros.
+Para extraer cada mapa, es necesario especificar primero el objeto con la lista de mapas previamente creado con la función `sig_caminos_descarga()`. En el segundo parámetro, se debe especificar el mapa que se desea extraer de la lista. Los trece mapas disponibles son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, red_localidad, red_sitio_de_interes, y union. También, la lista de mapas se puede consultar utilizando la función `summary()` sobre el objeto creado con la función `sig_caminos_descarga()`. En el siguiente bloque de código, se ilustra la extracción del mapa `puente`, que contiene información de la ubicación geográfica de puentes carreteros.
 
 ```{r, eval = FALSE}
 # Obtener un mapa de puentes
-mapa.puentes <- sig_caminos_extrae(mapas.rnc, year = 2014, conjunto = "puentes")
+mapa.puentes <- sig_caminos_extrae(mapas.rnc, mapa = "puente")
 ```
