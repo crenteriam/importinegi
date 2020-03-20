@@ -11,10 +11,10 @@
 #' @examples
 #'
 #' # Consultar los metadatos del Marco Geoestadistico Nacional
-#' \donttest{sig_marcogeo()}
+#' \dontrun{sig_marcogeo()}
 #'
 #' # Descargar el mapa de munucipios para 2009
-#' \donttest{mapa09 = sig_marcogeo(year = 2009, mapa = "municipios")}
+#' \dontrun{mapa09 = sig_marcogeo(year = 2009, mapa = "municipios")}
 #' @return Data.frame
 #' @export
 

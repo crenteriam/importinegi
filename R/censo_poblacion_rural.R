@@ -10,7 +10,7 @@
 #' @examples
 #'
 #' # Descargar los datos de CDMX de 2010.
-#' \donttest{rural = censo_poblacion_rural(year = 2010, estado = "CDMX")}
+#' \dontrun{rural = censo_poblacion_rural(year = 2010, estado = "CDMX")}
 #' @return Data.frame
 #' @export
 

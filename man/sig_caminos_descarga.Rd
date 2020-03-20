@@ -21,5 +21,5 @@ La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las v
 \examples{
 
 # Descargar mapas de la RNC
-\donttest{mapas.rnc = sig_caminos_descarga(year = 2019)}
+\dontrun{mapas.rnc = sig_caminos_descarga(year = 2019)}
 }

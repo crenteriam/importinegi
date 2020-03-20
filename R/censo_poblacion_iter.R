@@ -13,10 +13,10 @@
 #' @examples
 #'
 #' # Consultar los datos ITER del Censo de Poblacion y Vivienda
-#' \donttest{censo_poblacion_iter()}
+#' \dontrun{censo_poblacion_iter()}
 #'
 #' # Descargar los datos de CDMX de 2010.
-#' \donttest{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
+#' \dontrun{iter = censo_poblacion_iter(year = 2010, estado = "CDMX")}
 #' @return Data.frame
 #' @export
 

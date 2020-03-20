@@ -23,8 +23,8 @@ Esta base de datos tiene dos niveles de agregacion: entidades federativas y muni
 \examples{
 
 # Consultar los datos del entorno urbano del Censo de Poblacion y Vivienda
-\donttest{censo_poblacion_entorno()}
+\dontrun{censo_poblacion_entorno()}
 
 # Descargar los datos de CDMX de 2010.
-\donttest{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
+\dontrun{urbano = censo_poblacion_entorno(year = 2010, estado = "CDMX")}
 }

@@ -11,10 +11,10 @@
 #' @examples
 #'
 #' # Consulta los metadatos del Censo Nacional de Gobiernos Municipales y Delegacionales
-#' \donttest{censo_municipal()}
+#' \dontrun{censo_municipal()}
 #'
 #' # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-#' \donttest{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
+#' \dontrun{estruct <- censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "estructura")}
 #' @return Data.frame
 #' @export
 

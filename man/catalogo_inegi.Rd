@@ -22,10 +22,10 @@ La funcion \code{catalogo_inegi} provee una lista de bases de datos con un ident
 
 # Accede al repositorio de la Red Nacional de Metadatos
 # > de INEGI y almacenalo como una base de datos.
-\donttest{dt.catalogo <- catalogo_inegi()}
+\dontrun{dt.catalogo <- catalogo_inegi()}
 
 # Consulta metadatos de una base de datos.
-\donttest{catalogo_inegi(id = 489)}
+\dontrun{catalogo_inegi(id = 489)}
 
 }
 \seealso{

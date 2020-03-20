@@ -23,5 +23,5 @@ La ENIGH provee informacion estadisticas sobre los ingresos y gastos de los hoga
 \examples{
 
 # Descargar datos de hogares
-\donttest{hogares14 = enigh_nuevaconstruccion(year = 2014,  datos = "hogares")}
+\dontrun{hogares14 = enigh_nuevaconstruccion(year = 2014,  datos = "hogares")}
 }

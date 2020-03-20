@@ -9,7 +9,7 @@
 #' @examples
 #'
 #' # Descargar mapas de la RNC
-#' \donttest{mapas.rnc = sig_caminos_descarga(year = 2019)}
+#' \dontrun{mapas.rnc = sig_caminos_descarga(year = 2019)}
 #' @return Data.frame
 #' @export
 

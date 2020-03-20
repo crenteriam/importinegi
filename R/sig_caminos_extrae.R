@@ -10,10 +10,10 @@
 #' @examples
 #'
 #' # Descargar mapas de la RNC
-#' \donttest{mapas.rnc = sig_caminos_descarga(year = 2019)}
+#' \dontrun{mapas.rnc = sig_caminos_descarga(year = 2019)}
 #'
 #' # Extraer el mapa de las plazas de cobro
-#' \donttest{mapa.pzacobro = sig_caminos_extrae(mapas.rnc, mapa = "puente")}
+#' \dontrun{mapa.pzacobro = sig_caminos_extrae(mapas.rnc, mapa = "puente")}
 #' @return Data.frame
 #' @export
 
