@@ -22,7 +22,7 @@ censo_poblacion_urbano <- function(year = NA, estado = NA){
 
   # Objetos generales
   formato_archivo = "dbf"
-  inegi.base      = "http://www.beta.inegi.org.mx/contenidos/programas/ccpv/"
+  inegi.base      = "http://www.inegi.org.mx/contenidos/programas/ccpv/"
 
   # Estado  -------------------------------------------------------------
   if      (estado == "Aguascalientes"){   censo.state = "01" }

@@ -27,7 +27,7 @@ temp.enoe = tempfile()
 zipdir     = tempdir()
 
 # Descargar
-url.base = paste0("http://www.beta.inegi.org.mx/contenidos/programas/enoe/15ymas/microdatos/", year, trimestre,  "_", fformat, ".zip")
+url.base = paste0("http://www.inegi.org.mx/contenidos/programas/enoe/15ymas/microdatos/", year, trimestre,  "_", fformat, ".zip")
 utils::download.file(url.base, temp.enoe)
 utils::unzip(temp.enoe, exdir = zipdir)
 list_dataraw = list.files(zipdir, pattern = ".dbf")

@@ -24,7 +24,7 @@ censo_poblacion_iter <- function(year = "2010", estado = "Nacional", totalestado
 
 # Objetos generales
 formato_archivo = "dbf"
-inegi.base      = "http://www.beta.inegi.org.mx/contenidos/programas/ccpv/"
+inegi.base      = "http://www.inegi.org.mx/contenidos/programas/ccpv/"
 
 # Estado  -------------------------------------------------------------
   if      (estado == "Aguascalientes"){   censo.state = "01" }
