@@ -4,7 +4,7 @@
  
 ## Introduccion
 
-`importinegi` es un paquete de R para descargar y gestionar bases de datos abiertas del INEGI. El paquete facilita la búsqueda, descarga y gestión de los datos abiertos del INEGI. Con la version `1.1.2` del paquete se pueden descargar y gestionar los datos de los siguientes proyectos estadisticos:
+`importinegi` es un paquete de R para descargar y gestionar bases de datos abiertas del INEGI. El paquete facilita la búsqueda, descarga y gestión de los datos abiertos del INEGI. Con la version `1.1.1` del paquete se pueden descargar y gestionar los datos de los siguientes proyectos estadisticos:
 
 - Censo (y Conteo) Poblacion y Vivienda (1990-2010)
 - Censo Nacional de Gobiernos Municipales y Delegacionales (2011-2017)
@@ -15,7 +15,7 @@
 
 ## Instalacion
 
-Última versión estable, `1.1.1`, (desde CRAN):
+Última versión estable `1.1.1` (desde CRAN):
 ```
 install.packages("importinegi")
 library(importinegi)
