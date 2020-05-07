@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 El paquete de R `importinegi` fue creado para facilitar la descarga y uso de las bases de datos publicas del INEGI. Entre otras ventajas, este paquete permite integrar múltiples bases de  datos con un identificador único en común, consolidar los datos en diferentes niveles de agregación (p. ej. vivienda, localidad, municipio o entidad federativa), o automatizar la codificación de valores perdidos en el sistema de R `NA`).
 
-La version `1.0.0` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
+La version `1.1.2` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
 
 * Censo y Conteo de Poblacion y Vivienda
 * Censo Nacional de Gobiernos Municipales y Delegacionales
@@ -61,16 +61,16 @@ El objetivo de los parámetros lógicos es ofrecer flexibilidad al usuario en la
 
 ```{r, eval = FALSE}
 # Default: a nivel localidad, pero sin datos a nivel estado ni municipio
-censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Jalisco")
+censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Jalisco")
 
 # Datos a nivel estado, municipio y localidad
-censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Jalisco", totalestado = TRUE, totalmunicipio = TRUE)
+censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE)
 
 # Datos a nivel estado y municipio, pero sin datos a nivel localidad
-censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)
+censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)
 
 # Datos a nivel nacional
-censo.jalisco = censo_poblacion_iter(year = 2010, estado == "Nacional")
+censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Nacional")
 ```
 
 Finalmente, en la muestra del Censo la unidad de análisis puede ser personas, viviendas o migrantes. Por lo tanto, además del año y el estado, un tercer parámetro requerido es `muestra`, que representa la unidad de análisis. Las unidades de análisis en este parámetro pueden ser `Migrantes`, `Personas`, `Viviendas` u `Hogar`. En el siguiente bloque de código se ilustra la descarga del cuestionario de personas para el Censo 2010 en el estado de Jalisco.
