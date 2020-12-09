@@ -326,7 +326,7 @@ else {}
   zipdir     = tempdir()
 
   # Descargar
-  url.base = paste0("http://www.beta.inegi.org.mx/contenidos/programas/cngmd/", year, "/microdatos/", url.complemento, year, "_", fformat, ".zip")
+  url.base = paste0("http://www.inegi.org.mx/contenidos/programas/cngmd/", year, "/microdatos/", url.complemento, year, "_", fformat, ".zip")
   utils::download.file(url.base, temp.cngmd)
   utils::unzip(temp.cngmd, exdir = zipdir)
   list_dataraw = as.list(list.files(paste0(zipdir, folder.complemento)))
