@@ -13,7 +13,7 @@ LazyData: true
 Imports: foreign, dplyr, haven, rgdal, data.table
 Suggests:
     knitr,
-    rmarkdown
+    rmarkdown,
     testthat (>= 2.1.0)
 Language: es
 RoxygenNote: 7.1.0
