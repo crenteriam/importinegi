@@ -16,25 +16,18 @@
 
 sig_caminos_descarga <- function(year = NA){
 
-# Objetos generales
-base.caminos = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/"
-
-# Definir a\u00f1o
-#if (year==2018){codigo.year="889463674641_s"}
-#else if (year==2017) {codigo.year="889463171836_s"}
-#else if (year==2016) {codigo.year="702825219000_s"}
-#else {stop(message("Solo a\u00f1os 2918, 2017 y 2016 disponibles."))}
-
 # URL Completa (de datos.gob.mx)
-url.base = "http://internet.contenidos.inegi.org.mx/contenidos/Productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/"
+url.base = "http://internet.contenidos.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/"
 if      (year==2019) {code.year ="/2019/889463776086_s"}
 else if (year==2018) {code.year="/2018/889463674641_s"}
-else if (year==2017) {code.year="/2016/702825219000_s"}
+else if (year==2017) {code.year="/2017/889463171836_s"}
 else if (year==2016) {code.year="/2016/702825219000_s"}
-#else if (year==2015) {code.year="/2015/702825209575_s"}
-#else if (year==2014) {code.year="/702825278724_s"}
-else {stop(message("Solo a\u00f1os 2019, 2018, 2017, 2016, 2015 y 2014 estan disponibles."))}
-url.caminos = paste0(url.base, code.year, ".zip")
+else if (year==2015) {code.year="/2015/702825209575_s"}
+else if (year==2014) {code.year="/702825278724_s"}
+else {stop(message("Solo estan disponibles los a\u00f1os 2019, 2018, 2017, 2016, 2015 y 2014."))}
+
+if  (year==2014) {url.caminos = "https://www.inegi.org.mx/contenido/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/caminos/702825278724_s.zip"}
+else {url.caminos = paste0(url.base, code.year, ".zip")}
 
 # Inicio --------------------------------------------------------------------
 # Download the file
@@ -44,26 +37,25 @@ utils::download.file(url.caminos, tempcaminos)
 # Unzip and open
 message("Descomprimiendo archivo...")
 zipdir = tempdir()
-utils::unzip(paste0(tempcaminos, ".zip"), exdir = zipdir, junkpaths = TRUE)
+utils::unzip(tempcaminos, exdir = zipdir)
 
-return(zipdir)
-#output_conjunto = list_sigfiles[c(1, 2, 3, 4, 5)]
-#map_output = readOGR(dsn = "./conjunto_de_datos", layer = "red_vial")
+# Segunda etapa  -------------------------------------------------------------
+if      (year==2014) {subfolder = file.path(paste0(zipdir, "\\\\producto\\\\informaci\U00A2n espacial/"))}
+else if (year==2015 | year == 2017 | year==2018 | year ==2019) {subfolder = file.path(paste0(zipdir, "\\\\conjunto_de_datos\\\\"))}
+else if (year==2016) {second_zip = file.path(paste0(zipdir, "\\\\conjunto_de_datos\\\\red_nacional_de_caminos_2016.zip"))
+                      subfolder = tempdir()
+                      utils::unzip(second_zip, exdir = subfolder)
+                      }
 
 # Informacion de la funcion
 message("La base de datos con shapefiles ha sido descargada. Utiliza
         la funcion sig_caminos_extrae() para extraer cada conjunto de
-        datos (shapefile). Los conjuntos de datos disponibles son:
-        \n
-        \r2018: estructura, localidad, maniobra_prohibida, plaza_cobro,
-        \rposte_de_referencia, puente, red_vial, sitip_de_interes,
-        \rtarifas, transbordador, tred_localidad, tred_sitio_de_interes,
-        \runion.
-        \n
-        \rPara consultar el diccionario de datos, escribe:
-        \rsig_caminos_extrae(conjunto = \"diccionario\")
-        \r\n")
+        datos (shapefile). A continuacion, se listan los shapefiles contenidos en el objeto \r\n")
 
+if (year >= 2017) {message("AVISO. El archivo .ZIP a partir del año 2017 puede ser demasiado grande para su descarga directa en R")}
+
+print(dir(subfolder))
+return(subfolder)
 } # End of Function
 
 
