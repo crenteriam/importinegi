@@ -7,7 +7,7 @@ output:
     fig_caption: yes
 vignette: >
   %\VignetteIndexEntry{importinegi: Descargar y gestionar bases de datos del INEGI}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{rmarkdown::render}
   %\VignetteEncoding{UTF-8}
 ---
 
