@@ -1,9 +1,9 @@
 Package: importinegi
 Title: Download and Manage Open Data from INEGI
-Version: 1.1.2
-Authors@R: person("Cesar", "Renteria", email = "crenteria@albany.edu", role = c("aut", "cre"))
+Version: 1.1.3
+Authors@R: person("Cesar", "Renteria", email = "cesar.renteria@cide.edu", role = c("aut", "cre"))
 Author: Cesar Renteria [aut, cre]
-Maintainer: Cesar Renteria <crenteria@albany.edu>
+Maintainer: Cesar Renteria <cesar.renteria@cide.edu>
 Description: Download and manage data sets of statistical projects and geographic data created by Instituto Nacional de Estadistica y Geografia (INEGI). See <https://www.inegi.org.mx/>.
 BugReports: https://github.com/crenteriam/importinegi/issues
 Depends: R (>= 3.3.0)

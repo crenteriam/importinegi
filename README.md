@@ -15,15 +15,15 @@
 
 ## Instalacion
 
-Última versión estable `1.1.1` (desde CRAN):
+Última versión estable `1.1.3` (desde CRAN):
 ```
 install.packages("importinegi")
 library(importinegi)
 ```
 
-Última versión beta `1.1.2` (desde Github):
+Última versión beta `1.1.3` (desde Github):
 
-- Nota de la versión `1.1.2`. INEGI terminó de trasladar algunos repositorios de su versión beta a su versión estable. Esto afectó los URL de las funciones para el Censo y la ENOE. La versión beta `1.1.2` arregla este problema.
+- Nota de la versión `1.1.3`. INEGI terminó de trasladar algunos repositorios de su versión beta a su versión estable. Esto afectó los URL de las funciones para el Censo y la ENOE. La versión beta `1.1.2` arregla este problema.
 
 ```
 install.packages("devtools")
