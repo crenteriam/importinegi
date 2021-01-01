@@ -52,7 +52,7 @@ message("La base de datos con shapefiles ha sido descargada. Utiliza
         la funcion sig_caminos_extrae() para extraer cada conjunto de
         datos (shapefile). A continuacion, se listan los shapefiles contenidos en el objeto \r\n")
 
-if (year >= 2017) {message("AVISO. El archivo .ZIP a partir del año 2017 puede ser demasiado grande para su descarga directa en R")}
+if (year >= 2017) {message("AVISO. El archivo .ZIP a partir del anio 2017 puede ser demasiado grande para su descarga directa en R")}
 
 print(dir(subfolder))
 return(subfolder)
