@@ -19,7 +19,7 @@
 #' @return Data.frame
 #' @export
 
-enoeN = function(year = NA, trimestre = NA, integrar = FALSE, formato = "dbf"){
+enoe = function(year = NA, trimestre = NA, integrar = FALSE, formato = "dbf"){
   if (is.na(year) & is.na(trimestre)) {shell.exec("https://www.inegi.org.mx/programas/enoe/15ymas/")}
   # Temp files
   temp.enoe = tempfile()
