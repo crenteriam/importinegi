@@ -30,3 +30,6 @@ install.packages("devtools")
 devtools::install_github("crenteriam/importinegi")
 library(importinegi)
 ```
+
+Thanks Villiem for the fixes.
+https://twitter.com/villicanaem
