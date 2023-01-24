@@ -1,6 +1,6 @@
 Package: importinegi
 Title: Download and Manage Open Data from INEGI
-Version: 1.1.3
+Version: 1.2.0
 Authors@R: person("Cesar", "Renteria", email = "cesar.renteria@cide.edu", role = c("aut", "cre"))
 Author: Cesar Renteria [aut, cre]
 Maintainer: Cesar Renteria <cesar.renteria@cide.edu>
