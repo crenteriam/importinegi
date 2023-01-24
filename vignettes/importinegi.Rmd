@@ -61,16 +61,16 @@ El objetivo de los parámetros lógicos es ofrecer flexibilidad al usuario en la
 
 ```{r, eval = FALSE}
 # Default: a nivel localidad, pero sin datos a nivel estado ni municipio
-censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Jalisco")
+censo.jalisco  = censo_poblacion_iter(year = 2010, estado = "Jalisco")
 
 # Datos a nivel estado, municipio y localidad
-censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE)
+censo.jalisco  = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE)
 
 # Datos a nivel estado y municipio, pero sin datos a nivel localidad
-censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)
+censo.jalisco  = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)
 
 # Datos a nivel nacional
-censo.jalisco = censo_poblacion_iter(year = 2010, estado = "Nacional")
+censo.nacional = censo_poblacion_iter(year = 2010, estado = "Nacional")
 ```
 
 Finalmente, en la muestra del Censo la unidad de análisis puede ser personas, viviendas o migrantes. Por lo tanto, además del año y el estado, un tercer parámetro requerido es `muestra`, que representa la unidad de análisis. Las unidades de análisis en este parámetro pueden ser `Migrantes`, `Personas`, `Viviendas` u `Hogar`. En el siguiente bloque de código se ilustra la descarga del cuestionario de personas para el Censo 2010 en el estado de Jalisco.
@@ -148,7 +148,7 @@ Posteriormente, se debe extraer la base de datos, utilizando su posición dentro
 
 ```{r, eval = FALSE}
 # Identificar y extraer base de datos del cuestionario hogares
-dt.hog105 = dt.enoe05[[3]]
+dt.hog105 = lista.enoe05[[3]]
 ```
 
 Como se explicó, el parámetro por defecto `integrar = FALSE`, descarga las bases de datos por separado. Sin embargo, estas bases de datos pueden integrarse directamente en una sola matriz de datos utilizando la opción `integrar = TRUE`. Esta opción conecta todas las bases de datos mediante el identificador único que tienen en común. El siguiente bloque de código ilustra la descarga e integración de las bases de datos de la ENOE Trimestre I.
