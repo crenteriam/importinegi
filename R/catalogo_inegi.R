@@ -27,8 +27,8 @@ catalogo_inegi = function(id = NA){
   Catalogo = tempfile()
   utils::download.file("http://www3.inegi.org.mx/rnm/index.php/catalog/export/csv?ps=500&", Catalogo)
   Catalogo = utils::read.csv(Catalogo, encoding = "UTF-8")
-  names(Catalogo)[names(Catalogo) == "X.U.FEFF.id"] <- "id"
-  Catalogo = base::subset(Catalogo, select = c("id", "surveyid", "titl", "data_coll_start", "data_coll_end", "created", "changed"))
+  # names(Catalogo)[names(Catalogo) == "X.U.FEFF.id"] <- "id"
+  # Catalogo = base::subset(Catalogo, select = c("id", "surveyid", "titl", "data_coll_start", "data_coll_end", "created", "changed"))
   return(Catalogo)
   } # End of Catálogo General
 } # End of Function
