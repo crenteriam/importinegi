@@ -8,7 +8,8 @@
 #' @param year Año de levantamiento de la encuesta en formato numerico.
 #' @param trimestre Trimestre de levantamiento de la encuesta en formato alfanumerico. Las opciones son: "trim1", "trim2", "trim3" y "trim4".
 #' @param integrar \code{FALSE}: descarga por separado y en una lista las cinco bases de datos que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, utilizando el identificador unico del entrevistado.
-#' @param formato La extensión del formato. Las opciones son "dta","dbf", "csv" y "sav"
+#' @param formato La extensión del formato. Las opciones son: "dta","dbf", "csv" y "sav".
+#'
 #' @examples
 #'
 #' # Descargar las bases de datos de la ENOE 2009, Trimestre 1, sin integrar.
