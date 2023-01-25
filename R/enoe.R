@@ -4,7 +4,6 @@
 #'
 #' La ENOE es un proyecto estadistico de encuestas en hogares especializado en informacion sobre el mercado laboral. La ENOE provee informacion trimestral sobre la fuerza laboral, la ocupacion, subocupacion y desocupacion de los miembros del hogar encuestado.
 #'
-#'
 #' @param year Año de levantamiento de la encuesta en formato numerico.
 #' @param trimestre Trimestre de levantamiento de la encuesta en formato alfanumerico. Las opciones son: "trim1", "trim2", "trim3" y "trim4".
 #' @param integrar \code{FALSE}: descarga por separado y en una lista las cinco bases de datos que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, utilizando el identificador unico del entrevistado.
@@ -20,7 +19,7 @@
 #' @return Data.frame
 #' @export
 
-enoe = function(year = NA, trimestre = NA, integrar = FALSE, formato = "dbf"){
+enoe = function(year = NA, trimestre = NA, integrar = FALSE, formato = "dbf" ){
   if (is.na(year) & is.na(trimestre)) {shell.exec("https://www.inegi.org.mx/programas/enoe/15ymas/")}
   # Temp files
   temp.enoe = tempfile()
