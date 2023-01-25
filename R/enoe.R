@@ -7,7 +7,6 @@
 #' @param year Año de levantamiento de la encuesta en formato numerico.
 #' @param trimestre Trimestre de levantamiento de la encuesta en formato alfanumerico. Las opciones son: "trim1", "trim2", "trim3" y "trim4".
 #' @param integrar \code{FALSE}: descarga por separado y en una lista las cinco bases de datos que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, utilizando el identificador unico del entrevistado.
-#' @param formato La extensión del formato. Las opciones son: "dta","dbf", "csv" y "sav".
 #'
 #' @examples
 #'
@@ -19,11 +18,12 @@
 #' @return Data.frame
 #' @export
 
-enoe = function(year = NA, trimestre = NA, integrar = FALSE, formato = "dbf" ){
+enoe = function(year = NA, trimestre = NA, integrar = FALSE){
   if (is.na(year) & is.na(trimestre)) {shell.exec("https://www.inegi.org.mx/programas/enoe/15ymas/")}
   # Temp files
   temp.enoe = tempfile()
   zipdir     = tempdir()
+  formato = "dbf"
 
   # Descargar
   if (year >= 2020 & !(year == 2020 & trimestre == 'trim1')) {
