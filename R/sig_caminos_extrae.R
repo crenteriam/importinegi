@@ -21,7 +21,7 @@ sig_caminos_extrae <- function(. = NA, mapa = NA){
 
   # Extraer Shpaefile
   message("Obteniendo Shapefile...")
-  map_output = rgdal::readOGR(dsn = ., layer = mapa)
+  map_output = sf::st_read(dsn = ., layer = mapa)
 
   return(map_output)
 

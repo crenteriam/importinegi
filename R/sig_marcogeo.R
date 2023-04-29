@@ -136,7 +136,7 @@ else if (year == 2010 & mapa == "ageb_urbana" & version == "5.0") {nombre_mapa =
   # Extract Map
   if (year == 2010 & version == "5.0") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year, "_5"))}
   else if (year == 2010 & version == "5.0.A") {map_output = rgdal::readOGR(dsn = zipdir_level, layer = nombre_mapa)}
-  else {map_output = rgdal::readOGR(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year))}
+  else {map_output = sf::st_read(dsn = zipdir_level, layer = paste0(nombre_mapa, "_", year))}
 
   return(map_output)
 } # End of Function
