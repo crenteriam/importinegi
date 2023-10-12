@@ -21,7 +21,13 @@ install.packages("importinegi")
 library(importinegi)
 ```
 
+<<<<<<< HEAD
 - Nota de la versión `1.2.1`. Se actualizó la nueva URL del Repositorio Nacional de Metadatos. Se reemplazo el paquete rgdal por sf.
+=======
+Última versión beta `1.2.0` (desde Github):
+
+- Nota de la versión `1.1.3`. INEGI terminó de trasladar algunos repositorios de su versión beta a su versión estable. Esto afectó los URL de las funciones para el Censo y la ENOE. La versión beta `1.1.3` arregla este problema.
+>>>>>>> f54238f62787e1ae98c14fb2fc97dcb0002da896
 - Nota de la versión `1.2.0`. Se arreglan problemas con las funciones catalogo_inegi() y enoe(). Cortesía de Villiem (https://twitter.com/villicanaem).
 - Nota de la versión `1.1.3`. INEGI terminó de trasladar algunos repositorios de su versión beta a su versión estable. Esto afectó los URL de las funciones para el Censo y la ENOE. La versión beta `1.1.2` arregla este problema.
 
