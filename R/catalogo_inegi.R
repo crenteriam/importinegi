@@ -16,16 +16,16 @@
 #' \dontrun{catalogo_inegi(id = 489)}
 #'
 #' @return Data.frame
-#' @seealso Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
+#' @seealso Consulta el \href{https://www.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
 #' @export
 
 catalogo_inegi = function(id = NA){
-  open.id = paste0("http://www3.inegi.org.mx/rnm/index.php/catalog/", id)
+  open.id = paste0("https://www.inegi.org.mx/rnm/index.php/catalog/", id)
   if (!is.na(id)) {shell.exec(open.id)}
 ### Catálgo General ---------------------------------------------------------
   else {
   Catalogo = tempfile()
-  utils::download.file("http://www3.inegi.org.mx/rnm/index.php/catalog/export/csv?ps=500&", Catalogo)
+  utils::download.file("https://www.inegi.org.mx/rnm/index.php/catalog/export/csv?ps=500&", Catalogo)
   Catalogo = utils::read.csv(Catalogo, encoding = "UTF-8")
   # names(Catalogo)[names(Catalogo) == "X.U.FEFF.id"] <- "id"
   # Catalogo = base::subset(Catalogo, select = c("id", "surveyid", "titl", "data_coll_start", "data_coll_end", "created", "changed"))

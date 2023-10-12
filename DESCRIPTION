@@ -1,6 +1,6 @@
 Package: importinegi
 Title: Download and Manage Open Data from INEGI
-Version: 1.2.0
+Version: 1.2.1
 Authors@R: person("Cesar", "Renteria", email = "cesar.renteria@cide.edu", role = c("aut", "cre"))
 Author: Cesar Renteria [aut, cre]
 Maintainer: Cesar Renteria <cesar.renteria@cide.edu>
@@ -10,7 +10,7 @@ Depends: R (>= 3.3.0)
 License: CC0
 Encoding: UTF-8
 LazyData: true
-Imports: foreign, dplyr, haven, rgdal, data.table, rio
+Imports: foreign, dplyr, haven, sf, data.table, rio
 Suggests:
     knitr,
     markdown,
