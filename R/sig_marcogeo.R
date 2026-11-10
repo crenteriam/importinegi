@@ -43,6 +43,9 @@ else if (year == 1995 & (mapa == "ageb" | mapa == "urbano" | mapa == "rural")) {
   else if (year == 2010 & mapa == "ageb" & version == "5.0.A") {stop("El mapa ageb no esta disponible para el a\u00f1o 2010 5.0.A")}
   #else if (mapa != "entidades" | mapa != "municipios" | mapa != "ageb" | mapa != "urbano" | mapa != "rural") {stop(message("Nombre de mapa no reconocido."))}
 
+# El paquete sf es opcional: solo lo requieren las funciones sig_*
+requiere_paquete("sf")
+
 # Inicio --------------------------------------------------------------------
 
 # Links:
