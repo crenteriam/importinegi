@@ -36,7 +36,7 @@ enoe = function(year = NA, trimestre = NA, integrar = FALSE){
   list_dataraw = list.files(zipdir, pattern = paste0(formato,'$'), full.names = T)
   list_names = basename(tools::file_path_sans_ext(list_dataraw))
   # Read all files in the folder
-  output = lapply(list_dataraw, rio::import)
+  output = lapply(list_dataraw, foreign::read.dbf, as.is = TRUE)
   names(output) = list_names
 
   # INTEGRAR - TRUE  FALSE

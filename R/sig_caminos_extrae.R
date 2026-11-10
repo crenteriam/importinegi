@@ -19,6 +19,9 @@
 
 sig_caminos_extrae <- function(. = NA, mapa = NA){
 
+  # El paquete sf es opcional: solo lo requieren las funciones sig_*
+  requiere_paquete("sf")
+
   # Extraer Shpaefile
   message("Obteniendo Shapefile...")
   map_output = sf::st_read(dsn = ., layer = mapa)

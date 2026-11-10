@@ -29,5 +29,5 @@ La funcion \code{catalogo_inegi} provee una lista de bases de datos con un ident
 
 }
 \seealso{
-Consulta el \href{http://www3.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
+Consulta el \href{https://www.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
 }
