@@ -10,12 +10,16 @@ BugReports: https://github.com/crenteriam/importinegi/issues
 Depends:
     R (>= 4.1)
 Imports:
-    foreign
+    foreign,
+    httr2 (>= 1.0.0),
+    jsonlite
 Suggests:
     knitr,
     markdown,
     sf,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    webfakes,
+    withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Encoding: UTF-8
