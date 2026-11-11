@@ -1,0 +1,62 @@
+[
+ {
+  "consecutivo": "40",
+  "idArchivo": "3870116",
+  "titulo": "Base de datos|II Trimestre (ENOE)",
+  "descripcion": "Descarga",
+  "formato": "_csv.zip&33.6  MB&SIN_ESTANDAR|_dbf.zip&32.5  MB&SIN_ESTANDAR|_dta.zip&53.5  MB&SIN_ESTANDAR|_sav.zip&43.8  MB&SIN_ESTANDAR|",
+  "tipoInformacion": "Microdatos",
+  "areaGeografica": "Estados Unidos Mexicanos,0 -3870116   |",
+  "url": "",
+  "extension": "csv|dbf|dta|sav|",
+  "pathLogico": "/programas/enoe/15ymas/microdatos/enoe_2026_trim2",
+  "anioInformacion": "|2026",
+  "fechaActualizacion": null,
+  "idAreaGeografica": "0"
+ },
+ {
+  "consecutivo": "14",
+  "idArchivo": "99478",
+  "titulo": "Base de datos|I Trimestre",
+  "descripcion": "Descarga",
+  "formato": "_csv.zip&32  MB&SIN_ESTANDAR|_dbf.zip&27.2  MB&SIN_ESTANDAR|_dta.zip&43.7  MB&SIN_ESTANDAR|_sav.zip&34.8  MB&SIN_ESTANDAR|",
+  "tipoInformacion": "Microdatos",
+  "areaGeografica": "Estados Unidos Mexicanos,0 -99478     |",
+  "url": "",
+  "extension": "csv|dbf|dta|sav|",
+  "pathLogico": "/programas/enoe/15ymas/microdatos/2005trim1",
+  "anioInformacion": "|2005",
+  "fechaActualizacion": null,
+  "idAreaGeografica": "0"
+ },
+ {
+  "consecutivo": "3",
+  "idArchivo": "80963",
+  "titulo": "Documentación de la base de datos|Clasificaciones",
+  "descripcion": "Censo (cuestionario básico)",
+  "formato": ".html&85.7 KB&SIN_ESTANDAR|",
+  "tipoInformacion": "Microdatos",
+  "areaGeografica": "Estados Unidos Mexicanos,0 -80963     |",
+  "url": "/app/biblioteca/ficha.html?upc=702825002067",
+  "extension": "html|",
+  "pathLogico": "",
+  "anioInformacion": "|2010",
+  "fechaActualizacion": null,
+  "idAreaGeografica": "0"
+ },
+ {
+  "consecutivo": "4",
+  "idArchivo": "79606",
+  "titulo": "Documentación de la base de datos|Descripción de la base de datos",
+  "descripcion": "Censo (cuestionario básico)",
+  "formato": ".xls&80.5 KB&SIN_ESTANDAR|",
+  "tipoInformacion": "Microdatos",
+  "areaGeografica": "Estados Unidos Mexicanos,0 -79606     |",
+  "url": "",
+  "extension": "xls|",
+  "pathLogico": "/programas/ccpv/2010/doc/diccionario_cuestionario_basico",
+  "anioInformacion": "|2010",
+  "fechaActualizacion": null,
+  "idAreaGeografica": "0"
+ }
+]

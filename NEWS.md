@@ -8,6 +8,12 @@
 * Pruebas automatizadas con `testthat` (tercera edicion).
 * Integracion continua con GitHub Actions en Windows, macOS y Linux, en sustitucion de Travis CI.
 
+## Funcionamiento interno
+
+* Nuevas utilidades internas compartidas, todavia sin efecto en las funciones exportadas: descarga con `httr2` (reintentos, limites de tiempo, copia local opcional y verificacion de que el archivo recibido sea un zip valido), descompresion en una carpeta propia por llamada, lectura de DBF y CSV, catalogo unico de entidades federativas y validacion de argumentos.
+* Nuevas dependencias: `httr2` y `jsonlite`.
+* Registro de direcciones de descarga generado con el script `data-raw/registro.R` a partir del servicio de descargas del INEGI, y tarea de GitHub Actions que lo ejecuta una vez al ano y avisa cuando el INEGI publica o cambia archivos.
+
 # Version 1.0.0
 
 Primera version publicada. Sin noticias.
