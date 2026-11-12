@@ -14,6 +14,16 @@
 * Nuevas dependencias: `httr2` y `jsonlite`.
 * Registro de direcciones de descarga generado con el script `data-raw/registro.R` a partir del servicio de descargas del INEGI, y tarea de GitHub Actions que lo ejecuta una vez al ano y avisa cuando el INEGI publica o cambia archivos.
 
+## Funciones
+
+* `catalogo_inegi()`:
+    * Devuelve el catalogo completo de la Red Nacional de Metadatos. Antes solo devolvia los 500 proyectos mas recientes (de 825 en noviembre de 2026).
+    * Nuevos argumentos `buscar` (texto en el nombre o la clave del proyecto, sin distinguir mayusculas ni acentos) y `year` (proyectos cuyo periodo incluye ese año).
+    * El catalogo incluye la columna `url`, con la direccion de la ficha de cada proyecto.
+    * Con `id` funciona en cualquier sistema operativo (antes solo en Windows) y devuelve la direccion de la ficha.
+    * El catalogo se descarga una sola vez por sesion de R.
+    * Avisa con un mensaje claro cuando el INEGI no devuelve el catalogo, en lugar de devolver una tabla vacia.
+
 # Version 1.0.0
 
 Primera version publicada. Sin noticias.

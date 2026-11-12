@@ -4,10 +4,14 @@
 \alias{catalogo_inegi}
 \title{Catalogo de proyectos estadisticos del INEGI}
 \usage{
-catalogo_inegi(id = NA)
+catalogo_inegi(id = NA, buscar = NULL, year = NULL)
 }
 \arguments{
 \item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar en el catalogo de proyectos estadisticos del INEGI (ver ejemplo).}
+
+\item{buscar}{Texto para buscar proyectos por su nombre o por su clave, sin distinguir mayusculas ni acentos (por ejemplo, \code{"empleo"}). Si se escriben varias palabras, se devuelven los proyectos que las contienen todas.}
+
+\item{year}{Año, o vector de años, para conservar solo los proyectos cuyo periodo incluye alguno de ellos (por ejemplo, \code{2020}).}
 }
 \value{
 Data.frame
@@ -26,6 +30,9 @@ La funcion \code{catalogo_inegi} provee una lista de bases de datos con un ident
 
 # Consulta metadatos de una base de datos.
 \dontrun{catalogo_inegi(id = 489)}
+
+# Busca proyectos por nombre y por año.
+\dontrun{catalogo_inegi(buscar = "ocupacion y empleo", year = 2020)}
 
 }
 \seealso{
