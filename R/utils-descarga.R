@@ -31,12 +31,19 @@ inegi_solicitud <- function(url) {
   )
   solicitud <- httr2::request(url)
   solicitud <- httr2::req_user_agent(solicitud, agente)
+  # Se pide el contenido sin comprimir y se le indica a curl que no intente
+  # decodificarlo. El catalogo de la Red Nacional de Metadatos responde con la
+  # cabecera "Content-Encoding: UTF-8", que no es valida: los navegadores la
+  # ignoran, pero curl la rechaza ("Unrecognized content encoding type") si
+  # la decodificacion automatica esta activa.
+  solicitud <- httr2::req_headers(solicitud, `Accept-Encoding` = "identity")
   solicitud <- httr2::req_options(
     solicitud,
     connecttimeout = 30,
     low_speed_limit = 1,
     low_speed_time = 60,
-    timeout = getOption("importinegi.timeout", 7200)
+    timeout = getOption("importinegi.timeout", 7200),
+    http_content_decoding = 0L
   )
   httr2::req_error(solicitud, is_error = function(respuesta) FALSE)
 }
