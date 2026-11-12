@@ -19,6 +19,8 @@ Extrae cada uno de los mapas que componen de la Red Nacional de Caminos, previam
 }
 \details{
 La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las vias de comunicacion inter-urbana e intra-urbana. Adicionalmente, contiene informacion sobre la infraestructura publica urbana (p. ej. tuneles, puentes, plazas de cobro, marcas de kilometraje, etc.), y la infraestructura de otros medios de transporte (p. ej. transbordadores, aeropuertos, puertos y estaciones de ferrocarril).
+
+Esta funcion requiere el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}.
 }
 \examples{
 

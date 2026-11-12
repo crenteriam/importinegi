@@ -54,6 +54,43 @@ test_that("EN VIVO: buscar y year funcionan con el catalogo real", {
   expect_true(all(reciente$year_start <= 2020))
 })
 
+test_that("EN VIVO: los ejemplos de la documentacion siguen vigentes", {
+  omitir_si_no_en_vivo()
+  catalogo <- suppressMessages(catalogo_inegi())
+
+  # Proyectos que se citan por su numero en la ayuda (489) y en la vineta
+  # (443), con las palabras de su nombre que la documentacion menciona.
+  ejemplos <- list(
+    list(id = 489L, nombre = "empresas constructoras 2019"),
+    list(id = 443L, nombre = "censo nacional de derechos humanos estatal 2018")
+  )
+  for (ejemplo in ejemplos) {
+    fila <- catalogo[catalogo$id == ejemplo$id, ]
+    cat("[en vivo] id = ", ejemplo$id, ": ",
+        if (nrow(fila) == 1) paste0(fila$title, " (", fila$idno, ")") else "NO ESTA EN EL CATALOGO",
+        "\n", sep = "")
+    expect_identical(nrow(fila), 1L)
+    expect_true(grepl(ejemplo$nombre, normalizar_texto(fila$title), fixed = TRUE))
+  }
+
+  # Busquedas de los ejemplos de la ayuda, la vineta y el README
+  busquedas <- list(
+    list(buscar = "enigh", year = NULL),
+    list(buscar = "ciberacoso", year = NULL),
+    list(buscar = "ocupacion empleo", year = NULL),
+    list(buscar = "ocupacion empleo", year = 2020),
+    list(buscar = "ocupacion y empleo", year = 2020),
+    list(buscar = "enoe", year = 2020)
+  )
+  for (busqueda in busquedas) {
+    resultado <- suppressMessages(catalogo_inegi(buscar = busqueda$buscar, year = busqueda$year))
+    cat("[en vivo] buscar = \"", busqueda$buscar, "\"",
+        if (!is.null(busqueda$year)) paste0(", year = ", busqueda$year),
+        ": ", nrow(resultado), " proyectos\n", sep = "")
+    expect_gt(nrow(resultado), 0)
+  }
+})
+
 test_that("EN VIVO (informativo): cuantos proyectos entregaba la consulta anterior", {
   omitir_si_no_en_vivo()
   anterior <- tryCatch(

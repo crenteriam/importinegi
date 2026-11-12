@@ -4,6 +4,8 @@
 #'
 #' La Red Nacional de Caminos (RNC) provee informacion georreferenciada sobre las vias de comunicacion inter-urbana e intra-urbana. Adicionalmente, contiene informacion sobre la infraestructura publica urbana (p. ej. tuneles, puentes, plazas de cobro, marcas de kilometraje, etc.), y la infraestructura de otros medios de transporte (p. ej. transbordadores, aeropuertos, puertos y estaciones de ferrocarril).
 #'
+#' Esta funcion requiere el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}.
+#'
 #' @param . Inserta el nombre del objecto previamente creado con la funcion \code{sig_caminos_descarga()}.
 #' @param mapa Mapa en formato alfanumerico. Las opciones son: estructura, localidad, maniobra_prohibida, plaza_cobro, poste_de_referencia, puente, red_vial, sitio_de_interes, tarifas, transbordador, tred_localidad, tred_sitio_de_interes, runion.
 #'

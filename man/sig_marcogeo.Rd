@@ -21,6 +21,8 @@ Extrae los mapas del Marco Geoestadistico Nacional.
 }
 \details{
 El Marco Geoestadistico Nacional (MGN) es un proyecto geoestadistico que presenta informacion sobre la division política del territorio mexicano en sus diferentes niveles de gobierno (nacional, estatal y municipal), asi como otras formas de clasificacion del territorio nacional.
+
+Esta funcion requiere el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}.
 }
 \examples{
 

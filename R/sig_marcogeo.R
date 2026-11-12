@@ -4,6 +4,8 @@
 #'
 #' El Marco Geoestadistico Nacional (MGN) es un proyecto geoestadistico que presenta informacion sobre la division política del territorio mexicano en sus diferentes niveles de gobierno (nacional, estatal y municipal), asi como otras formas de clasificacion del territorio nacional.
 #'
+#' Esta funcion requiere el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}.
+#'
 #' @param year Año de referencia del mapa, en formato numerico. Años disponibles: 1995, 2000, 2005, 2007, 2009, 2010 y 2013.
 #' @param mapa Mapa en formato alfanumerico. Las opciones son: entidades, municipios, ageb, urbano, y rural.
 #' @param version Especificar, en formato alfanumerico, la version para los años 2010 (4.3, 5.0, 5.0.A), 2017 (2010.0 o dejar en blanco) y 2018 (2010.0 o dejar en blanco). Para el resto de los años, dejar en blanco.
