@@ -26,6 +26,14 @@ test_that("EN VIVO: catalogo_inegi() trae el catalogo completo", {
   expect_type(catalogo$id, "integer")
   expect_false(anyDuplicated(catalogo$id) > 0)
   expect_false(anyNA(catalogo$title))
+  # Las fechas del catalogo se convierten a fecha (si el INEGI cambia su
+  # formato, quedan como texto y esta prueba lo detecta)
+  cat("[en vivo] created: ", class(catalogo$created)[1], " de ", format(min(catalogo$created)),
+      " a ", format(max(catalogo$created)), "; changed: ", class(catalogo$changed)[1],
+      " hasta ", format(max(catalogo$changed)), "\n", sep = "")
+  expect_s3_class(catalogo$created, "Date")
+  expect_s3_class(catalogo$changed, "Date")
+  expect_false(anyNA(catalogo$created))
 })
 
 test_that("EN VIVO: buscar y year funcionan con el catalogo real", {

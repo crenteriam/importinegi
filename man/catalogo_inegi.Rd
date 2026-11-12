@@ -14,10 +14,10 @@ catalogo_inegi(id = NA, buscar = NULL, year = NULL)
 \item{year}{Año, o vector de años, para conservar solo los proyectos cuyo periodo incluye alguno de ellos (por ejemplo, \code{2020}).}
 }
 \value{
-Data.frame
+Data.frame con el catalogo de proyectos. Si se usa \code{id}, la funcion abre la ficha del proyecto en el navegador y devuelve su direccion.
 }
 \description{
-Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
+Consulta el catalogo de la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
 }
 \details{
 La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos, utilizalo en el parametro para acceder al libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo).

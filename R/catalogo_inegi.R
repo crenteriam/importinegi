@@ -1,6 +1,6 @@
 #' Catalogo de proyectos estadisticos del INEGI
 #'
-#' Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
+#' Consulta el catalogo de la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
 #'
 #' La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos, utilizalo en el parametro para acceder al libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo).
 #'
@@ -20,7 +20,7 @@
 #' # Busca proyectos por nombre y por año.
 #' \dontrun{catalogo_inegi(buscar = "ocupacion y empleo", year = 2020)}
 #'
-#' @return Data.frame
+#' @return Data.frame con el catalogo de proyectos. Si se usa \code{id}, la funcion abre la ficha del proyecto en el navegador y devuelve su direccion.
 #' @seealso Consulta el \href{https://www.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
 #' @export
 
@@ -127,9 +127,43 @@ catalogo_rnm <- function() {
       call. = FALSE
     )
   }
+  for (columna in intersect(c("created", "changed"), names(catalogo))) {
+    catalogo[[columna]] <- catalogo_fecha(catalogo[[columna]])
+  }
   catalogo$url <- catalogo_ficha(catalogo$id)
   memoria_guardar("catalogo_rnm", catalogo)
   catalogo
+}
+
+# Convierte a fecha el texto con que el INEGI entrega las fechas del catalogo:
+# "Mes-DD-AA", con el mes abreviado en ingles (por ejemplo "Aug-20-25"). No
+# depende del idioma del sistema. Si algun valor no tiene ese formato o no es
+# una fecha valida, devuelve el texto original sin cambios.
+catalogo_fecha <- function(texto) {
+  if (!is.character(texto)) {
+    return(texto)
+  }
+  partes <- regmatches(texto, regexec("^([A-Za-z]{3})-([0-9]{2})-([0-9]{2})$", texto))
+  completas <- lengths(partes) == 4
+  if (!all(completas | is.na(texto))) {
+    return(texto)
+  }
+  parte <- function(i) {
+    vapply(partes[completas], function(p) p[i], character(1))
+  }
+  mes <- parte(2)
+  mes <- match(paste0(toupper(substr(mes, 1, 1)), tolower(substr(mes, 2, 3))), month.abb)
+  anio <- as.integer(parte(4))
+  anio <- ifelse(anio <= 68L, 2000L + anio, 1900L + anio)
+  fecha <- rep(as.Date(NA), length(texto))
+  fecha[completas] <- as.Date(
+    sprintf("%04d-%02d-%s", anio, mes, parte(3)),
+    format = "%Y-%m-%d"
+  )
+  if (anyNA(fecha[completas])) {
+    return(texto)
+  }
+  fecha
 }
 
 # Conserva los proyectos cuyo nombre o clave contiene todas las palabras

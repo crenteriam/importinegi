@@ -37,7 +37,12 @@ test_that("catalogo_inegi() devuelve el catalogo completo como tabla", {
   )
   expect_identical(catalogo$idno[3], "MEX-INEGI.EEC3.01-ENEC-2019")
   expect_identical(c(catalogo$year_start[8], catalogo$year_end[8]), c(1985L, 2001L))
-  expect_identical(catalogo$created[1], "Aug-20-25")
+  # Las fechas llegan como texto ("Aug-20-25") y se convierten a fecha
+  expect_s3_class(catalogo$created, "Date")
+  expect_s3_class(catalogo$changed, "Date")
+  expect_identical(catalogo$created[1], as.Date("2025-08-20"))
+  expect_identical(catalogo$changed[8], as.Date("2022-10-05"))
+  expect_identical(catalogo$id[order(catalogo$created)][1], 296L)
   expect_false(anyNA(catalogo))
   expect_identical(
     catalogo$url[3],
@@ -221,4 +226,39 @@ test_that("una falla de conexion se reporta en espa\u00f1ol", {
     suppressMessages(catalogo_inegi()),
     "No se pudo completar la solicitud.*Revisa tu conexi\u00f3n a internet"
   )
+})
+
+test_that("catalogo_fecha() convierte el formato del INEGI sin depender del idioma del sistema", {
+  expect_identical(
+    catalogo_fecha(c("Aug-20-25", "Jan-23-21", "Dec-31-13", "apr-01-19")),
+    as.Date(c("2025-08-20", "2021-01-23", "2013-12-31", "2019-04-01"))
+  )
+  expect_identical(catalogo_fecha(c("Nov-01-17", NA)), as.Date(c("2017-11-01", NA)))
+  expect_identical(catalogo_fecha(c("Jan-01-00", "Jan-01-99")), as.Date(c("2000-01-01", "1999-01-01")))
+  expect_identical(catalogo_fecha(character()), as.Date(character()))
+})
+
+test_that("catalogo_fecha() deja el texto original si algun valor no es una fecha valida", {
+  otro_formato <- c("Aug-20-25", "2025-08-20")
+  expect_identical(catalogo_fecha(otro_formato), otro_formato)
+  mes_en_espanol <- c("Ago-20-25", "Ene-05-24")
+  expect_identical(catalogo_fecha(mes_en_espanol), mes_en_espanol)
+  dia_invalido <- c("Feb-30-25", "Mar-07-25")
+  expect_identical(catalogo_fecha(dia_invalido), dia_invalido)
+  expect_identical(catalogo_fecha(c("", "Mar-07-25")), c("", "Mar-07-25"))
+  # Lo que no es texto se devuelve sin cambios
+  expect_identical(catalogo_fecha(20250820L), 20250820L)
+})
+
+test_that("si el INEGI cambia el formato de las fechas, el catalogo las conserva como texto", {
+  memoria_borrar("catalogo_rnm")
+  withr::defer(memoria_borrar("catalogo_rnm"))
+  local_mocked_bindings(inegi_descargar = function(url, destino, ...) {
+    writeLines(c("id,idno,title,year_start,year_end,created,changed",
+                 "1,MEX-A,Proyecto A,2020,2021,2021-03-07,Mar-07-22"), destino)
+    invisible(destino)
+  })
+  catalogo <- suppressMessages(catalogo_inegi())
+  expect_identical(catalogo$created, "2021-03-07")
+  expect_identical(catalogo$changed, as.Date("2022-03-07"))
 })
