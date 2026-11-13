@@ -85,12 +85,17 @@ poblacion_tablas <- function(programa, year, base) {
   if (base == "entorno" && programa == "censo" && year >= 2020L) {
     return(c(manzanas = "manzana", vialidades = "vialidad"))
   }
+  if (base == "asistencia") {
+    # TR_ALO_CAAS, TI_USU_CAAS y TI_TRA_CAAS: alojamientos, su poblacion
+    # usuaria residente y su poblacion trabajadora
+    return(c(alojamientos = "(^|_)alo(_|\\.)", usuarios = "(^|_)usu(_|\\.)", trabajadores = "(^|_)tra(_|\\.)"))
+  }
   NULL
 }
 
 # Bases que tienen varias tablas en algun año.
 poblacion_bases_con_tablas <- function() {
-  c("muestra", "entorno")
+  c("muestra", "entorno", "asistencia")
 }
 
 # Niveles de agregacion de las bases que mezclan filas de totales con filas de
@@ -180,7 +185,7 @@ poblacion_validar_tabla <- function(programa, year, base, tabla) {
         detener("La base ", comillas(base), " de ", year, " se publica en una sola tabla: omite el argumento `tabla`.")
       }
       detener(
-        "`tabla` solo se usa con las bases ", paste(comillas(poblacion_bases_con_tablas()), collapse = " y "),
+        "`tabla` solo se usa con las bases ", enumerar_y(poblacion_bases_con_tablas()),
         "; la base ", comillas(base), " tiene una sola tabla."
       )
     }
@@ -193,6 +198,15 @@ poblacion_validar_tabla <- function(programa, year, base, tabla) {
     detener("`tabla` debe ser una sola de estas opciones: ", enumerar(names(tablas)), ".")
   }
   validar_opcion(tolower(trimws(tabla)), names(tablas), "tabla")
+}
+
+# Lista entre comillas unida con "y": "a", "b" y "c".
+enumerar_y <- function(opciones) {
+  texto <- vapply(as.list(opciones), comillas, character(1))
+  if (length(texto) < 2) {
+    return(paste(texto, collapse = ""))
+  }
+  paste(paste(texto[-length(texto)], collapse = ", "), "y", texto[length(texto)])
 }
 
 # Devuelve los niveles pedidos, "todos", o NULL si la base no tiene niveles.
@@ -509,11 +523,12 @@ columnas_texto <- function(datos) {
   nombres[toupper(nombres) %in% geograficas | grepl(otras, nombres, ignore.case = TRUE)]
 }
 
-# Convierte a numero las columnas numericas. En la muestra se convierten
-# tambien las que tienen ceros a la izquierda ("008" en la edad, "0012" en el
-# factor de expansion): son respuestas codificadas, no claves.
+# Convierte a numero las columnas numericas. En la muestra y en la base de
+# asistencia social se convierten tambien las que tienen ceros a la izquierda
+# ("008" en la edad, "0012" en el factor de expansion): son respuestas
+# codificadas, no claves.
 poblacion_convertir <- function(datos, base) {
-  datos <- convertir_numericas(datos, texto = columnas_texto(datos), ceros = base == "muestra")
+  datos <- convertir_numericas(datos, texto = columnas_texto(datos), ceros = base %in% c("muestra", "asistencia"))
   # La altitud es una medida: es numerica en todos los censos, aunque algunos
   # la escriban con ceros a la izquierda ("0020")
   altitud <- grep("^ALTITUD$", names(datos), ignore.case = TRUE, value = TRUE)

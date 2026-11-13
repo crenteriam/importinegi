@@ -224,12 +224,26 @@ asistencia_colima <- tabla(
   NOM_ALOJ = c("Casa Hogar Ni\u00f1os de Colima", "Albergue San Jos\u00e9"),
   TIPO_ALOJ = c("1", "3"), RESIDENTES = c("24", "11")
 )
-escribir_zip("asistencia2020_06.zip", list("TR_ALOJAMIENTO_06.csv" = asistencia_colima))
-escribir_zip("asistencia2020_00.zip", list("TR_ALOJAMIENTO_EUM.csv" = rbind(
-  asistencia_colima,
-  tabla(ENT = "18", MUN = "017", LOC = "0001", NOM_ALOJ = "Casa de Reposo",
-        TIPO_ALOJ = "2", RESIDENTES = "9")
-)))
+# Tres tablas, como en los archivos del INEGI: alojamientos, poblacion usuaria
+# residente y poblacion trabajadora
+usuarios_colima <- tabla(ENT = "06", MUN = "002", LOC = "0001", ID_ALOJ = c("1", "1", "2"),
+                         SEXO = c("1", "3", "1"), EDAD = c("009", "011", "082"))
+trabajadores_colima <- tabla(ENT = "06", MUN = "002", LOC = "0001", ID_ALOJ = c("1", "2"),
+                             SEXO = c("3", "3"), EDAD = c("041", "036"))
+escribir_zip("asistencia2020_06.zip", list(
+  "TR_ALO_CAAS_06.csv" = asistencia_colima,
+  "TI_USU_CAAS_06.csv" = usuarios_colima,
+  "TI_TRA_CAAS_06.csv" = trabajadores_colima
+))
+escribir_zip("asistencia2020_00.zip", list(
+  "TR_ALO_CAAS_EUM.csv" = rbind(
+    asistencia_colima,
+    tabla(ENT = "18", MUN = "017", LOC = "0001", NOM_ALOJ = "Casa de Reposo",
+          TIPO_ALOJ = "2", RESIDENTES = "9")
+  ),
+  "TI_USU_CAAS_EUM.csv" = usuarios_colima,
+  "TI_TRA_CAAS_EUM.csv" = trabajadores_colima
+))
 
 # Archivo nacional: totales del pais y localidades de Colima
 escribir_zip(

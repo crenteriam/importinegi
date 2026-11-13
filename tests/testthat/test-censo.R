@@ -176,7 +176,7 @@ test_that("censo() valida los argumentos de la muestra", {
   expect_error(censo(2010, "muestra", estado = "Colima", nivel = "municipio"),
                "`nivel` solo se usa con las bases \"iter\" y \"ageb\"")
   expect_error(censo(2010, "iter", estado = "Colima", tabla = "personas"),
-               "`tabla` solo se usa con las bases \"muestra\" y \"entorno\"; la base \"iter\" tiene una sola tabla")
+               "`tabla` solo se usa con las bases \"muestra\", \"entorno\" y \"asistencia\"; la base \"iter\" tiene una sola tabla")
   expect_error(censo(2010, "entorno", estado = "Colima", tabla = "vialidades"),
                "La base \"entorno\" de 2010 se publica en una sola tabla")
 })
@@ -343,9 +343,20 @@ test_that("censo() descarga los alojamientos de asistencia social de 2020", {
   nacional <- suppressMessages(censo(2020, "asistencia"))
   expect_match(attr(nacional, "fuente"), "/caas/Censo2020_CAAS_eum_csv\\.zip$")
   expect_identical(nrow(nacional), 3L)
+  expect_identical(suppressMessages(censo(2020, "asistencia", estado = "Colima", tabla = "alojamientos")), colima)
+
+  # Poblacion usuaria y trabajadora: la edad pasa a numero; el identificador
+  # del alojamiento se conserva como texto
+  usuarios <- suppressMessages(censo(2020, "asistencia", estado = "Colima", tabla = "usuarios"))
+  expect_identical(nrow(usuarios), 3L)
+  expect_identical(usuarios$ID_ALOJ, c("1", "1", "2"))
+  expect_identical(usuarios$EDAD, c(9L, 11L, 82L))
+  trabajadores <- suppressMessages(censo(2020, "asistencia", estado = "Colima", tabla = "trabajadores"))
+  expect_identical(nrow(trabajadores), 2L)
+
   expect_error(censo(2010, "asistencia"), "La base \"asistencia\" no existe para 2010: el INEGI la publica para 2020")
   expect_error(censo(2020, "asistencia", estado = "Colima", tabla = "personas"),
-               "`tabla` solo se usa con las bases")
+               "`tabla = \"personas\"` no es una opci\u00f3n v\u00e1lida.*\"alojamientos\", \"usuarios\", \"trabajadores\"")
   expect_error(censo(2020, "asistencia", estado = "Colima", nivel = "municipio"),
                "`nivel` solo se usa con las bases")
 })
