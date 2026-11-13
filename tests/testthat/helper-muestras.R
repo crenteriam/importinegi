@@ -86,7 +86,63 @@ servidor_prueba <- function(entorno = parent.frame()) {
       }
     }
   )
+  # Archivos del Censo de Poblacion y Vivienda, en las rutas del registro del
+  # paquete. Responde con las muestras de fixtures/censo para Colima (06),
+  # Nayarit (18) y el archivo nacional; para el resto, como el INEGI cuando un
+  # archivo no existe: codigo 200 y una pagina HTML.
+  app$locals$descargas_censo <- 0
+  app$get(webfakes::new_regexp("^/contenidos/programas/ccpv/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_censo <- locales$descargas_censo + 1
+    reglas <- c(
+      ageb = "/iter/+ageb_manzana/+([0-9]{2})_",
+      iter = "/microdatos/iter/([0-9]{2})_",
+      muestra2010 = "/mpv/MC2010_([0-9]{2})_",
+      muestra2000 = "/muestra/cgpv2000_([0-9]{2})_",
+      muestra1990 = "/cgpv90p_([0-9]{2})_",
+      localidades = "/cinco_mil_menos/resloc_([0-9]{2}|nal)_",
+      entorno = "/urbano/MANZANA_EU_([0-9]{2})_",
+      iter2020 = "/datosabiertos/iter/iter_([0-9]{2})_cpv2020_"
+    )
+    archivo <- NA_character_
+    for (nombre in names(reglas)) {
+      hallado <- regmatches(req$path, regexec(reglas[[nombre]], req$path))[[1]]
+      if (length(hallado) == 2) {
+        archivo <- paste0(nombre, "_", sub("nal", "00", hallado[2]), ".zip")
+        break
+      }
+    }
+    carpeta <- file.path(locales$carpeta, "censo")
+    if (!is.na(archivo) && file.exists(file.path(carpeta, archivo))) {
+      res$send_file(archivo, root = carpeta)
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
+  app$get("/censo/descargas", function(req, res) {
+    res$send(as.character(req$app$locals$descargas_censo))
+  })
   webfakes::local_app_process(app, .local_envir = entorno)
+}
+
+# Servidor local con las muestras del censo y sin esperas entre reintentos.
+censo_local <- function(entorno = parent.frame()) {
+  servidor <- servidor_prueba(entorno)
+  withr::local_options(
+    importinegi.base = sub("/$", "", servidor$url("/")),
+    importinegi.espera = 0,
+    importinegi.cache = FALSE,
+    importinegi.registro = NULL,
+    .local_envir = entorno
+  )
+  servidor
+}
+
+# Numero de archivos del censo que se han pedido al servidor local.
+descargas_censo <- function(servidor) {
+  as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/censo/descargas")))))
 }
 
 # Las pruebas en vivo consultan el sitio real del INEGI. Solo corren cuando la
