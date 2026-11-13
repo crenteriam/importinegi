@@ -19,11 +19,6 @@ Catalogo y documentacion de los proyectos estadisticos:
 Censo y Conteo de Poblacion y Vivienda:
 \itemize{
 \item \code{\link{censo}}: todas las bases de datos de los Censos de Poblacion y Vivienda (ITER, AGEB y manzana, muestra, localidades y entorno urbano) en una sola funcion.
-\item \code{\link{censo_poblacion_iter}}: principales resultados por localidad (ITER).
-\item \code{\link{censo_poblacion_ageb}}: resultados por AGEB y manzana urbana.
-\item \code{\link{censo_poblacion_rural}}: localidades con menos de 5 mil habitantes.
-\item \code{\link{censo_poblacion_urbano}}: infraestructura y caracteristicas del entorno urbano.
-\item \code{\link{censo_poblacion_muestra}}: muestra (cuestionario ampliado).
 }
 
 Censos de gobierno y encuestas en hogares:
