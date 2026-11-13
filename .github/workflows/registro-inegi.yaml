@@ -53,6 +53,12 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # Filas que el INEGI agrego, quito o cambio respecto del registro que
+      # esta en el repositorio (como maximo 5 mil lineas).
+      - name: Cambios en el registro
+        if: always()
+        run: git diff --unified=0 -- data-raw/registro_inegi.csv | head -n 5000
+
       - uses: actions/upload-artifact@v7
         if: always()
         with:
