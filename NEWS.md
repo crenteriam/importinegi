@@ -20,9 +20,18 @@
 
 ## Funciones
 
-* Nueva funcion `censo()`, que reune en una sola funcion todas las bases de datos de los Censos de Poblacion y Vivienda. Sustituira a `censo_poblacion_iter()`, `censo_poblacion_ageb()`, `censo_poblacion_rural()`, `censo_poblacion_urbano()` y `censo_poblacion_muestra()`, que por ahora se conservan sin cambios.
+* Nueva funcion `censo()`, que reune en una sola funcion todas las bases de datos de los Censos de Poblacion y Vivienda.
+* **Cambio incompatible:** se eliminaron `censo_poblacion_iter()`, `censo_poblacion_ageb()`, `censo_poblacion_rural()`, `censo_poblacion_urbano()` y `censo_poblacion_muestra()`. `censo()` las sustituye:
+    * `censo_poblacion_iter(2010, "Jalisco")` pasa a ser `censo(2010, estado = "Jalisco")`.
+    * `censo_poblacion_iter(2010, "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)` pasa a ser `censo(2010, estado = "Jalisco", nivel = c("entidad", "municipio"))`.
+    * `censo_poblacion_ageb(2010, "Jalisco")` pasa a ser `censo(2010, "ageb", estado = "Jalisco")`.
+    * `censo_poblacion_rural(2010, "Jalisco")` pasa a ser `censo(2010, "localidades", estado = "Jalisco")`.
+    * `censo_poblacion_urbano(2010, "Jalisco")` pasa a ser `censo(2010, "entorno", estado = "Jalisco")`.
+    * `censo_poblacion_muestra(2010, "Jalisco", "Personas")` pasa a ser `censo(2010, "muestra", estado = "Jalisco", tabla = "personas")`.
+    * Los Conteos de Poblacion y Vivienda de 1995 y 2005, que se descargaban con `censo_poblacion_iter()` y `censo_poblacion_muestra()`, no estan disponibles en esta version en desarrollo: tendran su propia funcion.
+* `censo()`:
     * `censo(year, base, estado, tabla, nivel)`: `year` es obligatorio; `base` elige entre `"iter"`, `"ageb"`, `"muestra"`, `"localidades"`, `"entorno"` y `"asistencia"` (alojamientos de asistencia social, Censo 2020; tablas de alojamientos, usuarios y trabajadores).
-    * Censos de 1990, 2000, 2010 y 2020. El Censo 2020 es nuevo en el paquete; se lee de los archivos CSV del INEGI. Los conteos de 1995 y 2005 tendran su propia funcion.
+    * Censos de 1990, 2000, 2010 y 2020. El Censo 2020 es nuevo en el paquete; se lee de los archivos CSV del INEGI.
     * `estado` acepta nombre, abreviatura o clave, sin distinguir mayusculas ni acentos, y varias entidades a la vez, que se combinan en una sola tabla. `"todas"` descarga las 32 entidades.
     * `nivel` sustituye a los argumentos `totalestado`, `totalmunicipio`, `localidades`, `totallocalidad`, `totalageb` y `manzana`.
     * Las direcciones salen del registro de archivos del INEGI. Con las funciones anteriores, la direccion del ITER 2010 se armaba mal para 6 entidades.
@@ -43,6 +52,7 @@
 ## Documentacion
 
 * Ayuda de `catalogo_inegi()`: describe las columnas del catalogo y agrega ejemplos de busqueda.
+* Ayuda de `censo()` y seccion del Censo de Poblacion y Vivienda de la viñeta, reescrita para `censo()`: bases disponibles por año, entidades, niveles de agregacion y tablas. La documentacion ya no menciona las funciones `censo_poblacion_*()`.
 * La pagina de ayuda del paquete (`?importinegi`) incluye el indice de funciones por proyecto estadistico.
 * La ayuda de `sig_marcogeo()` y `sig_caminos_extrae()` indica que requieren el paquete `sf`.
 * Viñeta: nueva seccion sobre el catalogo de proyectos estadisticos y requisitos de la version; se corrigieron referencias que ya no eran vigentes (el paquete `rgdal` y dos nombres de funciones).

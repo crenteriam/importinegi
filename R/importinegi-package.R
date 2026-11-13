@@ -5,9 +5,9 @@
 #'   \item \code{\link{catalogo_inegi}}: catalogo de proyectos de la Red Nacional de Metadatos del INEGI y acceso a la ficha de cada proyecto.
 #' }
 #'
-#' Censo y Conteo de Poblacion y Vivienda:
+#' Censo de Poblacion y Vivienda:
 #' \itemize{
-#'   \item \code{\link{censo}}: todas las bases de datos de los Censos de Poblacion y Vivienda (ITER, AGEB y manzana, muestra, localidades y entorno urbano) en una sola funcion.
+#'   \item \code{\link{censo}}: todas las bases de datos de los Censos de Poblacion y Vivienda de 1990 a 2020 (ITER, AGEB y manzana, muestra, localidades, entorno urbano y alojamientos de asistencia social) en una sola funcion.
 #' }
 #'
 #' Censos de gobierno y encuestas en hogares:

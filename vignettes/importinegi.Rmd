@@ -22,7 +22,7 @@ El paquete de R `importinegi` fue creado para facilitar la descarga y uso de las
 
 La version `2.0.0` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
 
-* Censo y Conteo de Poblacion y Vivienda
+* Censo de Poblacion y Vivienda
 * Censo Nacional de Gobiernos Municipales y Delegacionales
 * Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH)
 * Encuesta Nacional de Ocupación y Empleo (ENOE)
@@ -31,7 +31,7 @@ La versión `2.0.0` requiere R 4.1 o posterior. Las funciones de información ge
 
 # Sintaxis
 
-El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `censo_municipal()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de cinco tipos formatos de microdatos, siendo ITER una de ellas. Por lo tanto, las funciones del Censo tienen una palabra clave adicional indicando el formato de microdatos. Para acceder al formato ITER, por ejemplo, la función es `censo_poblacion_iter()`.
+El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `censo_municipal()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, la función `enigh_nuevaconstruccion()` descarga la ENIGH de la serie Nueva Construcción. En otros casos, una sola función da acceso a todas las bases de datos del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de varios tipos de bases de datos, siendo ITER una de ellas. Todas se descargan con la función `censo()`, que tiene un parámetro para elegir la base de datos.
 
 En el caso de la información georreferenciada, el nombre de la funcion comienza con las siglas Sistema de Información Georreferenciada (SIG). Estas siglas son sucedidas por una palabra clave del proyecto geoestadístico. Por ejemplo, la función para acceder a lo datos de la Red Nacional de Caminos es `sig_caminos_descarga()`.
 
@@ -84,35 +84,70 @@ El catálogo se descarga una sola vez por sesión de R: las consultas posteriore
 
 ## Censo Nacional de Poblacion y Vivienda
 
-Todas las funciones para los cinco tipos de microdatos de los censos tienen la misma sintaxis. Aunque las funciones varían en los parámetros requeridos, todas comparten tres parámetros indispensables.
+La función `censo()` descarga todas las bases de datos de los Censos de Población y Vivienda de 1990, 2000, 2010 y 2020. La sintaxis de la función tiene cinco parámetros, de los cuales solo el primero es indispensable.
 
-El primer parámetro indispensable es el año (`year`) en formato numérico. Los datos disponibles comienzan a partir de 1990 (e incluyen los Conteos), pero no todos los tipos de microdatos están disponibles para todos los años censales. La documentación de cada función provee los años disponibles para cada tipo de microdatos del censo.
+El primer parámetro es el año del censo (`year`) en formato numérico. Los años disponibles son 1990, 2000, 2010 y 2020. Los Conteos de Población y Vivienda (1995 y 2005) y las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta función.
 
-El segundo parámetro indispensable es la entidad federativa (`estado`) en formato alfanumérico. La selección por default es `Nacional`, que provee los datos para todos los estados. Los estados se deben escribir con letra capital y los estados con múltiples palabras se escriben espaciados y sin acentos (p. ej. `San Luis Potosi`). La Ciudad de México (anteriormente Distrito Federal) se escribe `CDMX`. 
+El segundo parámetro es la base de datos (`base`) en formato alfanumérico. La selección por default es `iter`. No todas las bases de datos están disponibles para todos los años censales, como se muestra en la siguiente tabla.
 
-El resto de los parámetros varía entre funciones. El primer grupo de parámetros (`totalestado`, `totalmunicipio`, `totallocalidad` y `totalageb`) requiere información lógica (`TRUE` o `FALSE`), donde `FALSE` es el default y significa que la base de datos excluye los resultados agregados a nivel estado, municipio, localidad o AGEB, respectivamente. El segundo grupo de parámetros (`localidades` y `manzana`) también requiere información lógica, donde `TRUE` es el default y significa que la base de datos incluye información a nivel manzana o localidad, respectivamente.
+| `base` | Base de datos | Años disponibles |
+|:-------|:--------------|:-----------------|
+| `iter` | Principales resultados por localidad (ITER) | 1990, 2000, 2010 y 2020 |
+| `ageb` | Principales resultados por AGEB y manzana urbana | 2010 y 2020 |
+| `muestra` | Microdatos de la muestra (cuestionario ampliado) | 1990, 2000, 2010 y 2020 |
+| `localidades` | Características de las localidades pequeñas | 2010 y 2020 |
+| `entorno` | Características del entorno urbano, por manzana | 2010 y 2020 |
+| `asistencia` | Características de los alojamientos de asistencia social | 2020 |
 
-El objetivo de los parámetros lógicos es ofrecer flexibilidad al usuario en la descarga de los datos. Al manipular estos parámetros, el usuario puede limitar la descarga de datos a sólo uno de los niveles de gobierno o cualquier combinación de múltiples niveles de gobierno. En el siguiente bloque de código se presentan cuatro ejemplos de descarga de datos entre diversos niveles de gobierno.
+El tercer parámetro es la entidad federativa (`estado`) en formato alfanumérico. La selección por default es `nacional`, que descarga el archivo con los datos de todo el país. Las entidades se pueden escribir con su nombre, su abreviatura o su clave del INEGI, sin distinguir entre mayúsculas y minúsculas ni entre letras con y sin acento (p. ej. `San Luis Potosi`, `slp` o `24`). También se pueden indicar varias entidades a la vez, que la función combina en una sola base de datos.
+
+El INEGI no publica un archivo nacional de todas las bases de datos. Las bases `ageb`, `muestra` (hasta 2010) y `entorno` (2010) se publican solamente por entidad federativa. En esos casos se debe indicar la entidad o las entidades que se desean descargar, o bien `estado = "todas"`, que descarga los archivos de las 32 entidades y los combina. Algunas de estas descargas son grandes (por ejemplo, la muestra del Censo 2010 de las 32 entidades pesa cerca de 350 MB), por lo que la función indica el tamaño total antes de descargar varios archivos.
+
+El cuarto parámetro es el nivel de agregación (`nivel`) y se utiliza solamente en las bases `iter` y `ageb`. Estas bases contienen, además de los datos por localidad o por manzana, los resultados agregados (totales) a nivel entidad, municipio, localidad y AGEB. Por default, la función devuelve solamente los datos del nivel de mayor detalle: las localidades en la base `iter` y las manzanas en la base `ageb`. Los niveles disponibles son `nacional`, `entidad`, `municipio` y `localidad` en la base `iter`, y `entidad`, `municipio`, `localidad`, `ageb` y `manzana` en la base `ageb`. Se puede indicar uno o varios niveles, o bien `todos`, que conserva todos los datos del archivo.
+
+El objetivo de este parámetro es ofrecer flexibilidad al usuario en la descarga de los datos. Al manipular este parámetro, el usuario puede limitar la descarga de datos a sólo uno de los niveles de gobierno o cualquier combinación de múltiples niveles de gobierno. En el siguiente bloque de código se presentan cuatro ejemplos de descarga de datos entre diversos niveles de gobierno.
 
 ```{r, eval = FALSE}
 # Default: a nivel localidad, pero sin datos a nivel estado ni municipio
-censo.jalisco  = censo_poblacion_iter(year = 2010, estado = "Jalisco")
+censo.jalisco  = censo(year = 2010, estado = "Jalisco")
 
 # Datos a nivel estado, municipio y localidad
-censo.jalisco  = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE)
+censo.jalisco  = censo(year = 2010, estado = "Jalisco", nivel = c("entidad", "municipio", "localidad"))
 
 # Datos a nivel estado y municipio, pero sin datos a nivel localidad
-censo.jalisco  = censo_poblacion_iter(year = 2010, estado = "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)
+censo.jalisco  = censo(year = 2010, estado = "Jalisco", nivel = c("entidad", "municipio"))
 
 # Datos a nivel nacional
-censo.nacional = censo_poblacion_iter(year = 2010, estado = "Nacional")
+censo.nacional = censo(year = 2010, estado = "nacional")
 ```
 
-Finalmente, en la muestra del Censo la unidad de análisis puede ser personas, viviendas o migrantes. Por lo tanto, además del año y el estado, un tercer parámetro requerido es `muestra`, que representa la unidad de análisis. Las unidades de análisis en este parámetro pueden ser `Migrantes`, `Personas`, `Viviendas` u `Hogar`. En el siguiente bloque de código se ilustra la descarga del cuestionario de personas para el Censo 2010 en el estado de Jalisco.
+El siguiente bloque de código presenta ejemplos de descarga de otras bases de datos y de varias entidades a la vez.
+
+```{r, eval = FALSE}
+# Resultados por manzana urbana del Censo 2020 en Jalisco
+manzanas.jalisco = censo(year = 2020, base = "ageb", estado = "Jalisco")
+
+# Caracteristicas de las localidades del Censo 2020, todo el pais
+localidades = censo(year = 2020, base = "localidades")
+
+# ITER del Censo 2020 de Jalisco y Colima, en una sola base de datos
+censo.occidente = censo(year = 2020, estado = c("Jalisco", "Colima"))
+```
+
+Finalmente, en la muestra del Censo la unidad de análisis puede ser personas, viviendas o migrantes. El quinto parámetro, `tabla`, define la unidad de análisis. Las unidades de análisis en este parámetro pueden ser `personas` (default), `viviendas` o `migrantes`. La muestra del Censo de 1990 se publica en una sola tabla y no requiere este parámetro. En el siguiente bloque de código se ilustra la descarga del cuestionario de personas para el Censo 2010 en el estado de Jalisco.
 
 ```{r, eval = FALSE}
 # Descarga cuestionario de personas
-muestra.jalisco = censo_poblacion_muestra(year = 2010, estado = "Jalisco", muestra = "Personas")
+muestra.jalisco = censo(year = 2010, base = "muestra", estado = "Jalisco", tabla = "personas")
+```
+
+El parámetro `tabla` se utiliza también en otras dos bases de datos del Censo 2020 que se publican en varias tablas. En la base `entorno`, las tablas son `manzanas` (default) y `vialidades`. En la base `asistencia`, las tablas son `alojamientos` (default), `usuarios` y `trabajadores`.
+
+La función devuelve una base de datos (data.frame) con los nombres de variables que utiliza el INEGI. Las claves geográficas (entidad, municipio, localidad, AGEB y manzana) se almacenan como texto para conservar los ceros a la izquierda (p. ej. `09`) y los indicadores se almacenan como números. En las bases `iter`, `ageb` y `localidades`, los datos que el INEGI reserva por confidencialidad (`*`) se codifican como valores perdidos (`NA`). En la base `iter`, las localidades con clave `9998` y `9999` son resultados agregados de las localidades de una y de dos viviendas, por lo que solamente se incluyen con `nivel = "todos"`. La dirección de los archivos descargados queda almacenada en el objeto, como se muestra en el siguiente bloque de código.
+
+```{r, eval = FALSE}
+# Consultar la direccion de los archivos descargados
+attr(censo.jalisco, "fuente")
 ```
 
 ## Censo de Gobiernos Municipales y Delegacionales

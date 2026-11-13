@@ -72,10 +72,13 @@ viviendas <- censo(2010, base = "muestra", estado = c("Colima", "Nayarit"),
 # Resultados sobre las localidades pequeñas del Censo 2020, todo el pais.
 \dontrun{localidades <- censo(2020, base = "localidades")}
 
+# Alojamientos de asistencia social del Censo 2020, todo el pais.
+\dontrun{alojamientos <- censo(2020, base = "asistencia")}
+
 # Direccion de los archivos que se descargaron.
 \dontrun{attr(iter, "fuente")}
 
 }
 \seealso{
-\code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos.
+\code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos (por ejemplo, \code{catalogo_inegi(buscar = "censo de poblacion")}). La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion con mas ejemplos.
 }
