@@ -82,13 +82,34 @@ catalogo_inegi(id = ciberacoso$id[1])
 
 El catálogo se descarga una sola vez por sesión de R: las consultas posteriores, con o sin `buscar` y `year`, utilizan la copia que queda en memoria. El parámetro `id` no se combina con `buscar` ni con `year`.
 
+## Bases de datos disponibles
+
+La función `bases_importinegi()` muestra las bases de datos que se pueden descargar con las funciones de este paquete. A diferencia de `catalogo_inegi()`, que consulta en línea todos los proyectos estadísticos que documenta el INEGI, esta función muestra solamente lo que `importinegi` puede descargar. La función no descarga ningún archivo ni requiere conexión a internet.
+
+El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla.
+
+La función tiene dos parámetros, ambos opcionales. El parámetro `proyecto` limita la consulta a un proyecto estadístico y el parámetro `year` la limita a uno o varios años. El siguiente bloque de código presenta tres ejemplos de consulta.
+
+```{r, eval = FALSE}
+# Todas las bases de datos que descarga el paquete
+bases = bases_importinegi()
+
+# Bases de datos del Censo de Poblacion y Vivienda
+bases.censo = bases_importinegi(proyecto = "censo")
+
+# Bases de datos del Censo de Poblacion y Vivienda 2020
+bases.censo2020 = bases_importinegi(proyecto = "censo", year = 2020)
+```
+
+La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo de Población y Vivienda. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
+
 ## Censo Nacional de Poblacion y Vivienda
 
 La función `censo()` descarga todas las bases de datos de los Censos de Población y Vivienda de 1990, 2000, 2010 y 2020. La sintaxis de la función tiene cinco parámetros, de los cuales solo el primero es indispensable.
 
 El primer parámetro es el año del censo (`year`) en formato numérico. Los años disponibles son 1990, 2000, 2010 y 2020. Los Conteos de Población y Vivienda (1995 y 2005) y las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta función.
 
-El segundo parámetro es la base de datos (`base`) en formato alfanumérico. La selección por default es `iter`. No todas las bases de datos están disponibles para todos los años censales, como se muestra en la siguiente tabla.
+El segundo parámetro es la base de datos (`base`) en formato alfanumérico. La selección por default es `iter`. No todas las bases de datos están disponibles para todos los años censales, como se muestra en la siguiente tabla. Esta información se puede consultar también con `bases_importinegi(proyecto = "censo")`.
 
 | `base` | Base de datos | Años disponibles |
 |:-------|:--------------|:-----------------|
@@ -141,7 +162,15 @@ Finalmente, en la muestra del Censo la unidad de análisis puede ser personas, v
 muestra.jalisco = censo(year = 2010, base = "muestra", estado = "Jalisco", tabla = "personas")
 ```
 
-El parámetro `tabla` se utiliza también en otras dos bases de datos del Censo 2020 que se publican en varias tablas. En la base `entorno`, las tablas son `manzanas` (default) y `vialidades`. En la base `asistencia`, las tablas son `alojamientos` (default), `usuarios` y `trabajadores`.
+El parámetro `tabla` se utiliza de la misma manera en otras dos bases de datos del Censo 2020 que se publican en varias tablas. En la base `entorno`, las tablas son `manzanas` (default) y `vialidades`. En la base `asistencia`, las tablas son `alojamientos` (default), `usuarios` y `trabajadores`. La tabla `alojamientos` contiene las características de cada alojamiento de asistencia social. Las tablas `usuarios` y `trabajadores` contienen, para cada alojamiento, la población usuaria residente y la población que trabaja en él, por sexo y grupos de edad. En el siguiente bloque de código se ilustra la descarga de las tablas de alojamientos y de usuarios del estado de Tlaxcala.
+
+```{r, eval = FALSE}
+# Descarga la tabla de alojamientos de asistencia social (default)
+alojamientos.tlaxcala = censo(year = 2020, base = "asistencia", estado = "Tlaxcala")
+
+# Descarga la tabla de poblacion usuaria de los alojamientos
+usuarios.tlaxcala = censo(year = 2020, base = "asistencia", estado = "Tlaxcala", tabla = "usuarios")
+```
 
 La función devuelve una base de datos (data.frame) con los nombres de variables que utiliza el INEGI. Las claves geográficas (entidad, municipio, localidad, AGEB y manzana) se almacenan como texto para conservar los ceros a la izquierda (p. ej. `09`) y los indicadores se almacenan como números. En las bases `iter`, `ageb` y `localidades`, los datos que el INEGI reserva por confidencialidad (`*`) se codifican como valores perdidos (`NA`). En la base `iter`, las localidades con clave `9998` y `9999` son resultados agregados de las localidades de una y de dos viviendas, por lo que solamente se incluyen con `nivel = "todos"`. La dirección de los archivos descargados queda almacenada en el objeto, como se muestra en el siguiente bloque de código.
 

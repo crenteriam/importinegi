@@ -75,6 +75,20 @@ poblacion_nombre_base <- function(base) {
   unname(nombres[base])
 }
 
+# Titulo de cada base, como lo muestra bases_importinegi().
+poblacion_titulo_base <- function(base) {
+  titulos <- c(
+    iter = "Principales resultados por localidad (ITER)",
+    ageb = "Principales resultados por AGEB y manzana urbana",
+    muestra = "Muestra (cuestionario ampliado)",
+    localidades = "Caracter\u00edsticas de las localidades",
+    entorno = "Caracter\u00edsticas del entorno urbano",
+    asistencia = "Alojamientos de asistencia social",
+    viviendas = "Viviendas habitadas y deshabitadas por localidad"
+  )
+  unname(titulos[base])
+}
+
 # Tablas de las bases que se publican en varias tablas, con el patron con el
 # que se reconoce el archivo de cada una dentro del zip. La primera es la que
 # se descarga por omision. NULL significa que la base tiene una sola tabla.
@@ -165,12 +179,13 @@ poblacion_validar_base <- function(programa, year, base) {
     if (length(otros) > 0) {
       detener(
         "La base ", comillas(base), " no existe para ", year, ": el INEGI la publica para ",
-        enumerar(otros), ". Bases de ", year, ": ", enumerar(del_year), "."
+        enumerar(otros), ". Bases de ", year, ": ", enumerar(del_year),
+        ". Consulta todas con bases_importinegi(\"", programa, "\")."
       )
     }
     detener(
       "`base = ", comillas(base), "` no es una opci\u00f3n v\u00e1lida. Bases de ", year, ": ",
-      enumerar(del_year), "."
+      enumerar(del_year), ". Consulta todas con bases_importinegi(\"", programa, "\")."
     )
   }
   base

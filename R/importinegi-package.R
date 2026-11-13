@@ -3,6 +3,7 @@
 #' Catalogo y documentacion de los proyectos estadisticos:
 #' \itemize{
 #'   \item \code{\link{catalogo_inegi}}: catalogo de proyectos de la Red Nacional de Metadatos del INEGI y acceso a la ficha de cada proyecto.
+#'   \item \code{\link{bases_importinegi}}: bases de datos que se pueden descargar con el paquete, por proyecto y año, con su cobertura y su tamaño. No requiere conexion a internet.
 #' }
 #'
 #' Censo de Poblacion y Vivienda:
