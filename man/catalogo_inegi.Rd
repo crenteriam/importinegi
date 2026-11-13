@@ -4,19 +4,37 @@
 \alias{catalogo_inegi}
 \title{Catalogo de proyectos estadisticos del INEGI}
 \usage{
-catalogo_inegi(id = NA)
+catalogo_inegi(id = NA, buscar = NULL, year = NULL)
 }
 \arguments{
 \item{id}{Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar en el catalogo de proyectos estadisticos del INEGI (ver ejemplo).}
+
+\item{buscar}{Texto para buscar proyectos por su nombre o por su clave, sin distinguir mayusculas ni acentos (por ejemplo, \code{"empleo"}). Si se escriben varias palabras, se devuelven los proyectos que las contienen todas.}
+
+\item{year}{Año, o vector de años, para conservar solo los proyectos cuyo periodo incluye alguno de ellos (por ejemplo, \code{2020}).}
 }
 \value{
-Data.frame
+Data.frame con el catalogo de proyectos. Si se usa \code{id}, la funcion abre la ficha del proyecto en el navegador y devuelve su direccion.
+
+El catalogo tiene una fila por proyecto y las siguientes columnas:
+\describe{
+\item{\code{id}}{Numero de identificacion unico del proyecto en la Red Nacional de Metadatos.}
+\item{\code{idno}}{Clave del proyecto, que incluye sus siglas (por ejemplo, \code{MEX-INEGI.ESD3.03-ENOE-2025-II}).}
+\item{\code{title}}{Nombre del proyecto.}
+\item{\code{nation}}{Pais.}
+\item{\code{authoring_entity}}{Institucion y area responsables del proyecto.}
+\item{\code{year_start}, \code{year_end}}{Años en que comenzo y finalizo el levantamiento de los datos.}
+\item{\code{created}, \code{changed}}{Fecha de creacion de los metadatos y fecha de su ultima actualizacion (clase \code{Date}).}
+\item{\code{url}}{Direccion de la ficha del proyecto en la Red Nacional de Metadatos.}
+}
 }
 \description{
-Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
+Consulta el catalogo de la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
 }
 \details{
 La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos, utilizalo en el parametro para acceder al libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo).
+
+El catalogo se descarga una sola vez por sesion de R: las consultas siguientes, con o sin \code{buscar} y \code{year}, usan la copia que queda en memoria. El parametro \code{id} abre la ficha de un proyecto y no se combina con \code{buscar} ni con \code{year}. La funcion requiere conexion a internet.
 }
 \examples{
 
@@ -27,7 +45,19 @@ La funcion \code{catalogo_inegi} provee una lista de bases de datos con un ident
 # Consulta metadatos de una base de datos.
 \dontrun{catalogo_inegi(id = 489)}
 
+# Busca proyectos por nombre y por año.
+\dontrun{catalogo_inegi(buscar = "ocupacion y empleo", year = 2020)}
+
+# Busca proyectos por sus siglas.
+\dontrun{catalogo_inegi(buscar = "enigh")}
+
+# Busca un proyecto y consulta los metadatos de uno de los encontrados.
+\dontrun{
+ciberacoso <- catalogo_inegi(buscar = "ciberacoso")
+catalogo_inegi(id = ciberacoso$id[1])
+}
+
 }
 \seealso{
-Consulta el \href{https://www.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
+Consulta el \href{https://www.inegi.org.mx/rnm/index.php/catalog/}{repositorio de la Red Nacional de Metadatos del INEGI.}
 }

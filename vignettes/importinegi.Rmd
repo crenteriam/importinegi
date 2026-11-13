@@ -20,32 +20,67 @@ knitr::opts_chunk$set(
 
 El paquete de R `importinegi` fue creado para facilitar la descarga y uso de las bases de datos publicas del INEGI. Entre otras ventajas, este paquete permite integrar múltiples bases de  datos con un identificador único en común, consolidar los datos en diferentes niveles de agregación (p. ej. vivienda, localidad, municipio o entidad federativa), o automatizar la codificación de valores perdidos en el sistema de R `NA`).
 
-La version `1.1.2` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
+La version `2.0.0` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
 
 * Censo y Conteo de Poblacion y Vivienda
 * Censo Nacional de Gobiernos Municipales y Delegacionales
 * Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH)
 * Encuesta Nacional de Ocupación y Empleo (ENOE)
 
+La versión `2.0.0` requiere R 4.1 o posterior. Las funciones de información georreferenciada `sig_marcogeo()` y `sig_caminos_extrae()` necesitan, además, el paquete `sf`, que no se instala junto con `importinegi`. Para instalarlo, se utiliza `install.packages("sf")`.
+
 # Sintaxis
 
 El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `censo_municipal()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de cinco tipos formatos de microdatos, siendo ITER una de ellas. Por lo tanto, las funciones del Censo tienen una palabra clave adicional indicando el formato de microdatos. Para acceder al formato ITER, por ejemplo, la función es `censo_poblacion_iter()`.
 
-En el caso de la información georreferenciada, el nombre de la funcion comienza con las siglas Sistema de Información Georreferenciada (SIG). Estas siglas son sucedidas por una palabra clave del proyecto geoestadístico. Por ejemplo, la función para acceder a lo datos de la Red Nacional de Caminos es `sig_caminos()`.
+En el caso de la información georreferenciada, el nombre de la funcion comienza con las siglas Sistema de Información Georreferenciada (SIG). Estas siglas son sucedidas por una palabra clave del proyecto geoestadístico. Por ejemplo, la función para acceder a lo datos de la Red Nacional de Caminos es `sig_caminos_descarga()`.
 
-Existe una función especial, `catalogo_inegi()`, que permite explorar el catálogo de proyectos estadísticos del INEGI, así como la documentación completa de cada base de datos y proyecto estadístico del INEGI. La función accede a la Red Nacional de Metadatos (RNM), que es una plataforma de difusión y consulta de los metadatos de cada proyecto estadístico del INEGI. La sintaxis de esta función es sencilla. El único parámetro requerido es el número del proyecto estadístico a consultar (`id`). En el siguiente bloque de código, se accede (a través del navegador por default del sistema operativo) a la documentación del proyecto estadístico "Censo Nacional de Derechos Humanos Estatal 2018" a través de su número de proyecto estadístico.
+## Catalogo de proyectos estadisticos
+
+Existe una función especial, `catalogo_inegi()`, que permite explorar el catálogo de proyectos estadísticos del INEGI, así como la documentación completa de cada base de datos y proyecto estadístico del INEGI. La función accede a la Red Nacional de Metadatos (RNM), que es una plataforma de difusión y consulta de los metadatos de cada proyecto estadístico del INEGI. La sintaxis de esta función es sencilla. La función tiene tres parámetros, todos opcionales. Con el número del proyecto estadístico (`id`) se consulta su documentación. En el siguiente bloque de código, se accede (a través del navegador por default del sistema operativo) a la documentación del proyecto estadístico "Censo Nacional de Derechos Humanos Estatal 2018" a través de su número de proyecto estadístico.
 
 ```{r, eval = FALSE}
 # Accede a la documentacion del Censo Nacional de Derechos Humanos Estatal 2018
 catalogo_inegi(id = 443)
 ```
 
-Tecleando la función `catalogo_inegi()` (sin incluir nada en el paréntesis) se puede descargar y almacenar en un objeto de R una base de datos con el catálogo de proyectos del INEGI. Dicha base de datos provee el número de proyecto estadístico (`id`), el nombre del proyecto, los años en que se comenzó y finalizó el levantamiento de los datos, la fecha de creación de los metadatos en la RNM y la fecha de última actualización de los metadatos. El siguiente bloque de código ilustra la descarga de la base de datos del catálogo de proyectos del INEGI y su almacenamiento en un objeto de R.
+Tecleando la función `catalogo_inegi()` (sin incluir nada en el paréntesis) se puede descargar y almacenar en un objeto de R una base de datos con el catálogo de proyectos del INEGI. Dicha base de datos provee el número de proyecto estadístico (`id`), la clave del proyecto (`idno`), el nombre del proyecto, los años en que se comenzó y finalizó el levantamiento de los datos, la fecha de creación de los metadatos en la RNM, la fecha de última actualización de los metadatos y la dirección de su ficha (`url`). El siguiente bloque de código ilustra la descarga de la base de datos del catálogo de proyectos del INEGI y su almacenamiento en un objeto de R.
 
 ```{r, eval = FALSE}
 # Descarga y almacena el catalogo de proyectos estadisticos del INEGI
 catalogoINEGI = catalogo_inegi()
 ```
+
+El catálogo completo contiene más de 800 proyectos estadísticos, por lo que la función tiene dos parámetros para acotarlo. El parámetro `buscar` conserva los proyectos cuyo nombre o cuya clave contienen el texto indicado, sin distinguir entre mayúsculas y minúsculas ni entre letras con y sin acento. Si se escriben varias palabras, la función devuelve los proyectos que las contienen todas. El parámetro `year` conserva los proyectos cuyo periodo de levantamiento incluye el año indicado (o alguno de los años, si se indica más de uno). Los dos parámetros se pueden combinar. El siguiente bloque de código presenta cuatro ejemplos de búsqueda en el catálogo.
+
+```{r, eval = FALSE}
+# Proyectos de la ENOE, buscados por sus siglas
+catalogo.enoe = catalogo_inegi(buscar = "enoe")
+
+# Proyectos cuyo nombre contiene las palabras "ocupacion" y "empleo"
+catalogo.empleo = catalogo_inegi(buscar = "ocupacion empleo")
+
+# Proyectos con levantamiento de datos en 2020
+catalogo.2020 = catalogo_inegi(year = 2020)
+
+# Proyectos de ocupacion y empleo con levantamiento de datos en 2020
+catalogo.empleo2020 = catalogo_inegi(buscar = "ocupacion empleo", year = 2020)
+```
+
+Cuando no se conoce el número de un proyecto estadístico, se puede buscar primero en el catálogo y utilizar después el `id` que aparece en el resultado para consultar su documentación. En el siguiente bloque de código se buscan los proyectos del Módulo sobre Ciberacoso, se revisan los proyectos encontrados y se accede a la documentación de uno de ellos.
+
+```{r, eval = FALSE}
+# Busca los proyectos del Modulo sobre Ciberacoso
+ciberacoso = catalogo_inegi(buscar = "ciberacoso")
+
+# Revisa el numero, el nombre y el periodo de los proyectos encontrados
+ciberacoso[, c("id", "title", "year_start", "year_end")]
+
+# Accede a la documentacion de uno de los proyectos con su numero
+catalogo_inegi(id = ciberacoso$id[1])
+```
+
+El catálogo se descarga una sola vez por sesión de R: las consultas posteriores, con o sin `buscar` y `year`, utilizan la copia que queda en memoria. El parámetro `id` no se combina con `buscar` ni con `year`.
 
 ## Censo Nacional de Poblacion y Vivienda
 
@@ -84,7 +119,7 @@ muestra.jalisco = censo_poblacion_muestra(year = 2010, estado = "Jalisco", muest
 
 La función `censo_municipal()` descarga las bases de datos de las cuatro temáticas y tiene tres parámetros indispensables. Primero, se debe establece en formato numérico el año del levantamiento del CNGMD, que puede ser 2011, 2013, 2015 ó 2017. En el parámetro `fuente`, se debe definir en formato alfanumérico la temática o fuente de la base de datos requerida. Finalmente, en el parámetro `datos`, se debe definir en formato alfanumérico el conjunto de bases de datos.
 
-La relación entre los datos, conjunto de datos y fuentes puede ser complicada, especialmente a partir del CNGDM de 2015. Se recomienda consultar directamente en la documentación en linea del INEGI la disponibilidad de datos por cada fuente, conjunto de datos y año de levantamiento. Se puede acceder a dicha documentación directamente al teclear la función `censo_municial()` (sin incluir nada entre los paréntesis), como se muestra en el siguiente bloque de código.
+La relación entre los datos, conjunto de datos y fuentes puede ser complicada, especialmente a partir del CNGDM de 2015. Se recomienda consultar directamente en la documentación en linea del INEGI la disponibilidad de datos por cada fuente, conjunto de datos y año de levantamiento. Se puede acceder a dicha documentación directamente al teclear la función `censo_municipal()` (sin incluir nada entre los paréntesis), como se muestra en el siguiente bloque de código.
 
 ```{r, eval = FALSE}
 # Acceder a la documentacion en linea del CNGDM
@@ -160,11 +195,11 @@ lista.enoe = enoe(year = 2005, trimestre = "trim1", integrar = TRUE)
 
 ## Marco Geoestadistico Nacional
 
-La función `sig_marcogeo()` descarga los mapas del MGN desde 1995 hasta 2013. Esta función utiliza el paquete `rdgal` para descargar y gestionar archivos de información georreferenciada. Se puede acceder a la documentación en línea del MGN tecleando la función (sin incluir nada entre los paréntesis) `sig_marcogeo()`.
+La función `sig_marcogeo()` descarga los mapas del MGN desde 1995 hasta 2013. Esta función utiliza el paquete `sf`, que se instala aparte, para descargar y gestionar archivos de información georreferenciada. Se puede acceder a la documentación en línea del MGN tecleando la función (sin incluir nada entre los paréntesis) `sig_marcogeo()`.
 
 La sintaxis de la función tiene tres parámetros, de los cuales dos son indispensables. Primero, se debe especificar el año del mapa en formato numérico; los años disponibles se encuentran en la documentación de la función. El segundo parámetro indispensable es el mapa. El MGN provee cinco mapas diferentes: `entidades`, `municipios`, `ageb`, `urbano`, y `rural`, aunque la dispobilidad de algunos mapas varía entre años. El tercer parámetro, `version`, solo es necesario en los años que cuentan con múltiples versiones. Por ejemplo, el año 2010 cuenta las versiones `4.3`, `5.0`, ó `5.0.A`.
 
-El mapa descargado debe ser almacenado en un objeto de R. El resultado es un objeto espacial de la clase `SpatialPolygonsDataFrame`, a partir del cual se puede realizar análisis espacial y estadístico. En el siguiente bloque de código se ejemplifica la descarga del mapa de estados del MGN de 1995 y se utiliza una función para su visualización.
+El mapa descargado debe ser almacenado en un objeto de R. El resultado es un objeto espacial de la clase `sf`, a partir del cual se puede realizar análisis espacial y estadístico. En el siguiente bloque de código se ejemplifica la descarga del mapa de estados del MGN de 1995 y se utiliza una función para su visualización.
 
 ```{r, eval = FALSE}
 # Descargar el MGN de 1995

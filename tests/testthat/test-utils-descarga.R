@@ -143,3 +143,25 @@ test_that("inegi_texto() devuelve el contenido y se identifica como importinegi"
   expect_match(inegi_texto(servidor$url("/agente")), "^importinegi/[0-9.]+ ")
   expect_error(inegi_texto(servidor$url("/datos/403.zip")), "c\u00f3digo 403")
 })
+
+test_that("se acepta una respuesta con una cabecera Content-Encoding que no es valida", {
+  # Asi responde el catalogo de la Red Nacional de Metadatos del INEGI
+  # ("Content-Encoding: UTF-8"). Sin desactivar la decodificacion de curl, la
+  # descarga falla con "Unrecognized content encoding type".
+  servidor <- servidor_prueba()
+  withr::local_options(importinegi.espera = 0, importinegi.intentos = 1)
+  url <- servidor$url("/datos/codificacion_invalida.csv")
+
+  ruta <- inegi_descargar(url, destino = tempfile(fileext = ".csv"), silencioso = TRUE)
+  expect_identical(unname(tools::md5sum(ruta)), unname(tools::md5sum(muestra("utf8_bom.csv"))))
+  expect_identical(leer_tabla(ruta)$ENTIDAD, c("01", "09", "19"))
+
+  texto <- inegi_texto(url)
+  expect_match(texto, "ENTIDAD,NOM_ENT,POBTOT,PROM_OCUP", fixed = TRUE)
+  expect_match(texto, "Ciudad de M\u00e9xico", fixed = TRUE)
+})
+
+test_that("las solicitudes piden el contenido sin comprimir", {
+  servidor <- servidor_prueba()
+  expect_identical(inegi_texto(servidor$url("/cabeceras")), "Accept-Encoding: identity")
+})

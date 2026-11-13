@@ -1,0 +1,42 @@
+# Pruebas en vivo: ejecutan las funciones del paquete contra el sitio real del
+# INEGI (tests/testthat/test-en-vivo-*.R). El resto de las pruebas no usa la red.
+#
+# - Manual: pestana Actions > pruebas-en-vivo.yaml > Run workflow.
+# - En pull requests que tocan el codigo del paquete o estas pruebas.
+#
+# Si el sitio del INEGI no responde, esta tarea falla aunque el paquete este
+# bien; por eso va separada de R-CMD-check.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'R/**'
+      - 'tests/testthat/test-en-vivo*'
+      - 'tests/testthat/helper*'
+      - '.github/workflows/pruebas-en-vivo.yaml'
+
+name: pruebas-en-vivo.yaml
+
+permissions: read-all
+
+jobs:
+  en-vivo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      IMPORTINEGI_EN_VIVO: "true"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: any::pkgload, any::testthat, any::withr, any::webfakes
+
+      - name: Pruebas en vivo contra el INEGI
+        run: Rscript -e 'testthat::test_local(filter = "en-vivo", stop_on_failure = TRUE)'

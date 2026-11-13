@@ -1,10 +1,14 @@
 #' Catalogo de proyectos estadisticos del INEGI
 #'
-#' Consulta el catalogo la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
+#' Consulta el catalogo de la Red Nacional de Metadatos del INEGI o los metadatos de un proyecto estadistico en particular.
 #'
 #' La funcion \code{catalogo_inegi} provee una lista de bases de datos con un identificador unico (\code{id}). Si conoces el \code{id} de la base de datos, utilizalo en el parametro para acceder al libro de codigos y los metadatos de la base de datos. Si no conoces el \code{id} de la base de datos a consultar, teclea la funcion \code{catalogo_inegi} sin parametros para descargar la lista de bases de datos (Ver ejemplo).
 #'
+#' El catalogo se descarga una sola vez por sesion de R: las consultas siguientes, con o sin \code{buscar} y \code{year}, usan la copia que queda en memoria. El parametro \code{id} abre la ficha de un proyecto y no se combina con \code{buscar} ni con \code{year}. La funcion requiere conexion a internet.
+#'
 #' @param id Para acceder al diccionario de datos de una base de datos de la Red Nacional de Metadatos del INEGI, utiliza el numero de identificacion unico (valor numerico). El identificador unico se puede consultar en el catalogo de proyectos estadisticos del INEGI (ver ejemplo).
+#' @param buscar Texto para buscar proyectos por su nombre o por su clave, sin distinguir mayusculas ni acentos (por ejemplo, \code{"empleo"}). Si se escriben varias palabras, se devuelven los proyectos que las contienen todas.
+#' @param year Año, o vector de años, para conservar solo los proyectos cuyo periodo incluye alguno de ellos (por ejemplo, \code{2020}).
 #'
 #' @examples
 #'
@@ -15,20 +19,218 @@
 #' # Consulta metadatos de una base de datos.
 #' \dontrun{catalogo_inegi(id = 489)}
 #'
-#' @return Data.frame
-#' @seealso Consulta el \href{https://www.inegi.org.mx/rnm/index.php/catalog/}{repositorio la Red Nacional de Metadatos del INEGI.}
+#' # Busca proyectos por nombre y por año.
+#' \dontrun{catalogo_inegi(buscar = "ocupacion y empleo", year = 2020)}
+#'
+#' # Busca proyectos por sus siglas.
+#' \dontrun{catalogo_inegi(buscar = "enigh")}
+#'
+#' # Busca un proyecto y consulta los metadatos de uno de los encontrados.
+#' \dontrun{
+#' ciberacoso <- catalogo_inegi(buscar = "ciberacoso")
+#' catalogo_inegi(id = ciberacoso$id[1])
+#' }
+#'
+#' @return Data.frame con el catalogo de proyectos. Si se usa \code{id}, la funcion abre la ficha del proyecto en el navegador y devuelve su direccion.
+#'
+#' El catalogo tiene una fila por proyecto y las siguientes columnas:
+#' \describe{
+#'   \item{\code{id}}{Numero de identificacion unico del proyecto en la Red Nacional de Metadatos.}
+#'   \item{\code{idno}}{Clave del proyecto, que incluye sus siglas (por ejemplo, \code{MEX-INEGI.ESD3.03-ENOE-2025-II}).}
+#'   \item{\code{title}}{Nombre del proyecto.}
+#'   \item{\code{nation}}{Pais.}
+#'   \item{\code{authoring_entity}}{Institucion y area responsables del proyecto.}
+#'   \item{\code{year_start}, \code{year_end}}{Años en que comenzo y finalizo el levantamiento de los datos.}
+#'   \item{\code{created}, \code{changed}}{Fecha de creacion de los metadatos y fecha de su ultima actualizacion (clase \code{Date}).}
+#'   \item{\code{url}}{Direccion de la ficha del proyecto en la Red Nacional de Metadatos.}
+#' }
+#' @seealso Consulta el \href{https://www.inegi.org.mx/rnm/index.php/catalog/}{repositorio de la Red Nacional de Metadatos del INEGI.}
 #' @export
 
-catalogo_inegi = function(id = NA){
-  open.id = paste0("https://www.inegi.org.mx/rnm/index.php/catalog/", id)
-  if (!is.na(id)) {shell.exec(open.id)}
-### Catálgo General ---------------------------------------------------------
-  else {
-  Catalogo = tempfile()
-  utils::download.file("https://www.inegi.org.mx/rnm/index.php/catalog/export/csv?ps=500&", Catalogo)
-  Catalogo = utils::read.csv(Catalogo, encoding = "UTF-8")
-  # names(Catalogo)[names(Catalogo) == "X.U.FEFF.id"] <- "id"
-  # Catalogo = base::subset(Catalogo, select = c("id", "surveyid", "titl", "data_coll_start", "data_coll_end", "created", "changed"))
-  return(Catalogo)
-  } # End of Catálogo General
-} # End of Function
+catalogo_inegi <- function(id = NA, buscar = NULL, year = NULL) {
+  hay_id <- !(is.null(id) || (length(id) == 1 && is.na(id)))
+
+  # Con id: abre la ficha del proyecto en el navegador ------------------------
+  if (hay_id) {
+    if (!is.null(buscar) || !is.null(year)) {
+      detener(
+        "`id` abre la ficha de un proyecto y no se combina con `buscar` ni con `year`. ",
+        "Usa `id` solo, o busca sin `id`."
+      )
+    }
+    return(abrir_pagina(catalogo_ficha(catalogo_validar_id(id))))
+  }
+
+  # Sin id: devuelve el catalogo, completo o filtrado -------------------------
+  catalogo <- catalogo_rnm()
+  if (!is.null(buscar)) {
+    catalogo <- catalogo_buscar(catalogo, buscar)
+  }
+  if (!is.null(year)) {
+    catalogo <- catalogo_filtrar_year(catalogo, year)
+  }
+  if (nrow(catalogo) == 0) {
+    message("Ning\u00fan proyecto del cat\u00e1logo coincide con la b\u00fasqueda.")
+  }
+  rownames(catalogo) <- NULL
+  catalogo
+}
+
+# Funciones internas del catalogo ----------------------------------------------
+
+# Numero de proyectos que se pide a la Red Nacional de Metadatos. El sitio
+# entrega como maximo los que se le piden en `ps`, empezando por los mas
+# recientes, asi que debe ser mayor que el total del catalogo. Verificado el
+# 11 de noviembre de 2026: con ps=500 entrega 500 proyectos; con ps=5000, los 825.
+catalogo_tamano <- function() {
+  5000L
+}
+
+# Direccion de la exportacion del catalogo.
+catalogo_url_exportacion <- function() {
+  paste0("/rnm/index.php/catalog/export/csv?ps=", catalogo_tamano())
+}
+
+# Direccion de la ficha de un proyecto.
+catalogo_ficha <- function(id) {
+  paste0(inegi_base(), "/rnm/index.php/catalog/", id)
+}
+
+# El identificador de un proyecto es un solo numero entero positivo.
+catalogo_validar_id <- function(id) {
+  es_numero <- is.numeric(id) || (is.character(id) && all(grepl("^[0-9]+$", id)))
+  valido <- length(id) == 1 && !is.na(id) && es_numero &&
+    as.numeric(id) >= 1 && as.numeric(id) == round(as.numeric(id))
+  if (!isTRUE(valido)) {
+    detener(
+      "`id` debe ser el n\u00famero de identificaci\u00f3n de un proyecto (un solo n\u00famero ",
+      "entero), por ejemplo `id = 489`. Consulta los identificadores con catalogo_inegi()."
+    )
+  }
+  format(as.numeric(id), scientific = FALSE, trim = TRUE)
+}
+
+# Descarga y lee el catalogo. Se conserva en la memoria de la sesion para no
+# descargarlo en cada llamada.
+catalogo_rnm <- function() {
+  guardado <- memoria_obtener("catalogo_rnm")
+  if (!is.null(guardado)) {
+    return(guardado)
+  }
+  message("Descargando el cat\u00e1logo de la Red Nacional de Metadatos del INEGI ...")
+  archivo <- inegi_descargar(
+    catalogo_url_exportacion(),
+    destino = tempfile("importinegi_", fileext = ".csv"),
+    silencioso = TRUE
+  )
+  on.exit(unlink(archivo), add = TRUE)
+
+  catalogo <- tryCatch(
+    suppressWarnings(leer_tabla(archivo, convertir = TRUE)),
+    error = function(e) NULL
+  )
+  # Si el sitio responde con una pagina en lugar del catalogo, no se devuelve
+  # una tabla sin sentido: se avisa.
+  es_catalogo <- is.data.frame(catalogo) && nrow(catalogo) > 0 &&
+    all(c("id", "idno", "title") %in% names(catalogo))
+  if (!es_catalogo) {
+    detener(
+      "El INEGI no devolvi\u00f3 el cat\u00e1logo de la Red Nacional de Metadatos ",
+      "(la respuesta no tiene el formato esperado). Intenta m\u00e1s tarde o ",
+      "consulta el cat\u00e1logo en ", inegi_base(), "/rnm/index.php/catalog/"
+    )
+  }
+  # Si llegan tantos proyectos como se pidieron, el catalogo crecio mas alla del
+  # limite y podria venir recortado: se avisa en lugar de callarlo.
+  if (nrow(catalogo) >= catalogo_tamano()) {
+    warning(
+      "El cat\u00e1logo recibido tiene ", nrow(catalogo), " proyectos, el m\u00e1ximo que ",
+      "se pide al INEGI, y podr\u00eda estar incompleto. Rep\u00f3rtalo en ",
+      "https://github.com/crenteriam/importinegi/issues",
+      call. = FALSE
+    )
+  }
+  for (columna in intersect(c("created", "changed"), names(catalogo))) {
+    catalogo[[columna]] <- catalogo_fecha(catalogo[[columna]])
+  }
+  catalogo$url <- catalogo_ficha(catalogo$id)
+  memoria_guardar("catalogo_rnm", catalogo)
+  catalogo
+}
+
+# Convierte a fecha el texto con que el INEGI entrega las fechas del catalogo:
+# "Mes-DD-AA", con el mes abreviado en ingles (por ejemplo "Aug-20-25"). No
+# depende del idioma del sistema. Si algun valor no tiene ese formato o no es
+# una fecha valida, devuelve el texto original sin cambios.
+catalogo_fecha <- function(texto) {
+  if (!is.character(texto)) {
+    return(texto)
+  }
+  partes <- regmatches(texto, regexec("^([A-Za-z]{3})-([0-9]{2})-([0-9]{2})$", texto))
+  completas <- lengths(partes) == 4
+  if (!all(completas | is.na(texto))) {
+    return(texto)
+  }
+  parte <- function(i) {
+    vapply(partes[completas], function(p) p[i], character(1))
+  }
+  mes <- parte(2)
+  mes <- match(paste0(toupper(substr(mes, 1, 1)), tolower(substr(mes, 2, 3))), month.abb)
+  anio <- as.integer(parte(4))
+  anio <- ifelse(anio <= 68L, 2000L + anio, 1900L + anio)
+  fecha <- rep(as.Date(NA), length(texto))
+  fecha[completas] <- as.Date(
+    sprintf("%04d-%02d-%s", anio, mes, parte(3)),
+    format = "%Y-%m-%d"
+  )
+  if (anyNA(fecha[completas])) {
+    return(texto)
+  }
+  fecha
+}
+
+# Conserva los proyectos cuyo nombre o clave contiene todas las palabras
+# buscadas, sin distinguir mayusculas ni acentos.
+catalogo_buscar <- function(catalogo, buscar) {
+  terminos <- if (is.character(buscar) && !anyNA(buscar)) {
+    palabras <- unlist(strsplit(normalizar_texto(buscar), " ", fixed = TRUE))
+    palabras[nzchar(palabras)]
+  } else {
+    character()
+  }
+  if (length(terminos) == 0) {
+    detener("`buscar` debe ser un texto con al menos una palabra, por ejemplo `buscar = \"empleo\"`.")
+  }
+  campo <- function(nombre) {
+    valores <- as.character(catalogo[[nombre]])
+    valores[is.na(valores)] <- ""
+    valores
+  }
+  donde <- normalizar_texto(paste(campo("title"), campo("idno")))
+  coincide <- rep(TRUE, nrow(catalogo))
+  for (termino in terminos) {
+    coincide <- coincide & grepl(termino, donde, fixed = TRUE)
+  }
+  catalogo[coincide, , drop = FALSE]
+}
+
+# Conserva los proyectos cuyo periodo (year_start a year_end) incluye alguno de
+# los anios pedidos.
+catalogo_filtrar_year <- function(catalogo, year) {
+  valido <- is.numeric(year) && length(year) > 0 && !anyNA(year) && all(year == round(year))
+  if (!valido) {
+    detener("`year` debe ser un a\u00f1o o un vector de a\u00f1os, por ejemplo `year = 2020`.")
+  }
+  if (!all(c("year_start", "year_end") %in% names(catalogo))) {
+    detener("El cat\u00e1logo no incluye el periodo de los proyectos; no se puede filtrar con `year`.")
+  }
+  inicio <- suppressWarnings(as.numeric(catalogo$year_start))
+  fin <- suppressWarnings(as.numeric(catalogo$year_end))
+  fin[is.na(fin)] <- inicio[is.na(fin)]
+  inicio[is.na(inicio)] <- fin[is.na(inicio)]
+  incluye <- rep(FALSE, nrow(catalogo))
+  for (anio in year) {
+    incluye <- incluye | (!is.na(inicio) & anio >= inicio & anio <= fin)
+  }
+  catalogo[incluye, , drop = FALSE]
+}

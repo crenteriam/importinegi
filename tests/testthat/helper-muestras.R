@@ -47,6 +47,30 @@ servidor_prueba <- function(entorno = parent.frame()) {
   app$get("/pagina", function(req, res) {
     res$send_file("pagina_programa.html", root = req$app$locals$carpeta)
   })
+  # Exportacion del catalogo de la Red Nacional de Metadatos
+  app$locals$consultas_catalogo <- 0
+  app$locals$ultimo_ps <- ""
+  app$get("/rnm/index.php/catalog/export/csv", function(req, res) {
+    locales <- req$app$locals
+    locales$consultas_catalogo <- locales$consultas_catalogo + 1
+    locales$ultimo_ps <- req$query$ps
+    # El servidor real envia esta cabecera, que no es valida (Content-Encoding
+    # es para compresion): los navegadores la ignoran, pero curl la rechaza si
+    # no se le indica que no decodifique el contenido.
+    res$set_header("Content-Encoding", "UTF-8")
+    res$set_header("Content-Disposition", "attachment;filename=search.csv")
+    res$send_file("catalogo_rnm.csv", root = locales$carpeta)
+  })
+  app$get("/datos/codificacion_invalida.csv", function(req, res) {
+    res$set_header("Content-Encoding", "UTF-8")
+    res$send_file("utf8_bom.csv", root = req$app$locals$carpeta)
+  })
+  app$get("/cabeceras", function(req, res) {
+    res$send(paste0("Accept-Encoding: ", req$get_header("Accept-Encoding")))
+  })
+  app$get("/rnm/consultas", function(req, res) {
+    res$send(paste(req$app$locals$consultas_catalogo, req$app$locals$ultimo_ps))
+  })
   # Paginas de programa y servicio de descargas, como en el sitio del INEGI
   app$get(webfakes::new_regexp("^/programas/.+/$"), function(req, res) {
     res$send_file("pagina_programa.html", root = req$app$locals$carpeta)
@@ -63,4 +87,14 @@ servidor_prueba <- function(entorno = parent.frame()) {
     }
   )
   webfakes::local_app_process(app, .local_envir = entorno)
+}
+
+# Las pruebas en vivo consultan el sitio real del INEGI. Solo corren cuando la
+# variable de entorno IMPORTINEGI_EN_VIVO vale "true" (ver
+# .github/workflows/pruebas-en-vivo.yaml).
+omitir_si_no_en_vivo <- function() {
+  testthat::skip_if_not(
+    identical(Sys.getenv("IMPORTINEGI_EN_VIVO"), "true"),
+    "Las pruebas en vivo solo corren con IMPORTINEGI_EN_VIVO=true"
+  )
 }

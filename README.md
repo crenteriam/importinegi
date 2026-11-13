@@ -1,5 +1,5 @@
 <!-- badges: start -->
-[![](https://www.r-pkg.org/badges/version-last-release/importinegi)](https://cran.r-project.org/package=importinegi) [![](https://cranlogs.r-pkg.org/badges/importinegi)](https://cran.r-project.org/package=importinegi)
+[![](https://www.r-pkg.org/badges/version-last-release/importinegi)](https://cran.r-project.org/package=importinegi) [![](https://cranlogs.r-pkg.org/badges/importinegi)](https://cran.r-project.org/package=importinegi) [![R-CMD-check](https://github.com/crenteriam/importinegi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/crenteriam/importinegi/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
  
 ## Introduccion
@@ -13,6 +13,8 @@
 - Red Nacional Carretera (2014-2016)
 - Marco Geoestadistico Nacional (1995-2018)
 
+La versión `2.0.0` está en desarrollo en este repositorio. La última versión estable es la `1.2.1`, disponible en CRAN.
+
 ## Instalacion
 
 Última versión estable `1.2.1` (desde CRAN):
@@ -21,12 +23,32 @@ install.packages("importinegi")
 library(importinegi)
 ```
 
-- Nota de la versión `1.2.1`. Se actualizó la nueva URL del Repositorio Nacional de Metadatos. Se reemplazo el paquete rgdal por sf.
-- Nota de la versión `1.2.0`. Se arreglan problemas con las funciones catalogo_inegi() y enoe(). Cortesía de Villiem (https://twitter.com/villicanaem).
-- Nota de la versión `1.1.3`. INEGI terminó de trasladar algunos repositorios de su versión beta a su versión estable. Esto afectó los URL de las funciones para el Censo y la ENOE. La versión beta `1.1.3` arregla este problema.
-
+Versión en desarrollo `2.0.0` (desde GitHub):
 ```
 install.packages("devtools")
 devtools::install_github("crenteriam/importinegi")
 library(importinegi)
 ```
+
+La versión `2.0.0` requiere R 4.1 o posterior. Las funciones de mapas `sig_marcogeo()` y `sig_caminos_extrae()` necesitan, además, el paquete `sf`, que se instala aparte con `install.packages("sf")`.
+
+## Uso
+
+El siguiente ejemplo, con la versión en desarrollo `2.0.0`, consulta el catálogo de proyectos estadísticos del INEGI:
+
+```
+# Descarga el catalogo de proyectos estadisticos del INEGI
+catalogo <- catalogo_inegi()
+
+# Busca proyectos por nombre o por siglas, y por año
+catalogo_inegi(buscar = "enoe", year = 2020)
+
+# Accede a la documentacion de un proyecto con su numero (id)
+catalogo_inegi(id = 489)
+```
+
+La sintaxis de todas las funciones, con ejemplos, se explica en la [viñeta del paquete](https://github.com/crenteriam/importinegi/blob/master/vignettes/importinegi.Rmd). Con el paquete instalado desde CRAN, la viñeta también se consulta con `vignette("importinegi")`.
+
+## Novedades
+
+Los cambios de cada versión se registran en [NEWS.md](https://github.com/crenteriam/importinegi/blob/master/NEWS.md).
