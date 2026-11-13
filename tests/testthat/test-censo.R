@@ -26,7 +26,7 @@ test_that("censo() convierte los indicadores a numero y los datos reservados a N
   expect_identical(iter$PROM_OCUP, c(3.48, NA, NA, 3.70))
   # Las claves y los valores con ceros a la izquierda quedan como texto
   expect_type(iter$ENTIDAD, "character")
-  expect_identical(iter$ALTITUD, c("0020", "0015", "0040", "0490"))
+  expect_identical(iter$ALTITUD, c(20L, 15L, 40L, 490L))
   # Las coordenadas se conservan como texto
   expect_identical(iter$LONGITUD, c("1035752", "1035800", "1035910", "1034330"))
   # El texto de los DBF se entrega en UTF-8
@@ -163,7 +163,7 @@ test_that("censo() reconoce las tablas de la muestra de 2000 y la tabla unica de
   expect_identical(muestra$ENT, rep("06", 3))
   expect_identical(muestra$MUN, c("001", "001", "010"))
   expect_error(censo(1990, "muestra", estado = "Colima", tabla = "personas"),
-               "La muestra de 1990 se publica en una sola tabla")
+               "La base \"muestra\" de 1990 se publica en una sola tabla")
 })
 
 test_that("censo() valida los argumentos de la muestra", {
@@ -176,7 +176,9 @@ test_that("censo() valida los argumentos de la muestra", {
   expect_error(censo(2010, "muestra", estado = "Colima", nivel = "municipio"),
                "`nivel` solo se usa con las bases \"iter\" y \"ageb\"")
   expect_error(censo(2010, "iter", estado = "Colima", tabla = "personas"),
-               "`tabla` solo se usa con base = \"muestra\"")
+               "`tabla` solo se usa con las bases \"muestra\" y \"entorno\"; la base \"iter\" tiene una sola tabla")
+  expect_error(censo(2010, "entorno", estado = "Colima", tabla = "vialidades"),
+               "La base \"entorno\" de 2010 se publica en una sola tabla")
 })
 
 # Localidades y entorno urbano ---------------------------------------------------
@@ -312,6 +314,20 @@ test_that("censo() descarga el Censo 2020 en CSV desde las rutas del registro", 
   expect_match(attr(nacional, "fuente"), "/ITER_NAL_2020_csv\\.zip$")
   expect_identical(nacional[, c("ENTIDAD", "MUN", "LOC", "POBTOT")],
                    data.frame(ENTIDAD = "00", MUN = "000", LOC = "0000", POBTOT = 750L))
+})
+
+test_that("censo() descarga las dos tablas del entorno urbano 2020", {
+  censo_local()
+  manzanas <- suppressMessages(censo(2020, "entorno", estado = "Colima"))
+  expect_match(attr(manzanas, "fuente"), "/ccpv/2020/microdatos/ceu/Censo2020_CEU_col_csv\\.zip$")
+  expect_identical(manzanas$MZA, c("001", "002"))
+  expect_identical(manzanas$RECUCALL_, c(1L, 2L))
+  expect_identical(suppressMessages(censo(2020, "entorno", estado = "Colima", tabla = "manzanas")), manzanas)
+  vialidades <- suppressMessages(censo(2020, "entorno", estado = "Colima", tabla = "vialidades"))
+  expect_named(vialidades, c("ENT", "MUN", "LOC", "AGEB", "MZA", "CVEVIAL", "TIPOVIAL", "BANQUETA"))
+  expect_identical(vialidades$CVEVIAL, c("00012", "00013", "00099"))
+  expect_error(censo(2020, "entorno", estado = "Colima", tabla = "personas"),
+               "`tabla = \"personas\"` no es una opci\u00f3n v\u00e1lida.*\"manzanas\", \"vialidades\"")
 })
 
 test_that("censo() explica cuando el registro no incluye una base", {

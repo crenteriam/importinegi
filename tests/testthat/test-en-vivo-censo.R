@@ -174,7 +174,7 @@ test_that("EN VIVO: censo() descarga cada tabla de la muestra", {
       next
     }
     describir_zip(year, "muestra", clave)
-    tablas <- names(poblacion_tablas("censo", year))
+    tablas <- names(poblacion_tablas("censo", year, "muestra"))
     if (is.null(tablas)) {
       muestra <- suppressMessages(censo(year, "muestra", estado = clave))
       describir_tabla(paste(year, "muestra", clave), muestra)
@@ -207,12 +207,16 @@ test_that("EN VIVO: censo() descarga las localidades y el entorno urbano", {
         next
       }
       describir_zip(year, base, clave)
-      datos <- suppressMessages(censo(year, base, estado = clave))
-      describir_tabla(paste(year, base, clave), datos)
-      revisar_texto(paste(year, base, clave), datos)
-      expect_gt(nrow(datos), 0)
-      expect_false(is.na(columna_clave(datos, "ent")), info = paste(year, base))
-      expect_false(is.na(columna_clave(datos, "mun")), info = paste(year, base))
+      tablas <- names(poblacion_tablas("censo", year, base)) %||% NA_character_
+      for (tabla in tablas) {
+        etiqueta <- paste(year, base, clave, if (!is.na(tabla)) tabla)
+        datos <- suppressMessages(censo(year, base, estado = clave, tabla = if (!is.na(tabla)) tabla))
+        describir_tabla(etiqueta, datos)
+        revisar_texto(etiqueta, datos)
+        expect_gt(nrow(datos), 0)
+        expect_false(is.na(columna_clave(datos, "ent")), info = etiqueta)
+        expect_false(is.na(columna_clave(datos, "mun")), info = etiqueta)
+      }
     }
   }
 })

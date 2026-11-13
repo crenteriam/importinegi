@@ -209,6 +209,15 @@ escribir_zip(
   otros = list("iter_06_cpv2020/metadatos/metadatos_iter_06_cpv2020.txt" = "Metadatos de muestra")
 )
 
+# Entorno urbano 2020: una tabla por manzana y otra por vialidad
+escribir_zip("entorno2020_06.zip", list(
+  "TI_MANZANA_EU_06.csv" = tabla(ENT = "06", MUN = "002", LOC = "0001", AGEB = "0012",
+                                 MZA = c("001", "002"), RECUCALL_ = c("1", "2")),
+  "TR_VIALIDAD_EU_06.csv" = tabla(ENT = "06", MUN = "002", LOC = "0001", AGEB = "0012",
+                                  MZA = c("001", "001", "002"), CVEVIAL = c("00012", "00013", "00099"),
+                                  TIPOVIAL = c("Calle", "Avenida", "Calle"), BANQUETA = c("1", "1", "2"))
+))
+
 # Archivo nacional: totales del pais y localidades de Colima
 escribir_zip(
   "iter2020_00.zip",

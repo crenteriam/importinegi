@@ -76,13 +76,22 @@ poblacion_nombre_base <- function(base) {
   unname(nombres[base])
 }
 
-# Tablas de la muestra y patron con el que se reconoce el archivo de cada una
-# dentro del zip. NULL significa que la muestra se publica en una sola tabla.
-poblacion_tablas <- function(programa, year) {
-  if (programa == "censo" && year == 1990L) {
-    return(NULL)
+# Tablas de las bases que se publican en varias tablas, con el patron con el
+# que se reconoce el archivo de cada una dentro del zip. La primera es la que
+# se descarga por omision. NULL significa que la base tiene una sola tabla.
+poblacion_tablas <- function(programa, year, base) {
+  if (base == "muestra" && !(programa == "censo" && year == 1990L)) {
+    return(c(personas = "^per", viviendas = "^viv|^vho", migrantes = "^mig|^min"))
   }
-  c(personas = "^per", viviendas = "^viv|^vho", migrantes = "^mig|^min")
+  if (base == "entorno" && programa == "censo" && year >= 2020L) {
+    return(c(manzanas = "manzana", vialidades = "vialidad"))
+  }
+  NULL
+}
+
+# Bases que tienen varias tablas en algun año.
+poblacion_bases_con_tablas <- function() {
+  c("muestra", "entorno")
 }
 
 # Niveles de agregacion de las bases que mezclan filas de totales con filas de
@@ -165,16 +174,16 @@ poblacion_validar_base <- function(programa, year, base) {
 
 # Devuelve el nombre de la tabla de la muestra (NA si la muestra tiene una sola).
 poblacion_validar_tabla <- function(programa, year, base, tabla) {
-  if (base != "muestra") {
-    if (!is.null(tabla)) {
-      detener("`tabla` solo se usa con base = \"muestra\"; la base ", comillas(base), " tiene una sola tabla.")
-    }
-    return(NA_character_)
-  }
-  tablas <- poblacion_tablas(programa, year)
+  tablas <- poblacion_tablas(programa, year, base)
   if (is.null(tablas)) {
     if (!is.null(tabla)) {
-      detener("La muestra de ", year, " se publica en una sola tabla: omite el argumento `tabla`.")
+      if (base %in% poblacion_bases_con_tablas()) {
+        detener("La base ", comillas(base), " de ", year, " se publica en una sola tabla: omite el argumento `tabla`.")
+      }
+      detener(
+        "`tabla` solo se usa con las bases ", paste(comillas(poblacion_bases_con_tablas()), collapse = " y "),
+        "; la base ", comillas(base), " tiene una sola tabla."
+      )
     }
     return(NA_character_)
   }
@@ -505,7 +514,14 @@ columnas_texto <- function(datos) {
 # tambien las que tienen ceros a la izquierda ("008" en la edad, "0012" en el
 # factor de expansion): son respuestas codificadas, no claves.
 poblacion_convertir <- function(datos, base) {
-  convertir_numericas(datos, texto = columnas_texto(datos), ceros = base == "muestra")
+  datos <- convertir_numericas(datos, texto = columnas_texto(datos), ceros = base == "muestra")
+  # La altitud es una medida: es numerica en todos los censos, aunque algunos
+  # la escriban con ceros a la izquierda ("0020")
+  altitud <- grep("^ALTITUD$", names(datos), ignore.case = TRUE, value = TRUE)
+  if (length(altitud) > 0) {
+    datos[altitud] <- convertir_numericas(datos[altitud], ceros = TRUE)
+  }
+  datos
 }
 
 # Motor -------------------------------------------------------------------------
@@ -539,7 +555,7 @@ poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
     )
   }
 
-  patron <- if (is.na(tabla)) NULL else poblacion_tablas(programa, year)[[tabla]]
+  patron <- if (is.na(tabla)) NULL else poblacion_tablas(programa, year, base)[[tabla]]
   tablas <- lapply(seq_len(nrow(seleccion)), function(i) {
     poblacion_leer(
       seleccion$url[i], seleccion$formato[i], tamano = seleccion$tamano[i],

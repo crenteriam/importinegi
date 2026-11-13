@@ -26,6 +26,7 @@
     * `estado` acepta nombre, abreviatura o clave, sin distinguir mayusculas ni acentos, y varias entidades a la vez, que se combinan en una sola tabla. `"todas"` descarga las 32 entidades.
     * `nivel` sustituye a los argumentos `totalestado`, `totalmunicipio`, `localidades`, `totallocalidad`, `totalageb` y `manzana`.
     * Las direcciones salen del registro de archivos del INEGI. Con las funciones anteriores, la direccion del ITER 2010 se armaba mal para 6 entidades.
+    * En el Censo 2020, la base `"entorno"` tiene dos tablas: por manzana (por omision) y por vialidad (`tabla = "vialidades"`).
     * Las claves geograficas se devuelven como texto con ceros a la izquierda y los indicadores, como numero (antes eran texto). En la muestra, las respuestas codificadas, la edad y el factor de expansion tambien son numericos.
     * Los agregados de localidades de una y dos viviendas del ITER (claves 9998 y 9999) ya no se devuelven mezclados con las localidades.
     * La muestra funciona en cualquier sistema operativo (antes solo en Windows).
