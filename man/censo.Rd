@@ -9,7 +9,7 @@ censo(year, base = "iter", estado = "nacional", tabla = NULL, nivel = NULL)
 \arguments{
 \item{year}{Año del censo, en formato numerico. Es obligatorio. Los censos disponibles son 1990, 2000, 2010 y 2020.}
 
-\item{base}{Base de datos que se descarga: \code{"iter"} (por omision), \code{"ageb"}, \code{"muestra"}, \code{"localidades"} o \code{"entorno"}. No todas las bases existen para todos los censos (ver Detalles).}
+\item{base}{Base de datos que se descarga: \code{"iter"} (por omision), \code{"ageb"}, \code{"muestra"}, \code{"localidades"}, \code{"entorno"} o \code{"asistencia"}. No todas las bases existen para todos los censos (ver Detalles).}
 
 \item{estado}{Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos. Acepta varias entidades a la vez, que se combinan en una sola tabla. Por omision, \code{"nacional"} descarga el archivo nacional, en las bases que lo tienen. \code{"todas"} descarga las 32 entidades y las combina.}
 
@@ -31,6 +31,7 @@ Una sola funcion da acceso a todas las bases de datos de cada censo. El argument
 \item{\code{"muestra"}}{Microdatos de la muestra (cuestionario ampliado). Censos de 1990, 2000, 2010 y 2020. Se publica por entidad; en 2020 tambien hay archivo nacional.}
 \item{\code{"localidades"}}{Resultados sobre las caracteristicas de las localidades pequeñas (con menos de 5 mil habitantes en 2010 y de 2,500 en 2020). Censos de 2010 y 2020. Tiene archivo nacional.}
 \item{\code{"entorno"}}{Resultados sobre infraestructura y caracteristicas del entorno urbano, por manzana. Censos de 2010 y 2020. Se publica por entidad; en 2020 tambien hay archivo nacional y una segunda tabla, por vialidad (ver el argumento \code{tabla}).}
+\item{\code{"asistencia"}}{Resultados sobre las caracteristicas de los alojamientos de asistencia social (por ejemplo, casas hogar, albergues y asilos). Censo de 2020. Tiene archivo nacional.}
 }
 
 Los Conteos de Poblacion y Vivienda (1995 y 2005) y las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta funcion.
@@ -48,7 +49,7 @@ En el ITER, las filas con clave de localidad \code{"9998"} y \code{"9999"} son a
 
 \section{Contenido de la tabla}{
 
-Las columnas conservan los nombres que les da el INEGI. Las claves geograficas (entidad, municipio, localidad, AGEB y manzana) son texto y conservan los ceros a la izquierda (\code{"09"}, \code{"001"}). Las columnas que solo contienen numeros se convierten a numero, salvo las que tienen valores con ceros a la izquierda (\code{"0020"}), que se conservan como texto porque suelen ser codigos. En la muestra, en cambio, esas columnas tambien se convierten a numero (la edad \code{"008"} pasa a ser \code{8}), salvo los identificadores de vivienda y persona y las variables del diseño muestral. Las coordenadas (\code{LONGITUD} y \code{LATITUD}) se conservan como texto, porque el INEGI las escribe en grados, minutos y segundos sin separadores; la altitud (\code{ALTITUD}) es numerica en todos los censos. En las bases \code{"iter"}, \code{"ageb"} y \code{"localidades"}, los datos que el INEGI reserva por confidencialidad (\code{"*"}) o marca como no disponibles (\code{"N/D"}) se convierten en \code{NA}.
+Las columnas conservan los nombres que les da el INEGI. Las claves geograficas (entidad, municipio, localidad, AGEB y manzana) son texto y conservan los ceros a la izquierda (\code{"09"}, \code{"001"}). Las columnas que solo contienen numeros se convierten a numero, salvo las que tienen valores con ceros a la izquierda (\code{"0020"}), que se conservan como texto porque suelen ser codigos. En la muestra, en cambio, esas columnas tambien se convierten a numero (la edad \code{"008"} pasa a ser \code{8}), salvo los identificadores de vivienda y persona y las variables del diseño muestral. Las coordenadas (\code{LONGITUD} y \code{LATITUD}) se conservan como texto, porque el INEGI las escribe en grados, minutos y segundos sin separadores; la altitud (\code{ALTITUD}) se convierte a numero cuando todos sus valores son numericos, aunque tengan ceros a la izquierda (en el ITER de 1990 se conserva como texto). En las bases \code{"iter"}, \code{"ageb"} y \code{"localidades"}, los datos que el INEGI reserva por confidencialidad (\code{"*"}) o marca como no disponibles (\code{"N/D"}) se convierten en \code{NA}.
 }
 
 \examples{

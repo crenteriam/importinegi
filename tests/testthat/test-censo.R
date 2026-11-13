@@ -281,7 +281,7 @@ test_that("las reglas de cada base encuentran sus archivos en el registro del pa
     c(2010, "iter", 33), c(2010, "ageb", 32), c(2010, "muestra", 32),
     c(2010, "localidades", 33), c(2010, "entorno", 32),
     c(2020, "iter", 33), c(2020, "ageb", 32), c(2020, "muestra", 33),
-    c(2020, "localidades", 33), c(2020, "entorno", 33)
+    c(2020, "localidades", 33), c(2020, "entorno", 33), c(2020, "asistencia", 33)
   )
   for (caso in esperado) {
     archivos <- poblacion_archivos("censo", as.integer(caso[1]), caso[2])
@@ -298,8 +298,10 @@ test_that("las reglas de cada base encuentran sus archivos en el registro del pa
   # Las bases de ejemplo del cuestionario basico (datos ficticios) no entran
   todas <- unlist(lapply(esperado, function(caso) poblacion_archivos("censo", as.integer(caso[1]), caso[2])$url))
   expect_false(any(grepl("ejemplo|dummy", todas, ignore.case = TRUE)))
-  # Ni la base de alojamientos de asistencia social, que el paquete no incluye
-  expect_false(any(grepl("caas", todas, ignore.case = TRUE)))
+  # Cada base encuentra solo sus archivos
+  asistencia <- poblacion_archivos("censo", 2020L, "asistencia")$url
+  expect_true(all(grepl("/microdatos/caas/Censo2020_CAAS_", asistencia)))
+  expect_identical(sum(grepl("/caas/", todas)), length(asistencia))
 })
 
 test_that("censo() descarga el Censo 2020 en CSV desde las rutas del registro", {
@@ -328,6 +330,24 @@ test_that("censo() descarga las dos tablas del entorno urbano 2020", {
   expect_identical(vialidades$CVEVIAL, c("00012", "00013", "00099"))
   expect_error(censo(2020, "entorno", estado = "Colima", tabla = "personas"),
                "`tabla = \"personas\"` no es una opci\u00f3n v\u00e1lida.*\"manzanas\", \"vialidades\"")
+})
+
+test_that("censo() descarga los alojamientos de asistencia social de 2020", {
+  censo_local()
+  colima <- suppressMessages(censo(2020, "asistencia", estado = "Colima"))
+  expect_match(attr(colima, "fuente"), "/ccpv/2020/microdatos/caas/Censo2020_CAAS_col_csv\\.zip$")
+  expect_identical(colima$ENT, c("06", "06"))
+  expect_identical(colima$MUN, c("002", "007"))
+  expect_identical(colima$RESIDENTES, c(24L, 11L))
+  expect_identical(colima$NOM_ALOJ[1], "Casa Hogar Ni\u00f1os de Colima")
+  nacional <- suppressMessages(censo(2020, "asistencia"))
+  expect_match(attr(nacional, "fuente"), "/caas/Censo2020_CAAS_eum_csv\\.zip$")
+  expect_identical(nrow(nacional), 3L)
+  expect_error(censo(2010, "asistencia"), "La base \"asistencia\" no existe para 2010: el INEGI la publica para 2020")
+  expect_error(censo(2020, "asistencia", estado = "Colima", tabla = "personas"),
+               "`tabla` solo se usa con las bases")
+  expect_error(censo(2020, "asistencia", estado = "Colima", nivel = "municipio"),
+               "`nivel` solo se usa con las bases")
 })
 
 test_that("censo() explica cuando el registro no incluye una base", {

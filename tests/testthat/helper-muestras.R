@@ -103,7 +103,8 @@ servidor_prueba <- function(entorno = parent.frame()) {
       localidades = "/cinco_mil_menos/resloc_([0-9]{2}|nal)_",
       entorno = "/urbano/MANZANA_EU_([0-9]{2})_",
       iter2020 = "/datosabiertos/iter/iter_([0-9]{2})_cpv2020_|/microdatos/iter/ITER_([0-9]{2}|NAL)_2020_",
-      entorno2020 = "/microdatos/ceu/Censo2020_CEU_([a-z]+)_"
+      entorno2020 = "/microdatos/ceu/Censo2020_CEU_([a-z]+)_",
+      asistencia2020 = "/microdatos/caas/Censo2020_CAAS_([a-z]+)_"
     )
     # En 2020 algunos archivos se nombran con la abreviatura de la entidad
     abreviaturas <- c(col = "06", nay = "18", eum = "00")

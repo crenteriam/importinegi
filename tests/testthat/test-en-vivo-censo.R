@@ -198,9 +198,9 @@ test_that("EN VIVO: censo() descarga cada tabla de la muestra", {
   }
 })
 
-test_that("EN VIVO: censo() descarga las localidades y el entorno urbano", {
+test_that("EN VIVO: censo() descarga las localidades, el entorno urbano y la asistencia social", {
   censo_en_vivo()
-  for (base in c("localidades", "entorno")) {
+  for (base in c("localidades", "entorno", "asistencia")) {
     for (year in years_censo()) {
       clave <- entidad_menor(year, base)
       if (is.na(clave)) {

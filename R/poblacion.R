@@ -38,16 +38,14 @@ poblacion_programas <- function() {
 # Bases de datos de cada programa y año. `reconoce` es una expresion regular
 # que se compara con la descripcion de cada archivo en el registro, ya
 # normalizada (minusculas y sin acentos).
-#
-# En 2020 el INEGI tambien publica la base de alojamientos de asistencia
-# social, que el paquete todavia no incluye.
 poblacion_bases <- function() {
   reglas <- c(
     iter = "\\biter\\b",
     ageb = "\\bageb\\b",
     muestra = "\\bmuestra\\b|cuestionario ampliado",
     localidades = "localidades con menos|de las localidades",
-    entorno = "entorno urbano"
+    entorno = "entorno urbano",
+    asistencia = "asistencia social"
   )
   fila <- function(programa, year, bases) {
     data.frame(
@@ -59,7 +57,7 @@ poblacion_bases <- function() {
     fila("censo", 1990L, c("iter", "muestra")),
     fila("censo", 2000L, c("iter", "muestra")),
     fila("censo", 2010L, c("iter", "ageb", "muestra", "localidades", "entorno")),
-    fila("censo", 2020L, c("iter", "ageb", "muestra", "localidades", "entorno"))
+    fila("censo", 2020L, c("iter", "ageb", "muestra", "localidades", "entorno", "asistencia"))
   )
 }
 
@@ -71,6 +69,7 @@ poblacion_nombre_base <- function(base) {
     muestra = "la muestra (cuestionario ampliado)",
     localidades = "los resultados sobre localidades",
     entorno = "los resultados sobre el entorno urbano",
+    asistencia = "los resultados sobre alojamientos de asistencia social",
     viviendas = "las viviendas habitadas y deshabitadas por localidad"
   )
   unname(nombres[base])

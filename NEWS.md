@@ -21,7 +21,7 @@
 ## Funciones
 
 * Nueva funcion `censo()`, que reune en una sola funcion todas las bases de datos de los Censos de Poblacion y Vivienda. Sustituira a `censo_poblacion_iter()`, `censo_poblacion_ageb()`, `censo_poblacion_rural()`, `censo_poblacion_urbano()` y `censo_poblacion_muestra()`, que por ahora se conservan sin cambios.
-    * `censo(year, base, estado, tabla, nivel)`: `year` es obligatorio; `base` elige entre `"iter"`, `"ageb"`, `"muestra"`, `"localidades"` y `"entorno"`.
+    * `censo(year, base, estado, tabla, nivel)`: `year` es obligatorio; `base` elige entre `"iter"`, `"ageb"`, `"muestra"`, `"localidades"`, `"entorno"` y `"asistencia"` (alojamientos de asistencia social, Censo 2020).
     * Censos de 1990, 2000, 2010 y 2020. El Censo 2020 es nuevo en el paquete; se lee de los archivos CSV del INEGI. Los conteos de 1995 y 2005 tendran su propia funcion.
     * `estado` acepta nombre, abreviatura o clave, sin distinguir mayusculas ni acentos, y varias entidades a la vez, que se combinan en una sola tabla. `"todas"` descarga las 32 entidades.
     * `nivel` sustituye a los argumentos `totalestado`, `totalmunicipio`, `localidades`, `totallocalidad`, `totalageb` y `manzana`.
