@@ -102,13 +102,14 @@ servidor_prueba <- function(entorno = parent.frame()) {
       muestra1990 = "/cgpv90p_([0-9]{2})_",
       localidades = "/cinco_mil_menos/resloc_([0-9]{2}|nal)_",
       entorno = "/urbano/MANZANA_EU_([0-9]{2})_",
-      iter2020 = "/datosabiertos/iter/iter_([0-9]{2})_cpv2020_"
+      iter2020 = "/datosabiertos/iter/iter_([0-9]{2})_cpv2020_|/microdatos/iter/ITER_([0-9]{2}|NAL)_2020_"
     )
     archivo <- NA_character_
     for (nombre in names(reglas)) {
       hallado <- regmatches(req$path, regexec(reglas[[nombre]], req$path))[[1]]
-      if (length(hallado) == 2) {
-        archivo <- paste0(nombre, "_", sub("nal", "00", hallado[2]), ".zip")
+      clave <- hallado[-1][nzchar(hallado[-1])]
+      if (length(clave) == 1) {
+        archivo <- paste0(nombre, "_", sub("^nal$", "00", tolower(clave)), ".zip")
         break
       }
     }

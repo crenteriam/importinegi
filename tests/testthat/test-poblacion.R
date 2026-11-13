@@ -105,7 +105,7 @@ test_that("las tablas de bases y programas son coherentes", {
 
 test_that("poblacion_archivos() devuelve una tabla vacia si la base no existe o no esta en el registro", {
   columnas <- c("clave", "formato", "tamano", "bytes", "url")
-  for (caso in list(c(1990, "ageb"), c(2020, "iter"), c(2010, "viviendas"))) {
+  for (caso in list(c(1990, "ageb"), c(2000, "localidades"), c(2010, "viviendas"))) {
     archivos <- poblacion_archivos("censo", as.integer(caso[1]), caso[2])
     expect_identical(nrow(archivos), 0L, info = paste(caso, collapse = " "))
     expect_named(archivos, columnas)

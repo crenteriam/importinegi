@@ -39,8 +39,8 @@ poblacion_programas <- function() {
 # que se compara con la descripcion de cada archivo en el registro, ya
 # normalizada (minusculas y sin acentos).
 #
-# Las bases de 2020 se reconocen con las mismas reglas que las de 2010; se
-# confirmaran cuando el registro del paquete incluya el Censo 2020.
+# En 2020 el INEGI tambien publica la base de alojamientos de asistencia
+# social, que el paquete todavia no incluye.
 poblacion_bases <- function() {
   reglas <- c(
     iter = "\\biter\\b",
@@ -238,14 +238,20 @@ poblacion_archivos <- function(programa, year, base) {
     registro$proyecto == proyecto & !is.na(registro$edicion) & registro$edicion == year &
       registro$formato %in% c("csv", "dbf"),
   ]
-  filas <- filas[grepl(regla$reconoce, normalizar_texto(filas$descripcion)), ]
 
-  # El titulo es "Bases de datos|<entidad>"; se descartan la documentacion y
-  # las bases de ejemplo, que no contienen datos reales.
-  partes <- strsplit(filas$titulo, "|", fixed = TRUE)
-  grupo <- normalizar_texto(vapply(partes, function(p) p[1], character(1)))
+  # El registro describe los archivos de dos formas:
+  #   hasta 2010: titulo "Bases de datos|<entidad>" y la base en la descripcion;
+  #   desde 2020: titulo "<base>|...|Bases de datos|<entidad>".
+  # La base se reconoce en la descripcion o en el primer segmento del titulo.
+  # Solo se conservan los archivos cuyo penultimo segmento es "Bases de datos":
+  # asi se descartan la documentacion y las bases de ejemplo, que no contienen
+  # datos reales.
+  partes <- lapply(strsplit(filas$titulo, "|", fixed = TRUE), trimws)
+  primero <- vapply(partes, function(p) p[1], character(1))
+  grupo <- normalizar_texto(vapply(partes, function(p) if (length(p) >= 2) p[length(p) - 1] else "", character(1)))
   entidad <- vapply(partes, function(p) p[length(p)], character(1))
-  es_datos <- lengths(partes) >= 2 & grepl("^bases? de datos$|^microdatos$|^datos abiertos$", grupo)
+  es_base <- grepl(regla$reconoce, normalizar_texto(paste(filas$descripcion, primero)))
+  es_datos <- es_base & grepl("^bases? de datos$|^microdatos$|^datos abiertos$", grupo)
   filas <- filas[es_datos, ]
   entidad <- entidad[es_datos]
 
@@ -482,6 +488,26 @@ poblacion_filtrar_nivel <- function(datos, base, nivel, explicito) {
   datos[clasificacion %in% nivel, , drop = FALSE]
 }
 
+# Tipos de las columnas -----------------------------------------------------------
+
+# Columnas que se conservan como texto aunque solo contengan numeros: las claves
+# geograficas, los identificadores de vivienda, hogar y persona, las variables
+# del diseño de la muestra y las coordenadas, que el INEGI escribe en grados,
+# minutos y segundos sin separadores ("1023456").
+columnas_texto <- function(datos) {
+  geograficas <- unlist(lapply(claves_geograficas(), function(clave) clave$nombres), use.names = FALSE)
+  otras <- "^ID_|^FOLIO|^NUMVIV$|^LOC50K$|^UPM$|^ESTRATO$|^LONGITUD$|^LATITUD$"
+  nombres <- names(datos)
+  nombres[toupper(nombres) %in% geograficas | grepl(otras, nombres, ignore.case = TRUE)]
+}
+
+# Convierte a numero las columnas numericas. En la muestra se convierten
+# tambien las que tienen ceros a la izquierda ("008" en la edad, "0012" en el
+# factor de expansion): son respuestas codificadas, no claves.
+poblacion_convertir <- function(datos, base) {
+  convertir_numericas(datos, texto = columnas_texto(datos), ceros = base == "muestra")
+}
+
 # Motor -------------------------------------------------------------------------
 
 poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
@@ -527,8 +553,7 @@ poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
   if (!is.null(faltantes)) {
     datos <- limpiar_faltantes(datos, faltantes)
   }
-  protegidas <- unlist(lapply(claves_geograficas(), function(clave) clave$nombres), use.names = FALSE)
-  datos <- convertir_numericas(datos, texto = protegidas)
+  datos <- poblacion_convertir(datos, base)
   if (!is.null(nivel)) {
     datos <- poblacion_filtrar_nivel(datos, base, nivel, nivel_explicito)
   }

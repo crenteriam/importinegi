@@ -209,5 +209,12 @@ escribir_zip(
   otros = list("iter_06_cpv2020/metadatos/metadatos_iter_06_cpv2020.txt" = "Metadatos de muestra")
 )
 
+# Archivo nacional: totales del pais y localidades de Colima
+escribir_zip(
+  "iter2020_00.zip",
+  list("iter_00_cpv2020/conjunto_de_datos/conjunto_de_datos_iter_00CSV20.csv" =
+         rbind(iter_nacional_totales[1, ], iter_csv))
+)
+
 message("Muestras generadas en ", destino, ":")
 print(file.info(list.files(destino, full.names = TRUE))[, "size", drop = FALSE])

@@ -27,6 +27,8 @@ test_that("censo() convierte los indicadores a numero y los datos reservados a N
   # Las claves y los valores con ceros a la izquierda quedan como texto
   expect_type(iter$ENTIDAD, "character")
   expect_identical(iter$ALTITUD, c("0020", "0015", "0040", "0490"))
+  # Las coordenadas se conservan como texto
+  expect_identical(iter$LONGITUD, c("1035752", "1035800", "1035910", "1034330"))
   # El texto de los DBF se entrega en UTF-8
   expect_identical(iter$NOM_LOC[1:3], c("Ciudad de Armer\u00eda", "El Para\u00edso", "Rinc\u00f3n de L\u00f3pez"))
   # La suma de las localidades es el total de la entidad: los agregados de
@@ -127,9 +129,10 @@ test_that("censo() descarga cada tabla de la muestra de 2010", {
   expect_identical(nrow(personas), 3L)
   expect_identical(personas$ENT, rep("06", 3))
   expect_identical(personas$MUN, c("001", "002", "003"))
-  # Codigos con ceros a la izquierda quedan como texto; el resto, como numero
-  expect_identical(personas$ESCOLARI, c("09", "02", "00"))
-  expect_identical(personas$ID_VIV[1], "06000000001")
+  # En la muestra, las respuestas con ceros a la izquierda pasan a numero;
+  # los identificadores y las claves se conservan como texto
+  expect_identical(personas$ESCOLARI, c(9L, 2L, 0L))
+  expect_identical(personas$ID_VIV, c("06000000001", "06000000002", "06000000003"))
   expect_identical(personas$SEXO, c(1L, 3L, 1L))
   expect_identical(personas$FACTOR, c(12L, 12L, 9L))
   expect_identical(suppressMessages(censo(2010, "muestra", estado = "Colima", tabla = "Personas")), personas)
@@ -274,7 +277,9 @@ test_that("las reglas de cada base encuentran sus archivos en el registro del pa
     c(1990, "iter", 33), c(1990, "muestra", 32),
     c(2000, "iter", 33), c(2000, "muestra", 32),
     c(2010, "iter", 33), c(2010, "ageb", 32), c(2010, "muestra", 32),
-    c(2010, "localidades", 33), c(2010, "entorno", 32)
+    c(2010, "localidades", 33), c(2010, "entorno", 32),
+    c(2020, "iter", 33), c(2020, "ageb", 32), c(2020, "muestra", 33),
+    c(2020, "localidades", 33), c(2020, "entorno", 33)
   )
   for (caso in esperado) {
     archivos <- poblacion_archivos("censo", as.integer(caso[1]), caso[2])
@@ -283,16 +288,36 @@ test_that("las reglas de cada base encuentran sus archivos en el registro del pa
     expect_identical(setdiff(sprintf("%02d", 1:32), archivos$clave), character(), info = etiqueta)
     expect_identical("00" %in% archivos$clave, caso[3] == "33", info = etiqueta)
     expect_identical(anyDuplicated(archivos$url), 0L, info = etiqueta)
-    expect_identical(unique(archivos$formato), "dbf", info = etiqueta)
-    expect_true(all(grepl(paste0("/contenidos/programas/ccpv/", caso[1], "/microdatos/.+_dbf\\.zip$"), archivos$url)),
+    formato <- if (caso[1] == "2020") "csv" else "dbf"
+    expect_identical(unique(archivos$formato), formato, info = etiqueta)
+    expect_true(all(grepl(paste0("/contenidos/programas/ccpv/", caso[1], "/microdatos/.+_", formato, "\\.zip$"), archivos$url)),
                 info = etiqueta)
   }
   # Las bases de ejemplo del cuestionario basico (datos ficticios) no entran
   todas <- unlist(lapply(esperado, function(caso) poblacion_archivos("censo", as.integer(caso[1]), caso[2])$url))
-  expect_false(any(grepl("ejemplobd|dummy", todas)))
+  expect_false(any(grepl("ejemplo|dummy", todas, ignore.case = TRUE)))
+  # Ni la base de alojamientos de asistencia social, que el paquete no incluye
+  expect_false(any(grepl("caas", todas, ignore.case = TRUE)))
 })
 
-test_that("censo() explica que el registro todavia no incluye el Censo 2020", {
+test_that("censo() descarga el Censo 2020 en CSV desde las rutas del registro", {
+  censo_local()
+  iter <- suppressMessages(censo(2020, estado = "Colima"))
+  expect_match(attr(iter, "fuente"), "/ccpv/2020/microdatos/iter/ITER_06_2020_csv\\.zip$")
+  expect_identical(iter$LOC, c("0001", "0015", "0020", "0001"))
+  expect_identical(iter$POBTOT, c(240L, 3L, 7L, 400L))
+  expect_identical(iter$NOM_LOC[1], "Ciudad de Armer\u00eda")
+  expect_identical(names(iter)[1], "ENTIDAD")
+  nacional <- suppressMessages(censo(2020, nivel = "nacional"))
+  expect_match(attr(nacional, "fuente"), "/ITER_NAL_2020_csv\\.zip$")
+  expect_identical(nacional[, c("ENTIDAD", "MUN", "LOC", "POBTOT")],
+                   data.frame(ENTIDAD = "00", MUN = "000", LOC = "0000", POBTOT = 750L))
+})
+
+test_that("censo() explica cuando el registro no incluye una base", {
+  registro <- registro_archivos[!(registro_archivos$proyecto == "ccpv" & registro_archivos$edicion %in% 2020L), ]
+  attr(registro, "generado") <- "2026-11-11"
+  withr::local_options(importinegi.registro = registro)
   expect_error(censo(2020), "El registro de archivos de esta versi\u00f3n del paquete \\(generado el 2026-11-11\\) no incluye los principales resultados por localidad \\(ITER\\) de 2020")
   expect_error(censo(2020, "muestra", estado = "Colima"), "no incluye la muestra \\(cuestionario ampliado\\) de 2020")
 })

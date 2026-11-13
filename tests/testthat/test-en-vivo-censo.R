@@ -38,6 +38,18 @@ describir_zip <- function(year, base, clave) {
       "\n", sep = "")
 }
 
+# Comprueba que el texto sea UTF-8 valido y muestra algunos valores con acento.
+revisar_texto <- function(etiqueta, datos) {
+  texto <- names(datos)[vapply(datos, is.character, logical(1))]
+  validos <- vapply(datos[texto], function(x) all(validUTF8(x)), logical(1))
+  expect_true(all(validos), info = paste(etiqueta, "columnas con texto invalido:", paste(texto[!validos], collapse = ", ")))
+  nombres <- grep("^NOM_", texto, value = TRUE)
+  ejemplos <- unique(unlist(lapply(datos[nombres], function(x) grep("[^ -~]", x, value = TRUE))))
+  cat("[en vivo] ", etiqueta, " texto con acento: ",
+      if (length(ejemplos) > 0) paste(utils::head(ejemplos, 5), collapse = " | ") else "(ninguno en columnas NOM_)",
+      "\n", sep = "")
+}
+
 describir_tabla <- function(etiqueta, datos) {
   tipos <- paste0(names(datos), "=", vapply(datos, function(x) class(x)[1], character(1)))
   cat("[en vivo] ", etiqueta, ": ", nrow(datos), " filas x ", ncol(datos), " columnas. ",
@@ -86,14 +98,7 @@ test_that("EN VIVO: censo() descarga el ITER de una entidad en cada censo", {
     expect_gt(sum(niveles == "localidad"), 0)
     expect_identical(unique(todos[[columna_clave(todos, "ent")]]), clave, info = year)
 
-    # Texto legible (los DBF no vienen en UTF-8)
-    texto <- names(todos)[vapply(todos, is.character, logical(1))]
-    expect_true(all(vapply(todos[texto], function(x) all(validUTF8(x)), logical(1))), info = year)
-    nombres <- grep("^NOM_LOC$|^NOMLOC$|^LOCALIDAD$", names(todos), value = TRUE, ignore.case = TRUE)
-    if (length(nombres) > 0) {
-      con_acento <- grep("[^ -~]", todos[[nombres[1]]], value = TRUE)
-      cat("[en vivo] ", year, " iter nombres con acento: ", paste(utils::head(con_acento, 4), collapse = " | "), "\n", sep = "")
-    }
+    revisar_texto(paste(year, "iter", clave), todos)
 
     # Las localidades suman el total de la entidad; los agregados 9998 y 9999
     # (localidades de una y dos viviendas) repiten poblacion ya contada.
@@ -154,6 +159,7 @@ test_that("EN VIVO: censo() descarga los resultados por AGEB y manzana", {
     for (nivel in c("municipio", "localidad", "ageb", "manzana")) {
       expect_gt(sum(niveles == nivel), 0)
     }
+    revisar_texto(paste(year, "ageb", clave), todos)
     manzanas <- suppressMessages(censo(year, "ageb", estado = clave))
     expect_identical(nrow(manzanas), sum(niveles == "manzana"), info = year)
   }
@@ -172,13 +178,22 @@ test_that("EN VIVO: censo() descarga cada tabla de la muestra", {
     if (is.null(tablas)) {
       muestra <- suppressMessages(censo(year, "muestra", estado = clave))
       describir_tabla(paste(year, "muestra", clave), muestra)
+      revisar_texto(paste(year, "muestra", clave), muestra)
       expect_gt(nrow(muestra), 0)
       next
     }
     for (tabla in tablas) {
       muestra <- suppressMessages(censo(year, "muestra", estado = clave, tabla = tabla))
-      describir_tabla(paste(year, "muestra", clave, tabla), muestra)
+      etiqueta <- paste(year, "muestra", clave, tabla)
+      describir_tabla(etiqueta, muestra)
+      revisar_texto(etiqueta, muestra)
       expect_gt(nrow(muestra), 0)
+      # El factor de expansion y la edad deben ser numericos
+      for (columna in grep("^FACTOR$|^EDAD$|^MEDAD$", names(muestra), value = TRUE)) {
+        expect_true(is.numeric(muestra[[columna]]), info = paste(etiqueta, columna))
+      }
+      texto <- names(muestra)[vapply(muestra, is.character, logical(1))]
+      cat("[en vivo] ", etiqueta, " columnas de texto: ", paste(texto, collapse = ", "), "\n", sep = "")
     }
   }
 })
@@ -194,6 +209,7 @@ test_that("EN VIVO: censo() descarga las localidades y el entorno urbano", {
       describir_zip(year, base, clave)
       datos <- suppressMessages(censo(year, base, estado = clave))
       describir_tabla(paste(year, base, clave), datos)
+      revisar_texto(paste(year, base, clave), datos)
       expect_gt(nrow(datos), 0)
       expect_false(is.na(columna_clave(datos, "ent")), info = paste(year, base))
       expect_false(is.na(columna_clave(datos, "mun")), info = paste(year, base))

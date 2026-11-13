@@ -66,20 +66,33 @@ dbf_codificacion <- function(archivo) {
   )
 }
 
-# El INEGI publica sus CSV en UTF-8 (a veces con marca BOM) o en Latin-1.
-# Todas las columnas se leen como texto para no perder ceros a la izquierda.
+# Lee un CSV con todas sus columnas como texto. El INEGI publica sus CSV en
+# UTF-8 (a veces con BOM) y algunos en Latin-1. El archivo se lee completo como
+# UTF-8 y despues se convierten desde Latin-1 los valores que no son UTF-8
+# valido, para no depender de que la primera parte del archivo tenga acentos.
 leer_csv <- function(archivo) {
-  muestra <- readLines(archivo, n = 2000, warn = FALSE, encoding = "bytes")
-  codificacion <- if (all(validUTF8(muestra))) "UTF-8-BOM" else "latin1"
-  utils::read.csv(
+  datos <- utils::read.csv(
     archivo,
     colClasses = "character",
-    fileEncoding = codificacion,
+    encoding = "UTF-8",
     check.names = FALSE,
     na.strings = "",
     strip.white = TRUE,
     stringsAsFactors = FALSE
   )
+  nombres <- names(datos)
+  invalidos <- !validUTF8(nombres)
+  nombres[invalidos] <- iconv(nombres[invalidos], from = "latin1", to = "UTF-8")
+  names(datos) <- sub("^\ufeff", "", nombres)
+  for (columna in seq_along(datos)) {
+    valores <- datos[[columna]]
+    malos <- !is.na(valores) & !validUTF8(valores)
+    if (any(malos)) {
+      valores[malos] <- iconv(valores[malos], from = "latin1", to = "UTF-8")
+      datos[[columna]] <- valores
+    }
+  }
+  datos
 }
 
 # Convierte en NA los codigos de dato faltante de las columnas de texto.
@@ -95,9 +108,10 @@ limpiar_faltantes <- function(datos, codigos = c("*", "N/D")) {
 }
 
 # Convierte a numero las columnas de texto cuyos valores son todos numericos.
-# No convierte las columnas con ceros a la izquierda ("09", "0001"), porque
-# son claves, ni las indicadas en `texto`.
-convertir_numericas <- function(datos, texto = NULL) {
+# Por omision no convierte las columnas con ceros a la izquierda ("09",
+# "0001"), porque suelen ser claves; con `ceros = TRUE` tambien las convierte.
+# Nunca convierte las columnas indicadas en `texto`.
+convertir_numericas <- function(datos, texto = NULL, ceros = FALSE) {
   protegidas <- tolower(texto %||% character())
   for (columna in names(datos)) {
     valores <- datos[[columna]]
@@ -110,7 +124,7 @@ convertir_numericas <- function(datos, texto = NULL) {
     }
     es_numero <- grepl("^-?[0-9]+(\\.[0-9]+)?$", presentes)
     es_clave <- grepl("^-?0[0-9]", presentes)
-    if (all(es_numero) && !any(es_clave)) {
+    if (all(es_numero) && (ceros || !any(es_clave))) {
       numeros <- as.numeric(valores)
       enteros <- !any(grepl(".", presentes, fixed = TRUE)) &&
         all(abs(numeros) <= .Machine$integer.max, na.rm = TRUE)
