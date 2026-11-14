@@ -14,16 +14,12 @@ Download and manage data sets of statistical projects and geographic data create
 Catalogo y documentacion de los proyectos estadisticos:
 \itemize{
 \item \code{\link{catalogo_inegi}}: catalogo de proyectos de la Red Nacional de Metadatos del INEGI y acceso a la ficha de cada proyecto.
+\item \code{\link{bases_importinegi}}: bases de datos que se pueden descargar con el paquete, por proyecto y año, con su cobertura y su tamaño. No requiere conexion a internet.
 }
 
-Censo y Conteo de Poblacion y Vivienda:
+Censo de Poblacion y Vivienda:
 \itemize{
-\item \code{\link{censo}}: todas las bases de datos de los Censos de Poblacion y Vivienda (ITER, AGEB y manzana, muestra, localidades y entorno urbano) en una sola funcion.
-\item \code{\link{censo_poblacion_iter}}: principales resultados por localidad (ITER).
-\item \code{\link{censo_poblacion_ageb}}: resultados por AGEB y manzana urbana.
-\item \code{\link{censo_poblacion_rural}}: localidades con menos de 5 mil habitantes.
-\item \code{\link{censo_poblacion_urbano}}: infraestructura y caracteristicas del entorno urbano.
-\item \code{\link{censo_poblacion_muestra}}: muestra (cuestionario ampliado).
+\item \code{\link{censo}}: todas las bases de datos de los Censos de Poblacion y Vivienda de 1990 a 2020 (ITER, AGEB y manzana, muestra, localidades, entorno urbano y alojamientos de asistencia social) en una sola funcion.
 }
 
 Censos de gobierno y encuestas en hogares:

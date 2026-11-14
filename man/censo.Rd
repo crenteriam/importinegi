@@ -13,7 +13,7 @@ censo(year, base = "iter", estado = "nacional", tabla = NULL, nivel = NULL)
 
 \item{estado}{Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos. Acepta varias entidades a la vez, que se combinan en una sola tabla. Por omision, \code{"nacional"} descarga el archivo nacional, en las bases que lo tienen. \code{"todas"} descarga las 32 entidades y las combina.}
 
-\item{tabla}{Solo para las bases que se publican en varias tablas. En \code{base = "muestra"}: \code{"personas"} (por omision), \code{"viviendas"} o \code{"migrantes"}; la muestra de 1990 se publica en una sola tabla y no usa este argumento. En \code{base = "entorno"} del Censo 2020: \code{"manzanas"} (por omision) o \code{"vialidades"}. En \code{base = "asistencia"}: \code{"alojamientos"} (por omision), \code{"usuarios"} (poblacion usuaria residente) o \code{"trabajadores"}.}
+\item{tabla}{Solo para las bases que se publican en varias tablas. En \code{base = "muestra"}: \code{"personas"} (por omision), \code{"viviendas"} o \code{"migrantes"}; la muestra de 1990 se publica en una sola tabla y no usa este argumento. En \code{base = "entorno"} del Censo 2020: \code{"manzanas"} (por omision) o \code{"vialidades"}. En \code{base = "asistencia"}: \code{"alojamientos"} (por omision; una fila por alojamiento, con sus caracteristicas), \code{"usuarios"} (poblacion usuaria residente de cada alojamiento, por sexo y grupos de edad) o \code{"trabajadores"} (poblacion que trabaja en cada alojamiento).}
 
 \item{nivel}{Solo para las bases \code{"iter"} y \code{"ageb"}: niveles de agregacion que se conservan. En \code{"iter"}: \code{"nacional"}, \code{"entidad"}, \code{"municipio"} y \code{"localidad"}. En \code{"ageb"}: \code{"entidad"}, \code{"municipio"}, \code{"localidad"}, \code{"ageb"} y \code{"manzana"}. Acepta varios niveles, o \code{"todos"} para conservar todas las filas. Por omision, el nivel de mayor detalle.}
 }
@@ -38,7 +38,7 @@ Los Conteos de Poblacion y Vivienda (1995 y 2005) y las Encuestas Intercensales 
 
 La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee. Hasta 2010 lee los archivos en formato DBF; en 2020, en formato CSV. Requiere conexion a internet.
 
-Algunas descargas son grandes. Antes de descargar varios archivos, la funcion indica cuanto pesan en total. Por ejemplo, la muestra del Censo 2010 de las 32 entidades pesa cerca de 350 MB.
+Algunas descargas son grandes. Antes de descargar varios archivos, la funcion indica cuanto pesan en total. Por ejemplo, la muestra del Censo 2010 de las 32 entidades pesa cerca de 350 MB. El tamaño de cada base se puede consultar antes con \code{\link{bases_importinegi}}.
 }
 \section{Niveles de agregacion}{
 
@@ -72,10 +72,19 @@ viviendas <- censo(2010, base = "muestra", estado = c("Colima", "Nayarit"),
 # Resultados sobre las localidades pequeñas del Censo 2020, todo el pais.
 \dontrun{localidades <- censo(2020, base = "localidades")}
 
+# Alojamientos de asistencia social del Censo 2020, todo el pais.
+\dontrun{alojamientos <- censo(2020, base = "asistencia")}
+
+# Poblacion usuaria de los alojamientos de asistencia social de Tlaxcala.
+\dontrun{
+usuarios <- censo(2020, base = "asistencia", estado = "Tlaxcala",
+                  tabla = "usuarios")
+}
+
 # Direccion de los archivos que se descargaron.
 \dontrun{attr(iter, "fuente")}
 
 }
 \seealso{
-\code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos.
+\code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada censo y cuanto pesan. \code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos (por ejemplo, \code{catalogo_inegi(buscar = "censo de poblacion")}). La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion con mas ejemplos.
 }
