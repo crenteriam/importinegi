@@ -161,7 +161,8 @@ nombrar_bases <- function(bases) {
 poblacion_niveles <- function(base) {
   switch(
     base,
-    iter = c("nacional", "entidad", "municipio", "localidad"),
+    iter = ,
+    viviendas = c("nacional", "entidad", "municipio", "localidad"),
     ageb = c("entidad", "municipio", "localidad", "ageb", "manzana"),
     NULL
   )
@@ -416,8 +417,11 @@ poblacion_avisar_omision <- function(base, archivos) {
 
 # Elige, dentro de la carpeta descomprimida, el archivo que contiene la tabla.
 # Los zip de datos abiertos traen ademas el diccionario, los catalogos y los
-# metadatos; esos archivos se descartan.
-poblacion_elegir_tabla <- function(carpeta, formato, patron = NULL, tabla = NA_character_) {
+# metadatos; esos archivos se descartan. Algunos zip traen la misma tabla dos
+# veces (por ejemplo, en la raiz y en una carpeta): si las copias son
+# identicas, se usa la primera. `archivo` es el nombre del zip, para los
+# mensajes.
+poblacion_elegir_tabla <- function(carpeta, formato, patron = NULL, tabla = NA_character_, archivo = NULL) {
   candidatos <- buscar_archivos(carpeta, extension = formato, exigir = TRUE)
   relativa <- tolower(substring(candidatos, nchar(carpeta) + 2))
   en_conjunto <- grepl("conjunto_de_datos", relativa, fixed = TRUE)
@@ -433,11 +437,16 @@ poblacion_elegir_tabla <- function(carpeta, formato, patron = NULL, tabla = NA_c
   if (!is.null(patron)) {
     encontrados <- candidatos[grepl(patron, basename(candidatos), ignore.case = TRUE)]
   }
+  if (length(encontrados) > 1 && length(unique(tolower(basename(encontrados)))) == 1 &&
+      length(unique(unname(tools::md5sum(encontrados)))) == 1) {
+    encontrados <- encontrados[1]
+  }
   if (length(encontrados) != 1) {
     detener(
-      if (length(encontrados) == 0) "No se encontr\u00f3" else "Se encontr\u00f3 m\u00e1s de un archivo para",
+      if (length(encontrados) == 0) "No se encontró" else "Se encontró más de un archivo para",
       if (!is.na(tabla)) paste0(" la tabla ", comillas(tabla)) else " la tabla de datos",
-      " en el archivo descargado, que contiene: ", enumerar(basename(candidatos), maximo = 15), ". ",
+      " en el archivo descargado", if (!is.null(archivo)) paste0(" ", archivo), ", que contiene: ",
+      enumerar(substring(candidatos, nchar(carpeta) + 2), maximo = 15), ". ",
       "Es posible que el INEGI haya cambiado el contenido del archivo; puedes reportarlo en ",
       "https://github.com/crenteriam/importinegi/issues"
     )
@@ -462,7 +471,7 @@ poblacion_leer <- function(url, formato, tamano = NULL, patron = NULL, tabla = N
     unlink(carpeta, recursive = TRUE)
     if (!conservar) unlink(zip)
   }, add = TRUE)
-  leer_tabla(poblacion_elegir_tabla(carpeta, formato, patron, tabla))
+  leer_tabla(poblacion_elegir_tabla(carpeta, formato, patron, tabla, archivo = basename(url)))
 }
 
 # Ruta en la carpeta temporal de la sesion donde se guarda cada archivo de una

@@ -199,6 +199,20 @@ test_that("poblacion_elegir_tabla() encuentra la tabla dentro del archivo descar
   expect_error(poblacion_elegir_tabla(carpeta, "dbf"), "m\u00e1s de un archivo para la tabla de datos")
   expect_error(poblacion_elegir_tabla(carpeta, "csv"), "no contiene lo que se esperaba")
 
+  # Una tabla repetida en dos carpetas: si las copias son identicas se usa una;
+  # si no, el error dice el nombre del zip y la ruta de cada archivo
+  repetida <- withr::local_tempdir()
+  dir.create(file.path(repetida, "copia"))
+  writeLines("a", file.path(repetida, "datgen95.dbf"))
+  writeLines("a", file.path(repetida, "copia", "DATGEN95.DBF"))
+  writeLines("b", file.path(repetida, "migint95.dbf"))
+  expect_identical(tolower(basename(poblacion_elegir_tabla(repetida, "dbf", "^datgen", "personas"))), "datgen95.dbf")
+  writeLines("distinta", file.path(repetida, "copia", "DATGEN95.DBF"))
+  expect_error(
+    poblacion_elegir_tabla(repetida, "dbf", "^datgen", "personas", archivo = "cpv95_15_dbf.zip"),
+    "m\u00e1s de un archivo para la tabla \"personas\" en el archivo descargado cpv95_15_dbf.zip, que contiene: \"copia/DATGEN95.DBF\", \"datgen95.dbf\", \"migint95.dbf\""
+  )
+
   # En los zip de datos abiertos se descartan diccionario, catalogos y metadatos
   abiertos <- inegi_descomprimir(muestra("censo/iter2020_06.zip"))
   withr::defer(unlink(abiertos, recursive = TRUE))

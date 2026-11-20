@@ -15,7 +15,7 @@ conteo(year, base = "iter", estado = NULL, tabla = NULL, nivel = NULL)
 
 \item{tabla}{Solo para \code{base = "muestra"}. En 1995: \code{"personas"} (por omision) o \code{"migrantes"}. En 2005: \code{"personas"} (por omision), \code{"viviendas"} o \code{"hogares"}.}
 
-\item{nivel}{Solo para \code{base = "iter"}: \code{"nacional"}, \code{"entidad"}, \code{"municipio"} y \code{"localidad"}. Acepta varios niveles, o \code{"todos"} para conservar todas las filas. Por omision, el nivel de mayor detalle.}
+\item{nivel}{Solo para las bases \code{"iter"} y \code{"viviendas"}: \code{"nacional"}, \code{"entidad"}, \code{"municipio"} y \code{"localidad"}. Acepta varios niveles, o \code{"todos"} para conservar todas las filas. Por omision, el nivel de mayor detalle.}
 }
 \value{
 Data.frame con la base de datos solicitada. El atributo \code{"fuente"} contiene la direccion de los archivos descargados.
@@ -41,17 +41,19 @@ El Conteo de 1995 tuvo dos operativos: una enumeracion de toda la poblacion, con
 
 El Conteo de 2005 se levanto del 4 al 29 de octubre de 2005, con dos semanas adicionales para recuperar las viviendas pendientes. Su muestra no proviene de una encuesta aparte: es un extracto del archivo completo del Conteo, del que el INEGI tomo de forma sistematica el 10 por ciento de las viviendas particulares de cada entidad, con todos sus ocupantes (las viviendas colectivas quedaron fuera). Por eso tiene las mismas preguntas que el resto del Conteo de 2005. Se obtuvo de la misma forma que la muestra del Censo de 1990, y no como la muestra de 1995 ni las muestras censales de 2000 en adelante, que provienen de un cuestionario ampliado.
 
+La muestra de 1995 trae los factores de expansion de las personas (\code{FAC_POB}) y de las viviendas (\code{FAC_VIV}). La de 2005 no trae factor de expansion: como se tomo 1 de cada 10 viviendas, cada vivienda de la muestra representa a 10 viviendas y cada persona, a 10 personas.
+
 El INEGI publica las muestras por entidad. Si no se indica \code{estado}, la funcion descarga la de Aguascalientes y avisa cuanto pesaria la de todo el pais; con \code{estado = "nacional"} descarga las 32 entidades y las combina. La muestra nacional de 2005 pesa cerca de 120 MB y tiene unos 10 millones de registros de personas: la descarga puede tardar varios minutos y combinarla requiere varios GB de memoria.
 }
 
 \section{Niveles de agregacion}{
 
-La base \code{"iter"} mezcla filas de detalle con filas de totales. El INEGI identifica los totales con claves en ceros: municipio \code{"000"} para el total de la entidad y localidad \code{"0000"} para el total del municipio. El argumento \code{nivel} elige que filas se conservan; por omision, solo las localidades.
+Las bases \code{"iter"} y \code{"viviendas"} mezclan filas de detalle con filas de totales. El INEGI identifica los totales con claves en ceros: entidad \code{"00"} para el total nacional, municipio \code{"000"} para el total de la entidad y localidad \code{"0000"} para el total del municipio. El argumento \code{nivel} elige que filas se conservan; por omision, solo las localidades.
 }
 
 \section{Contenido de la tabla}{
 
-Las columnas conservan los nombres que les da el INEGI. Las claves geograficas (entidad, municipio y localidad) son texto y conservan los ceros a la izquierda (\code{"09"}, \code{"001"}). Las columnas que solo contienen numeros se convierten a numero, salvo las que tienen valores con ceros a la izquierda, que se conservan como texto porque suelen ser codigos. En la muestra, en cambio, esas columnas tambien se convierten a numero (la edad \code{"008"} pasa a ser \code{8}). En las bases \code{"iter"} y \code{"viviendas"}, los datos que el INEGI reserva por confidencialidad (\code{"*"}) o marca como no disponibles (\code{"N/D"}) se convierten en \code{NA}.
+Las columnas conservan los nombres que les da el INEGI. Las claves geograficas (entidad, municipio y localidad) son texto y conservan los ceros a la izquierda (\code{"09"}, \code{"001"}). Las columnas que solo contienen numeros se convierten a numero, salvo las que tienen valores con ceros a la izquierda, que se conservan como texto porque suelen ser codigos. En la muestra, en cambio, esas columnas tambien se convierten a numero (la edad \code{"008"} pasa a ser \code{8}), salvo las variables del diseño muestral de 1995 (\code{ESTRATO} y \code{UPM}). En las bases \code{"iter"} y \code{"viviendas"}, los datos que el INEGI reserva por confidencialidad (\code{"*"}) o marca como no disponibles (\code{"N/D"}) se convierten en \code{NA}.
 }
 
 \examples{

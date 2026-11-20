@@ -24,23 +24,35 @@ test_that("EN VIVO: conteo() descarga el ITER de una entidad en cada conteo", {
       next
     }
     cat("[en vivo] ", year, " iter ", clave, " niveles: ", resumir_niveles(niveles), "\n", sep = "")
-    expect_identical(sum(niveles == "entidad"), 1L, info = year)
+    expect_identical(sum(niveles == "entidad"), 1L, info = as.character(year))
     expect_gt(sum(niveles == "municipio"), 0)
     expect_gt(sum(niveles == "localidad"), 0)
-    expect_identical(unique(todos[[columna_clave(todos, "ent")]]), clave, info = year)
+    expect_identical(unique(todos[[columna_clave(todos, "ent")]]), clave, info = as.character(year))
     revisar_texto(paste(year, "iter", clave), todos)
 
-    # Las localidades suman el total de la entidad; los agregados 9998 y 9999
-    # (localidades de una y dos viviendas) repiten poblacion ya contada.
+    # En los censos, las localidades suman el total de la entidad y los
+    # agregados 9998 y 9999 (localidades de una y dos viviendas) repiten
+    # poblacion ya contada. En el Conteo de 1995, las localidades pequeñas solo
+    # aparecen en los agregados: las localidades mas los agregados de los
+    # municipios suman el total. Se informa cual de las dos formas tiene cada
+    # conteo.
     poblacion <- grep("^POBTOT$|^P_TOTAL$|^POB_TOT$|^POBTOTAL$", names(todos), value = TRUE, ignore.case = TRUE)
     if (length(poblacion) > 0 && is.numeric(todos[[poblacion[1]]])) {
       valores <- todos[[poblacion[1]]]
-      cat("[en vivo] ", year, " iter ", poblacion[1], ": entidad = ", sum(valores[niveles == "entidad"]),
+      entidad <- sum(valores[niveles == "entidad"])
+      localidades <- sum(valores[niveles == "localidad"], na.rm = TRUE)
+      agregados_municipales <- sum(valores[niveles == "agregado" & todos$MUN != "000"], na.rm = TRUE)
+      cat("[en vivo] ", year, " iter ", poblacion[1], ": entidad = ", entidad,
           "; suma de municipios = ", sum(valores[niveles == "municipio"], na.rm = TRUE),
-          "; suma de localidades = ", sum(valores[niveles == "localidad"], na.rm = TRUE),
-          "; suma de agregados 9998/9999 = ", sum(valores[niveles == "agregado"], na.rm = TRUE), "\n", sep = "")
-      expect_equal(sum(valores[niveles == "localidad"], na.rm = TRUE), sum(valores[niveles == "entidad"]), info = year)
-      expect_equal(sum(valores[niveles == "municipio"], na.rm = TRUE), sum(valores[niveles == "entidad"]), info = year)
+          "; suma de localidades = ", localidades,
+          "; agregados 9998/9999 de los municipios = ", agregados_municipales,
+          "; de la entidad = ", sum(valores[niveles == "agregado" & todos$MUN == "000"], na.rm = TRUE),
+          if (localidades == entidad) " -> las localidades suman el total (los agregados repiten poblacion)",
+          if (localidades != entidad && localidades + agregados_municipales == entidad)
+            " -> las localidades mas los agregados de los municipios suman el total",
+          "\n", sep = "")
+      expect_true(localidades == entidad || localidades + agregados_municipales == entidad, info = as.character(year))
+      expect_equal(sum(valores[niveles == "municipio"], na.rm = TRUE), entidad, info = as.character(year))
     } else {
       cat("[en vivo] ", year, " iter: no se identifico la columna de poblacion total. Columnas: ",
           paste(names(todos), collapse = ", "), "\n", sep = "")
@@ -48,7 +60,7 @@ test_that("EN VIVO: conteo() descarga el ITER de una entidad en cada conteo", {
 
     # Por omision, solo localidades
     localidades <- suppressMessages(conteo(year, estado = clave))
-    expect_identical(nrow(localidades), sum(niveles == "localidad"), info = year)
+    expect_identical(nrow(localidades), sum(niveles == "localidad"), info = as.character(year))
   }
 })
 
@@ -109,6 +121,17 @@ test_that("EN VIVO: conteo() descarga Aguascalientes por omision en la muestra",
 
 test_that("EN VIVO: conteo() combina las 32 entidades de la muestra de 1995", {
   en_vivo()
+  # Informativo: zip de entidades que traen una tabla repetida
+  archivos <- poblacion_archivos("conteo", 1995L, "muestra")
+  for (i in seq_len(nrow(archivos))) {
+    zip <- suppressMessages(inegi_descargar(archivos$url[i]))
+    contenido <- utils::unzip(zip, list = TRUE)$Name
+    nombres <- tolower(basename(contenido[!grepl("/$", contenido)]))
+    if (anyDuplicated(nombres) > 0 || any(grepl("\\.zip$", nombres))) {
+      cat("[en vivo] 1995 muestra ", archivos$clave[i], ": ", basename(archivos$url[i]), " contiene: ",
+          paste(contenido, collapse = " | "), "\n", sep = "")
+    }
+  }
   inicio <- Sys.time()
   nacional <- suppressMessages(conteo(1995, "muestra", estado = "nacional"))
   segundos <- as.numeric(difftime(Sys.time(), inicio, units = "secs"))
@@ -134,11 +157,25 @@ test_that("EN VIVO: conteo() descarga las viviendas habitadas y deshabitadas de 
   expect_gt(nrow(viviendas), 0)
   expect_false(is.na(columna_clave(viviendas, "ent")))
   expect_false(is.na(columna_clave(viviendas, "mun")))
-  # Informativo: si la tabla mezcla filas de totales, con las reglas del ITER
-  niveles <- poblacion_clasificar_nivel(viviendas, "iter")
-  cat("[en vivo] 2005 viviendas ", clave, ": ",
-      if (is.null(niveles)) paste("columnas", paste(names(viviendas), collapse = ", ")) else resumir_niveles(niveles),
-      "\n", sep = "")
+  todas <- suppressMessages(conteo(2005, "viviendas", estado = clave, nivel = "todos"))
+  niveles <- poblacion_clasificar_nivel(todas, "viviendas")
+  expect_false(is.null(niveles))
+  cat("[en vivo] 2005 viviendas ", clave, " niveles: ", resumir_niveles(niveles), "\n", sep = "")
+  expect_identical(sum(niveles == "entidad"), 1L)
+  expect_gt(sum(niveles == "municipio"), 0)
+  expect_identical(nrow(viviendas), sum(niveles == "localidad"))
+  total <- grep("^VIV_TOT$|^VIVTOT$", names(todas), value = TRUE)
+  if (length(total) > 0 && is.numeric(todas[[total[1]]])) {
+    valores <- todas[[total[1]]]
+    cat("[en vivo] 2005 viviendas ", total[1], ": entidad = ", sum(valores[niveles == "entidad"]),
+        "; suma de municipios = ", sum(valores[niveles == "municipio"], na.rm = TRUE),
+        "; suma de localidades = ", sum(valores[niveles == "localidad"], na.rm = TRUE), "\n", sep = "")
+    expect_equal(sum(valores[niveles == "municipio"], na.rm = TRUE), sum(valores[niveles == "entidad"]))
+  }
+  nacional <- suppressMessages(conteo(2005, "viviendas", nivel = "todos"))
+  niveles <- poblacion_clasificar_nivel(nacional, "viviendas")
+  cat("[en vivo] 2005 viviendas nacional: ", nrow(nacional), " filas; niveles: ", resumir_niveles(niveles), "\n", sep = "")
+  expect_identical(sum(niveles == "entidad"), 32L)
 })
 
 # Medicion unica, fuera de las pruebas regulares: se activa al lanzar a mano el

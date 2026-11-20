@@ -46,10 +46,10 @@ test_that("EN VIVO: censo() descarga el ITER de una entidad en cada censo", {
     }
     cat("[en vivo] ", year, " iter ", clave, " niveles: ",
         paste(names(table(niveles)), table(niveles), sep = "=", collapse = ", "), "\n", sep = "")
-    expect_identical(sum(niveles == "entidad"), 1L, info = year)
+    expect_identical(sum(niveles == "entidad"), 1L, info = as.character(year))
     expect_gt(sum(niveles == "municipio"), 0)
     expect_gt(sum(niveles == "localidad"), 0)
-    expect_identical(unique(todos[[columna_clave(todos, "ent")]]), clave, info = year)
+    expect_identical(unique(todos[[columna_clave(todos, "ent")]]), clave, info = as.character(year))
 
     revisar_texto(paste(year, "iter", clave), todos)
 
@@ -62,8 +62,8 @@ test_that("EN VIVO: censo() descarga el ITER de una entidad en cada censo", {
           "; suma de municipios = ", sum(valores[niveles == "municipio"], na.rm = TRUE),
           "; suma de localidades = ", sum(valores[niveles == "localidad"], na.rm = TRUE),
           "; suma de agregados 9998/9999 = ", sum(valores[niveles == "agregado"], na.rm = TRUE), "\n", sep = "")
-      expect_equal(sum(valores[niveles == "localidad"], na.rm = TRUE), sum(valores[niveles == "entidad"]), info = year)
-      expect_equal(sum(valores[niveles == "municipio"], na.rm = TRUE), sum(valores[niveles == "entidad"]), info = year)
+      expect_equal(sum(valores[niveles == "localidad"], na.rm = TRUE), sum(valores[niveles == "entidad"]), info = as.character(year))
+      expect_equal(sum(valores[niveles == "municipio"], na.rm = TRUE), sum(valores[niveles == "entidad"]), info = as.character(year))
     } else {
       cat("[en vivo] ", year, " iter: no se identifico la columna de poblacion total. Columnas: ",
           paste(names(todos), collapse = ", "), "\n", sep = "")
@@ -71,7 +71,7 @@ test_that("EN VIVO: censo() descarga el ITER de una entidad en cada censo", {
 
     # Por omision, solo localidades
     localidades <- suppressMessages(censo(year, estado = clave))
-    expect_identical(nrow(localidades), sum(niveles == "localidad"), info = year)
+    expect_identical(nrow(localidades), sum(niveles == "localidad"), info = as.character(year))
   }
 })
 
@@ -108,20 +108,20 @@ test_that("EN VIVO: censo() descarga los resultados por AGEB y manzana", {
     todos <- suppressMessages(censo(year, "ageb", estado = clave, nivel = "todos"))
     describir_tabla(paste(year, "ageb", clave, "nivel = todos"), todos)
     niveles <- poblacion_clasificar_nivel(todos, "ageb")
-    expect_false(is.null(niveles), info = year)
+    expect_false(is.null(niveles), info = as.character(year))
     if (is.null(niveles)) {
       cat("[en vivo] ", year, " ageb: columnas ", paste(names(todos), collapse = ", "), "\n", sep = "")
       next
     }
     cat("[en vivo] ", year, " ageb ", clave, " niveles: ",
         paste(names(table(niveles)), table(niveles), sep = "=", collapse = ", "), "\n", sep = "")
-    expect_identical(sum(niveles == "entidad"), 1L, info = year)
+    expect_identical(sum(niveles == "entidad"), 1L, info = as.character(year))
     for (nivel in c("municipio", "localidad", "ageb", "manzana")) {
       expect_gt(sum(niveles == nivel), 0)
     }
     revisar_texto(paste(year, "ageb", clave), todos)
     manzanas <- suppressMessages(censo(year, "ageb", estado = clave))
-    expect_identical(nrow(manzanas), sum(niveles == "manzana"), info = year)
+    expect_identical(nrow(manzanas), sum(niveles == "manzana"), info = as.character(year))
   }
 })
 

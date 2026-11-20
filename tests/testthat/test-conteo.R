@@ -57,20 +57,26 @@ test_that("conteo() descarga el ITER de una entidad y filtra sus niveles", {
 
 test_that("conteo() descarga las dos tablas de la muestra de 1995", {
   censo_local()
+  # El zip de Colima trae cada tabla dos veces (en la raiz y en una carpeta);
+  # las copias son identicas, asi que se usa una
   personas <- suppressMessages(conteo(1995, "muestra", estado = "Colima"))
   expect_match(attr(personas, "fuente"), "/ccpv/1995/microdatos/cpv95_06_dbf\\.zip$")
-  expect_named(personas, c("ENT", "MUN", "LOC", "NUMVIV", "NUMPER", "SEXO", "EDAD", "OCUPA", "FACTOR"))
+  expect_named(personas, c("ENT", "ZONA", "ESTRATO", "TAM_LOC", "MUN", "UPM", "VIV", "HOGAR",
+                           "FAC_POB", "FAC_VIV", "P1_5", "P7_10C"))
   expect_identical(personas$ENT, rep("06", 3))
-  # En la muestra, las respuestas con ceros a la izquierda pasan a numero; el
-  # numero de vivienda se conserva como texto
-  expect_identical(personas$EDAD, c(34L, 8L, 61L))
-  expect_identical(personas$OCUPA, c(123L, 201L, NA))
-  expect_identical(personas$NUMVIV, c("00001", "00002", "00003"))
-  expect_identical(personas$FACTOR, c(25L, 25L, 31L))
+  # En la muestra, las respuestas con ceros a la izquierda pasan a numero; las
+  # variables del diseño muestral se conservan como texto
+  expect_identical(personas$P1_5, c(34L, 8L, 61L))
+  expect_identical(personas$P7_10C, c(123L, 201L, NA))
+  expect_identical(personas$FAC_POB, c(25L, 25L, 31L))
+  expect_identical(personas$UPM, c("01", "02", "03"))
+  expect_identical(personas$ESTRATO, rep("1", 3))
+  expect_identical(personas$ZONA, rep(40L, 3))
   expect_identical(suppressMessages(conteo(1995, "muestra", estado = "Colima", tabla = "personas")), personas)
 
   migrantes <- suppressMessages(conteo(1995, "muestra", estado = "Colima", tabla = "migrantes"))
-  expect_identical(migrantes$PAIS, 221L)
+  expect_identical(migrantes$P9_1, 11L)
+  expect_identical(migrantes$FAC_VIV, 23L)
   expect_identical(nrow(migrantes), 1L)
 })
 
@@ -78,14 +84,16 @@ test_that("conteo() descarga las tres tablas de la muestra de 2005, dentro de su
   censo_local()
   personas <- suppressMessages(conteo(2005, "muestra", estado = "Colima"))
   expect_match(attr(personas, "fuente"), "/ccpv/2005/microdatos/muestra/cpv2005_06_dbf\\.zip$")
-  expect_identical(nrow(personas), 3L)
+  expect_named(personas, c("ENT", "MUN", "CONS_MUN", "CONS_VIV", "CONS_HOG", "CONS_PER", "PARENT", "SEXO",
+                           "EDAD", "TAM_LOC"))
   expect_identical(personas$EDAD, c(27L, 25L, 3L))
-  expect_identical(personas$FACTOR, c(10L, 10L, 11L))
+  expect_identical(personas$PARENT, c(101L, 201L, 301L))
   viviendas <- suppressMessages(conteo(2005, "muestra", estado = "Colima", tabla = "viviendas"))
-  expect_named(viviendas, c("ENT", "MUN", "LOC", "NUMVIV", "PISOS", "TOTHOG", "FACTOR"))
+  expect_named(viviendas, c("ENT", "MUN", "CONS_MUN", "CONS_VIV", "CLAVIVPA", "CLAVIVCO", "MAT_PISO", "TOPERVIV"))
+  expect_identical(viviendas$CLAVIVCO, NA_character_)
   hogares <- suppressMessages(conteo(2005, "muestra", estado = "Colima", tabla = "Hogares"))
-  expect_named(hogares, c("ENT", "MUN", "LOC", "NUMVIV", "NUMHOG", "TOTPER", "FACTOR"))
-  expect_identical(hogares$TOTPER, 3L)
+  expect_named(hogares, c("ENT", "MUN", "CONS_MUN", "CONS_VIV", "CONS_HOG", "TOTPEHOG", "TICLAHOG"))
+  expect_identical(hogares$TOTPEHOG, 3L)
 })
 
 test_that("conteo() descarga Aguascalientes por omision en la muestra y lo avisa", {
@@ -93,13 +101,13 @@ test_that("conteo() descarga Aguascalientes por omision en la muestra y lo avisa
   mensajes <- testthat::capture_messages(personas <- conteo(1995, "muestra"))
   expect_match(
     mensajes[1],
-    "No indicaste `estado`: se descarga la muestra de Aguascalientes. Para todo el país usa estado = \"nacional\" \\(32 archivos, 8.1 MB en total\\)."
+    "No indicaste `estado`: se descarga la muestra de Aguascalientes. Para todo el pa\u00eds usa estado = \"nacional\" \\(32 archivos, 8.1 MB en total\\)."
   )
   expect_identical(descargas_censo(servidor), 1L)
   expect_identical(personas$ENT, c("01", "01"))
   expect_match(attr(personas, "fuente"), "/cpv95_01_dbf\\.zip$")
-  # OCUPA trae un codigo con letra, asi que se conserva como texto
-  expect_identical(personas$OCUPA, c("A10", "0410"))
+  # P7_10C trae un codigo con letra, asi que se conserva como texto
+  expect_identical(personas$P7_10C, c("A10", "0410"))
 
   mensajes <- testthat::capture_messages(conteo(2005, "muestra", tabla = "hogares"))
   expect_match(mensajes[1], "32 archivos, 121 MB en total")
@@ -112,28 +120,36 @@ test_that("conteo() combina las entidades de la muestra con estado = \"nacional\
   servidor <- censo_local()
   withr::local_options(importinegi.registro = registro_reducido("conteo", 1995L, "muestra", c("01", "06")))
   mensajes <- testthat::capture_messages(nacional <- conteo(1995, "muestra", estado = "nacional"))
-  expect_match(mensajes[1], "Se descargarán 2 archivos del INEGI")
+  expect_match(mensajes[1], "Se descargar\u00e1n 2 archivos del INEGI")
   expect_identical(descargas_censo(servidor), 2L)
   expect_identical(nacional$ENT, c("01", "01", "06", "06", "06"))
-  expect_identical(nacional$EDAD, c(45L, 12L, 34L, 8L, 61L))
-  # Que columnas pasan a numero se decide con todas las entidades: OCUPA es
+  expect_identical(nacional$P1_5, c(45L, 12L, 34L, 8L, 61L))
+  # Que columnas pasan a numero se decide con todas las entidades: P7_10C es
   # texto en Aguascalientes, asi que en Colima conserva sus ceros
-  expect_identical(nacional$OCUPA, c("A10", "0410", "0123", "0201", NA))
+  expect_identical(nacional$P7_10C, c("A10", "0410", "0123", "0201", NA))
   expect_length(attr(nacional, "fuente"), 2)
   expect_identical(suppressMessages(conteo(1995, "muestra", estado = c("ags", "Colima"))), nacional)
 })
 
 # Viviendas ----------------------------------------------------------------------
 
-test_that("conteo() descarga las viviendas habitadas y deshabitadas de 2005", {
+test_that("conteo() descarga las viviendas habitadas y deshabitadas de 2005 y filtra sus niveles", {
   censo_local()
   nacional <- suppressMessages(conteo(2005, "viviendas"))
   expect_match(attr(nacional, "fuente"), "/ccpv/2005/microdatos/viviendas/vivloc2005_nal_dbf\\.zip$")
-  expect_identical(nacional$ENTIDAD, c("01", "06", "06", "06"))
-  expect_identical(nacional$VIVHAB, c(120L, 74L, 1L, 175L))
-  expect_identical(nacional$VIVDES, c(10L, 6L, NA, 15L))
-  colima <- suppressMessages(conteo(2005, "viviendas", estado = "Colima"))
-  expect_identical(colima$NOM_LOC, c("Ciudad de Armería", "Cofradía de Juárez", "Colima"))
+  # Por omision, solo localidades
+  expect_identical(nacional$ENT, c("01", "06", "06", "06"))
+  expect_identical(nacional$VIV_CENS, c(120L, 74L, 1L, 175L))
+  expect_identical(nacional$VIV_DESH, c(10L, 5L, NA, 9L))
+  expect_identical(nacional$LATITUD, c("215247", "185608", "185800", "191444"))
+  total <- suppressMessages(conteo(2005, "viviendas", nivel = "nacional"))
+  expect_identical(total[, c("ENT", "VIV_TOT")], data.frame(ENT = "00", VIV_TOT = 402L))
+
+  colima <- suppressMessages(conteo(2005, "viviendas", estado = "Colima", nivel = c("entidad", "municipio")))
+  expect_identical(colima$VIV_TOT, c(272L, 82L, 190L))
+  todos <- suppressMessages(conteo(2005, "viviendas", estado = "Colima", nivel = "todos"))
+  expect_identical(nrow(todos), 6L)
+  expect_identical(todos$NOM_LOC[3:4], c("Ciudad de Armer\u00eda", "Cofrad\u00eda de Ju\u00e1rez"))
 })
 
 # Validacion ---------------------------------------------------------------------
@@ -153,7 +169,7 @@ test_that("conteo() valida el año, la base, la tabla y el nivel", {
   expect_error(conteo(2005, "viviendas", tabla = "personas"),
                "`tabla` solo se usa con la base \"muestra\"; la base \"viviendas\" tiene una sola tabla")
   expect_error(conteo(2005, "muestra", estado = "Colima", nivel = "municipio"),
-               "`nivel` solo se usa con la base \"iter\"; la base \"muestra\" no mezcla totales")
+               "`nivel` solo se usa con las bases \"iter\" y \"viviendas\"; la base \"muestra\" no mezcla totales")
   expect_error(conteo(1995, estado = "todas"), "No se reconoce la entidad")
   expect_error(conteo(1995, "muestra", estado = c("nacional", "Colima")), "no se combina con otras entidades")
   expect_identical(descargas_censo(servidor), 0L)
