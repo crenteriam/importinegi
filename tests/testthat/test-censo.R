@@ -112,12 +112,43 @@ test_that("censo() descarga los resultados por AGEB y manzana", {
   expect_identical(dos$AGEB[4], "0105")
 })
 
-test_that("censo() explica que el AGEB no tiene archivo nacional", {
-  censo_local()
-  expect_error(
-    censo(2010, "ageb"),
-    "no publica un archivo nacional de los resultados por AGEB y manzana urbana de 2010.*estado = \"todas\".*32 entidades \\([0-9]+ MB de descarga\\)"
+test_that("censo() descarga Aguascalientes por omision en las bases sin archivo nacional y lo avisa", {
+  servidor <- censo_local()
+  mensajes <- testthat::capture_messages(manzanas <- censo(2010, "ageb"))
+  expect_match(
+    mensajes[1],
+    "No indicaste `estado`: se descargan los datos de Aguascalientes. Para todo el pa\u00eds usa estado = \"nacional\" \\(32 archivos, 264 MB en total\\)."
   )
+  expect_identical(descargas_censo(servidor), 1L)
+  expect_identical(manzanas$ENTIDAD, "01")
+  expect_identical(manzanas$MZA, "004")
+  expect_match(attr(manzanas, "fuente"), "01_aguascalientes_2010_ageb_manzana_urbana_dbf\\.zip$")
+
+  mensajes <- testthat::capture_messages(muestra <- censo(2010, "muestra"))
+  expect_match(mensajes[1], "No indicaste `estado`: se descarga la muestra de Aguascalientes.*\\(32 archivos, 345 MB en total\\)")
+  expect_identical(muestra$ENT, c("01", "01"))
+  mensajes <- testthat::capture_messages(entorno <- censo(2010, "entorno"))
+  expect_match(mensajes[1], "se descargan los datos de Aguascalientes")
+  expect_identical(entorno$AGEB, "0230")
+
+  # Las bases con archivo nacional lo descargan sin aviso
+  mensajes <- testthat::capture_messages(censo(2010, "localidades"))
+  expect_false(any(grepl("No indicaste", mensajes)))
+})
+
+test_that("con estado = \"nacional\", censo() combina las entidades si no hay archivo nacional", {
+  servidor <- censo_local()
+  registro <- registro_archivos
+  archivos <- poblacion_archivos("censo", 2010L, "ageb")
+  registro <- registro[!registro_url(registro) %in% archivos$url[!archivos$clave %in% c("06", "18")], ]
+  attr(registro, "generado") <- registro_generado()
+  withr::local_options(importinegi.registro = registro)
+  mensajes <- testthat::capture_messages(nacional <- censo(2010, "ageb", estado = "nacional"))
+  expect_match(mensajes[1], "Se descargar\u00e1n 2 archivos del INEGI")
+  expect_false(any(grepl("No indicaste", mensajes)))
+  expect_identical(descargas_censo(servidor), 2L)
+  expect_identical(nacional$ENTIDAD, c("06", "06", "06", "18"))
+  expect_identical(nacional, suppressMessages(censo(2010, "ageb", estado = c("Colima", "Nayarit"))))
 })
 
 # Muestra ------------------------------------------------------------------------
@@ -168,7 +199,6 @@ test_that("censo() reconoce las tablas de la muestra de 2000 y la tabla unica de
 
 test_that("censo() valida los argumentos de la muestra", {
   censo_local()
-  expect_error(censo(2010, "muestra"), "no publica un archivo nacional de la muestra")
   expect_error(censo(2010, "muestra", estado = "Colima", tabla = "hogares"),
                "`tabla = \"hogares\"` no es una opci\u00f3n v\u00e1lida.*\"personas\", \"viviendas\", \"migrantes\"")
   expect_error(censo(2010, "muestra", estado = "Colima", tabla = c("personas", "viviendas")),
@@ -205,7 +235,6 @@ test_that("censo() descarga los resultados sobre el entorno urbano", {
   expect_identical(entorno$AGEB, c("0012", "0012", "003A"))
   expect_identical(entorno$MZA, c("001", "002", "001"))
   expect_identical(entorno$CONJHAB, c(3L, 3L, 1L))
-  expect_error(censo(2010, "entorno"), "no publica un archivo nacional")
 })
 
 # Validacion y errores -----------------------------------------------------------
@@ -235,7 +264,8 @@ test_that("censo() valida la entidad y el nivel antes de descargar", {
   expect_error(censo(2010, estado = "Colimaa"), "No se reconoce la entidad.*Colima")
   expect_error(censo(2010, estado = 40), "no es una clave de entidad v\u00e1lida")
   expect_error(censo(2010, estado = c("nacional", "Colima")), "no se combina con otras entidades")
-  expect_error(censo(2010, estado = NULL), "Falta indicar `estado`")
+  expect_error(censo(2010, estado = character()), "Falta indicar `estado`: una o varias entidades, o \"nacional\"")
+  expect_error(censo(2010, estado = "todas"), "No se reconoce la entidad `estado = \"todas\"`")
   expect_error(censo(2010, estado = "Colima", nivel = "nacional"), "solo est\u00e1 en el archivo nacional")
   expect_error(censo(2010, estado = "Colima", nivel = "manzana"), "no es una opci\u00f3n v\u00e1lida para la base \"iter\"")
   expect_error(censo(2010, estado = "Colima", nivel = c("todos", "entidad")), "no es una opci\u00f3n v\u00e1lida")
@@ -254,6 +284,31 @@ test_that("censo() avisa cuando el INEGI no tiene el archivo o cambio su conteni
   # Si una entidad falla, no se devuelve una tabla incompleta
   expect_error(suppressMessages(censo(2010, estado = c("Colima", "Zacatecas"))),
                "El INEGI no tiene publicado el archivo")
+})
+
+test_that("si falla una descarga de varios archivos, los ya descargados se conservan para repetirla", {
+  servidor <- censo_local()
+  expect_error(
+    suppressMessages(censo(2010, estado = c("Colima", "Zacatecas"))),
+    "El INEGI no tiene publicado el archivo .*32_zacatecas.* El archivo que ya se descarg\u00f3 se conserva durante esta sesi\u00f3n de R: si repites la llamada, solo se descargar\u00e1n los que faltan\\."
+  )
+  expect_identical(descargas_censo(servidor), 2L)
+  conservado <- ruta_reintento(poblacion_archivos("censo", 2010L, "iter")$url[poblacion_archivos("censo", 2010L, "iter")$clave == "06"])
+  expect_true(file.exists(conservado))
+
+  # La siguiente llamada usa el archivo de Colima que ya estaba y, si termina
+  # bien, borra los archivos de la carpeta temporal
+  mensajes <- testthat::capture_messages(dos <- censo(2010, estado = c("Colima", "Nayarit")))
+  expect_true(any(grepl("Usando la copia local de 06_colima_2010_iter_dbf.zip", mensajes)))
+  expect_identical(descargas_censo(servidor), 3L)
+  expect_identical(dos$ENTIDAD, c("06", "06", "06", "06", "18"))
+  expect_false(file.exists(conservado))
+  expect_false(any(file.exists(ruta_reintento(attr(dos, "fuente")))))
+
+  # Con una sola entidad no se usa la carpeta temporal
+  error <- tryCatch(suppressMessages(censo(2010, estado = "Zacatecas")), error = conditionMessage)
+  expect_match(error, "El INEGI no tiene publicado el archivo")
+  expect_false(grepl("se conserva", error))
 })
 
 test_that("censo() no deja archivos temporales y respeta la copia local", {
@@ -366,7 +421,7 @@ test_that("censo() explica cuando el registro no incluye una base", {
   attr(registro, "generado") <- "2026-11-11"
   withr::local_options(importinegi.registro = registro)
   expect_error(censo(2020), "El registro de archivos de esta versi\u00f3n del paquete \\(generado el 2026-11-11\\) no incluye los principales resultados por localidad \\(ITER\\) de 2020")
-  expect_error(censo(2020, "muestra", estado = "Colima"), "no incluye la muestra \\(cuestionario ampliado\\) de 2020")
+  expect_error(censo(2020, "muestra", estado = "Colima"), "no incluye la muestra de 2020")
 })
 
 test_that("censo() lee archivos CSV de datos abiertos cuando el registro los incluye", {
@@ -397,7 +452,8 @@ test_that("censo() lee archivos CSV de datos abiertos cuando el registro los inc
   expect_identical(iter$POBMAS, c(119L, NA, NA, 195L))
   expect_identical(iter$NOM_LOC[1], "Ciudad de Armer\u00eda")
   expect_error(censo(2020, estado = "Nayarit"), "El registro del paquete no tiene el archivo de .* para: \"Nayarit\"")
-  expect_error(censo(2020), "no publica un archivo nacional")
-  # "todas" descarga las entidades que tiene el registro
-  expect_identical(suppressMessages(censo(2020, estado = "todas")), iter)
+  # Sin archivo nacional en el registro, "nacional" combina las entidades que
+  # tiene (aqui, solo Colima) y, sin `estado`, se pide Aguascalientes
+  expect_identical(suppressMessages(censo(2020, estado = "nacional")), iter)
+  expect_error(suppressMessages(censo(2020)), "no tiene el archivo de .* para: \"Aguascalientes\"")
 })

@@ -11,26 +11,30 @@
 #   3. poblacion_obtener() valida los argumentos, descarga, lee, limpia, filtra
 #      el nivel de agregacion y combina las entidades.
 
-# Programas de poblacion del INEGI y sus años.
+# Programas de poblacion del INEGI y sus años. `funcion` es la funcion del
+# paquete que los descarga (NA mientras no exista).
 poblacion_programas <- function() {
   list(
     censo = list(
       proyecto = "ccpv",
       nombre = "Censo de Poblaci\u00f3n y Vivienda",
       con_articulo = "al Censo de Poblaci\u00f3n y Vivienda",
-      years = c(1990L, 2000L, 2010L, 2020L)
+      years = c(1990L, 2000L, 2010L, 2020L),
+      funcion = "censo"
     ),
     conteo = list(
       proyecto = "ccpv",
       nombre = "Conteo de Poblaci\u00f3n y Vivienda",
       con_articulo = "al Conteo de Poblaci\u00f3n y Vivienda",
-      years = c(1995L, 2005L)
+      years = c(1995L, 2005L),
+      funcion = "conteo"
     ),
     intercensal = list(
       proyecto = "eic",
       nombre = "Encuesta Intercensal",
       con_articulo = "a la Encuesta Intercensal",
-      years = c(2015L, 2025L)
+      years = c(2015L, 2025L),
+      funcion = NA_character_
     )
   )
 }
@@ -45,7 +49,8 @@ poblacion_bases <- function() {
     muestra = "\\bmuestra\\b|cuestionario ampliado",
     localidades = "localidades con menos|de las localidades",
     entorno = "entorno urbano",
-    asistencia = "asistencia social"
+    asistencia = "asistencia social",
+    viviendas = "viviendas habitadas y deshabitadas"
   )
   fila <- function(programa, year, bases) {
     data.frame(
@@ -57,7 +62,9 @@ poblacion_bases <- function() {
     fila("censo", 1990L, c("iter", "muestra")),
     fila("censo", 2000L, c("iter", "muestra")),
     fila("censo", 2010L, c("iter", "ageb", "muestra", "localidades", "entorno")),
-    fila("censo", 2020L, c("iter", "ageb", "muestra", "localidades", "entorno", "asistencia"))
+    fila("censo", 2020L, c("iter", "ageb", "muestra", "localidades", "entorno", "asistencia")),
+    fila("conteo", 1995L, c("iter", "muestra")),
+    fila("conteo", 2005L, c("iter", "muestra", "viviendas"))
   )
 }
 
@@ -66,7 +73,7 @@ poblacion_nombre_base <- function(base) {
   nombres <- c(
     iter = "los principales resultados por localidad (ITER)",
     ageb = "los resultados por AGEB y manzana urbana",
-    muestra = "la muestra (cuestionario ampliado)",
+    muestra = "la muestra",
     localidades = "los resultados sobre localidades",
     entorno = "los resultados sobre el entorno urbano",
     asistencia = "los resultados sobre alojamientos de asistencia social",
@@ -75,12 +82,24 @@ poblacion_nombre_base <- function(base) {
   unname(nombres[base])
 }
 
-# Titulo de cada base, como lo muestra bases_importinegi().
-poblacion_titulo_base <- function(base) {
+# Titulo de cada base, como lo muestra bases_importinegi(). El de la muestra
+# depende del levantamiento: en el Censo de 1990 y en el Conteo de 2005 es un
+# extracto del 10 % de las viviendas del archivo completo; en los censos desde
+# 2000, el cuestionario ampliado; en el Conteo de 1995, la encuesta del Conteo.
+poblacion_titulo_base <- function(programa, year, base) {
+  if (base == "muestra") {
+    extracto <- "Muestra (extracto del 10 % de las viviendas)"
+    if (programa == "censo") {
+      return(if (year == 1990L) extracto else "Muestra (cuestionario ampliado)")
+    }
+    if (programa == "conteo") {
+      return(if (year == 1995L) "Muestra (encuesta del Conteo, cuestionario ampliado)" else extracto)
+    }
+    return("Muestra")
+  }
   titulos <- c(
     iter = "Principales resultados por localidad (ITER)",
     ageb = "Principales resultados por AGEB y manzana urbana",
-    muestra = "Muestra (cuestionario ampliado)",
     localidades = "Caracter\u00edsticas de las localidades",
     entorno = "Caracter\u00edsticas del entorno urbano",
     asistencia = "Alojamientos de asistencia social",
@@ -93,6 +112,15 @@ poblacion_titulo_base <- function(base) {
 # que se reconoce el archivo de cada una dentro del zip. La primera es la que
 # se descarga por omision. NULL significa que la base tiene una sola tabla.
 poblacion_tablas <- function(programa, year, base) {
+  if (base == "muestra" && programa == "conteo") {
+    if (year == 1995L) {
+      # datgen95 y migint95: datos generales de las personas y migrantes
+      # internacionales de la Encuesta del Conteo
+      return(c(personas = "^datgen", migrantes = "^migint"))
+    }
+    # trpmueNN, trvmueNN y trhmueNN, dentro de la carpeta cpv2005_NN_dbf
+    return(c(personas = "^trpmue", viviendas = "^trvmue", hogares = "^trhmue"))
+  }
   if (base == "muestra" && !(programa == "censo" && year == 1990L)) {
     return(c(personas = "^per", viviendas = "^viv|^vho", migrantes = "^mig|^min"))
   }
@@ -107,9 +135,25 @@ poblacion_tablas <- function(programa, year, base) {
   NULL
 }
 
-# Bases que tienen varias tablas en algun año.
-poblacion_bases_con_tablas <- function() {
-  c("muestra", "entorno", "asistencia")
+# Bases de un programa que tienen varias tablas en algun año.
+poblacion_bases_con_tablas <- function(programa) {
+  bases <- poblacion_bases()
+  bases <- bases[bases$programa == programa, ]
+  varias <- vapply(seq_len(nrow(bases)), function(i) {
+    !is.null(poblacion_tablas(programa, bases$year[i], bases$base[i]))
+  }, logical(1))
+  unique(bases$base[varias])
+}
+
+# Bases de un programa que mezclan filas de totales con filas de detalle.
+poblacion_bases_con_niveles <- function(programa) {
+  bases <- unique(poblacion_bases()$base[poblacion_bases()$programa == programa])
+  bases[vapply(bases, function(base) !is.null(poblacion_niveles(base)), logical(1))]
+}
+
+# "la base "x"" o "las bases "x" y "y"", para los mensajes.
+nombrar_bases <- function(bases) {
+  if (length(bases) == 1) paste0("la base ", comillas(bases)) else paste0("las bases ", enumerar_y(bases))
 }
 
 # Niveles de agregacion de las bases que mezclan filas de totales con filas de
@@ -156,9 +200,11 @@ poblacion_validar_year <- function(programa, year) {
   if (!numero %in% propios) {
     otro <- names(programas)[vapply(programas, function(p) numero %in% p$years, logical(1))]
     if (length(otro) == 1) {
+      funcion <- programas[[otro]]$funcion
       detener(
         "`year = ", numero, "` corresponde ", programas[[otro]]$con_articulo, ", no ",
-        programas[[programa]]$con_articulo, ". ", disponibles
+        programas[[programa]]$con_articulo,
+        if (!is.na(funcion)) paste0(": usa ", funcion, "(", numero, ")"), ". ", disponibles
       )
     }
     detener("`year = ", numero, "` no est\u00e1 disponible. ", disponibles)
@@ -196,11 +242,11 @@ poblacion_validar_tabla <- function(programa, year, base, tabla) {
   tablas <- poblacion_tablas(programa, year, base)
   if (is.null(tablas)) {
     if (!is.null(tabla)) {
-      if (base %in% poblacion_bases_con_tablas()) {
+      if (base %in% poblacion_bases_con_tablas(programa)) {
         detener("La base ", comillas(base), " de ", year, " se publica en una sola tabla: omite el argumento `tabla`.")
       }
       detener(
-        "`tabla` solo se usa con las bases ", enumerar_y(poblacion_bases_con_tablas()),
+        "`tabla` solo se usa con ", nombrar_bases(poblacion_bases_con_tablas(programa)),
         "; la base ", comillas(base), " tiene una sola tabla."
       )
     }
@@ -225,13 +271,13 @@ enumerar_y <- function(opciones) {
 }
 
 # Devuelve los niveles pedidos, "todos", o NULL si la base no tiene niveles.
-poblacion_validar_nivel <- function(base, nivel) {
+poblacion_validar_nivel <- function(programa, base, nivel) {
   niveles <- poblacion_niveles(base)
   if (is.null(niveles)) {
     if (!is.null(nivel)) {
       detener(
-        "`nivel` solo se usa con las bases \"iter\" y \"ageb\"; la base ", comillas(base),
-        " no mezcla totales con filas de detalle."
+        "`nivel` solo se usa con ", nombrar_bases(poblacion_bases_con_niveles(programa)), "; la base ",
+        comillas(base), " no mezcla totales con filas de detalle."
       )
     }
     return(NULL)
@@ -313,33 +359,22 @@ poblacion_archivos <- function(programa, year, base) {
 }
 
 # Claves de las entidades pedidas en `estado`, ya verificadas contra los
-# archivos que existen para la base.
+# archivos que existen para la base. "nacional" es todo el pais: el archivo
+# nacional o, si el INEGI publica la base solo por entidad, todas las
+# entidades, que despues se combinan en una sola tabla.
 poblacion_claves <- function(estado, archivos, descripcion) {
   if (is.null(estado) || length(estado) == 0 || anyNA(estado)) {
-    detener("Falta indicar `estado`: una o varias entidades, \"nacional\" o \"todas\".")
+    detener("Falta indicar `estado`: una o varias entidades, o \"nacional\".")
   }
   entidades <- setdiff(archivos$clave, "00")
-  hay_nacional <- "00" %in% archivos$clave
-  todas <- length(estado) == 1 && is.character(estado) &&
-    normalizar_texto(estado) %in% c("todas", "todos", "todas las entidades")
-
-  claves <- if (todas) {
-    entidades
-  } else {
-    unique(vapply(as.list(estado), function(e) estado_clave(e), character(1)))
-  }
+  claves <- unique(vapply(as.list(estado), function(e) estado_clave(e), character(1)))
 
   if ("00" %in% claves) {
     if (length(claves) > 1) {
-      detener("`estado = \"nacional\"` no se combina con otras entidades: pide el archivo nacional o una lista de entidades.")
+      detener("`estado = \"nacional\"` no se combina con otras entidades: pide todo el pa\u00eds o una lista de entidades.")
     }
-    if (!hay_nacional) {
-      peso <- tamano_texto(archivos$bytes[archivos$clave %in% entidades])
-      detener(
-        "El INEGI no publica un archivo nacional de ", descripcion, ": se publica por entidad. ",
-        "Indica una o varias entidades en `estado`, o usa estado = \"todas\" para descargar y ",
-        "combinar las ", length(entidades), " entidades (", peso, " de descarga)."
-      )
+    if (!"00" %in% archivos$clave) {
+      return(entidades)
     }
   }
   faltan <- setdiff(claves, archivos$clave)
@@ -351,6 +386,30 @@ poblacion_claves <- function(estado, archivos, descripcion) {
     )
   }
   claves
+}
+
+# Entidad que se descarga cuando no se indica `estado`: todo el pais, salvo en
+# la muestra y en las bases sin archivo nacional, donde se descarga solo
+# Aguascalientes para no hacer sin pedirlo una descarga grande.
+poblacion_estado_omision <- function(base, archivos) {
+  if (base == "muestra" || !"00" %in% archivos$clave) "01" else "00"
+}
+
+# Aviso de que se descarga Aguascalientes por omision, con el tamaño de la
+# descarga de todo el pais.
+poblacion_avisar_omision <- function(base, archivos) {
+  nacional <- archivos$clave == "00"
+  detalle <- if (any(nacional)) {
+    paste0("archivo nacional de ", tamano_texto(archivos$bytes[nacional]))
+  } else {
+    paste0(sum(!nacional), " archivos, ", tamano_texto(archivos$bytes[!nacional]), " en total")
+  }
+  descarga <- if (base == "muestra") {
+    "se descarga la muestra de Aguascalientes"
+  } else {
+    "se descargan los datos de Aguascalientes"
+  }
+  message("No indicaste `estado`: ", descarga, ". Para todo el pa\u00eds usa estado = \"nacional\" (", detalle, ").")
 }
 
 # Lectura -----------------------------------------------------------------------
@@ -386,10 +445,18 @@ poblacion_elegir_tabla <- function(carpeta, formato, patron = NULL, tabla = NA_c
   encontrados
 }
 
-# Descarga un archivo del registro y devuelve su tabla, sin limpiar.
-poblacion_leer <- function(url, formato, tamano = NULL, patron = NULL, tabla = NA_character_) {
-  zip <- inegi_descargar(url, tamano = tamano)
-  conservar <- isTRUE(getOption("importinegi.cache", FALSE))
+# Descarga un archivo del registro y devuelve su tabla, sin limpiar. Con
+# `destino`, el zip se guarda en esa ruta y se reutiliza si ya existe (ver
+# poblacion_leer_entidades()).
+poblacion_leer <- function(url, formato, tamano = NULL, patron = NULL, tabla = NA_character_,
+                           destino = NA_character_) {
+  if (is.na(destino)) {
+    zip <- inegi_descargar(url, tamano = tamano)
+    conservar <- isTRUE(getOption("importinegi.cache", FALSE))
+  } else {
+    zip <- inegi_descargar(url, destino = destino, tamano = tamano, cache = TRUE)
+    conservar <- TRUE
+  }
   carpeta <- inegi_descomprimir(zip)
   on.exit({
     unlink(carpeta, recursive = TRUE)
@@ -398,11 +465,58 @@ poblacion_leer <- function(url, formato, tamano = NULL, patron = NULL, tabla = N
   leer_tabla(poblacion_elegir_tabla(carpeta, formato, patron, tabla))
 }
 
-# Une las tablas de varias entidades. Si no tienen las mismas columnas, las que
-# falten se llenan con NA.
-combinar_tablas <- function(tablas) {
-  if (length(tablas) == 1) {
-    return(tablas[[1]])
+# Ruta en la carpeta temporal de la sesion donde se guarda cada archivo de una
+# descarga de varios archivos.
+ruta_reintento <- function(url) {
+  relativa <- gsub("[^A-Za-z0-9._/-]", "_", sub("^https?://[^/]+/", "", url))
+  file.path(tempdir(), "importinegi", "descargas", relativa)
+}
+
+# Descarga y lee los archivos seleccionados. Si son varios y uno falla, los que
+# ya se descargaron se conservan en la carpeta temporal de la sesion, para que
+# al repetir la llamada solo se descarguen los que faltan; si todos se leen
+# bien, se borran. Con la copia local activada (importinegi.cache) se usa esa
+# copia.
+poblacion_leer_entidades <- function(seleccion, patron, tabla) {
+  varios <- nrow(seleccion) > 1 && !isTRUE(getOption("importinegi.cache", FALSE))
+  destinos <- if (varios) ruta_reintento(seleccion$url) else rep(NA_character_, nrow(seleccion))
+  tablas <- vector("list", nrow(seleccion))
+  for (i in seq_len(nrow(seleccion))) {
+    tablas[[i]] <- tryCatch(
+      poblacion_leer(
+        seleccion$url[i], seleccion$formato[i], tamano = seleccion$tamano[i],
+        patron = patron, tabla = tabla, destino = destinos[i]
+      ),
+      error = function(e) {
+        guardados <- if (varios) sum(file.exists(destinos)) else 0L
+        if (guardados == 0) {
+          stop(e)
+        }
+        detener(
+          conditionMessage(e), " ",
+          if (guardados == 1) {
+            "El archivo que ya se descarg\u00f3 se conserva"
+          } else {
+            paste0("Los ", guardados, " archivos que ya se descargaron se conservan")
+          },
+          " durante esta sesi\u00f3n de R: si repites la llamada, solo se descargar\u00e1n los que faltan."
+        )
+      }
+    )
+  }
+  if (varios) {
+    unlink(destinos)
+  }
+  tablas
+}
+
+# Deja las tablas de varias entidades con las mismas columnas, en el mismo
+# orden y del mismo tipo, para poder unirlas. Las columnas que faltan en alguna
+# entidad se llenan con NA; una columna que llega como numero en una entidad y
+# como texto en otra queda como texto en todas.
+armonizar_tablas <- function(tablas) {
+  if (length(tablas) < 2) {
+    return(tablas)
   }
   columnas <- unique(unlist(lapply(tablas, names)))
   distintas <- !all(vapply(tablas, function(t) identical(names(t), columnas), logical(1)))
@@ -419,19 +533,31 @@ combinar_tablas <- function(tablas) {
       t[, columnas, drop = FALSE]
     })
   }
-  # Una columna puede llegar como numero en una entidad y como texto en otra
   for (columna in columnas) {
     es_texto <- vapply(tablas, function(t) is.character(t[[columna]]), logical(1))
     if (any(es_texto) && !all(es_texto)) {
-      tablas <- lapply(tablas, function(t) {
-        t[[columna]] <- as.character(t[[columna]])
-        t
-      })
+      for (i in which(!es_texto)) {
+        tablas[[i]][[columna]] <- as.character(tablas[[i]][[columna]])
+      }
     }
   }
-  combinada <- do.call(rbind, tablas)
-  rownames(combinada) <- NULL
-  combinada
+  tablas
+}
+
+# Une las tablas, ya armonizadas, de varias entidades.
+unir_tablas <- function(tablas) {
+  if (length(tablas) == 1) {
+    return(tablas[[1]])
+  }
+  unida <- do.call(rbind, tablas)
+  rownames(unida) <- NULL
+  unida
+}
+
+# Une las tablas de varias entidades. Si no tienen las mismas columnas, las que
+# falten se llenan con NA.
+combinar_tablas <- function(tablas) {
+  unir_tablas(armonizar_tablas(tablas))
 }
 
 # Claves geograficas y niveles --------------------------------------------------
@@ -538,19 +664,50 @@ columnas_texto <- function(datos) {
   nombres[toupper(nombres) %in% geograficas | grepl(otras, nombres, ignore.case = TRUE)]
 }
 
-# Convierte a numero las columnas numericas. En la muestra y en la base de
-# asistencia social se convierten tambien las que tienen ceros a la izquierda
-# ("008" en la edad, "0012" en el factor de expansion): son respuestas
-# codificadas, no claves.
+# Decide que columnas se convierten a numero, con los valores de todas las
+# entidades. En la muestra y en la base de asistencia social se convierten
+# tambien las que tienen ceros a la izquierda ("008" en la edad, "0012" en el
+# factor de expansion): son respuestas codificadas, no claves. La altitud es
+# una medida: es numerica en todos los censos, aunque algunos la escriban con
+# ceros a la izquierda ("0020").
+poblacion_decidir_conversion <- function(tablas, base) {
+  decidir_conversion(
+    tablas,
+    texto = columnas_texto(tablas[[1]]),
+    ceros = base %in% c("muestra", "asistencia"),
+    medidas = "ALTITUD"
+  )
+}
+
+# Convierte a numero las columnas numericas de una tabla.
 poblacion_convertir <- function(datos, base) {
-  datos <- convertir_numericas(datos, texto = columnas_texto(datos), ceros = base %in% c("muestra", "asistencia"))
-  # La altitud es una medida: es numerica en todos los censos, aunque algunos
-  # la escriban con ceros a la izquierda ("0020")
-  altitud <- grep("^ALTITUD$", names(datos), ignore.case = TRUE, value = TRUE)
-  if (length(altitud) > 0) {
-    datos[altitud] <- convertir_numericas(datos[altitud], ceros = TRUE)
+  aplicar_conversion(datos, poblacion_decidir_conversion(list(datos), base))
+}
+
+# Lee las tablas de las entidades con `leer()` y las prepara: claves
+# geograficas, datos faltantes y tipos de las columnas; despues las une. Cada
+# entidad se convierte a numero antes de unirlas, para que no esten en memoria
+# dos copias completas de los datos (un entero ocupa la mitad que un texto).
+# Que columnas se convierten se decide con todas las entidades, de modo que el
+# resultado es el mismo que si se unieran primero.
+#
+# `leer` es una funcion que devuelve la lista de tablas: asi la lista solo
+# existe dentro de esta funcion y la memoria de cada tabla original se libera
+# en cuanto se convierte.
+poblacion_preparar <- function(leer, base) {
+  tablas <- armonizar_tablas(leer())
+  faltantes <- poblacion_faltantes(base)
+  for (i in seq_along(tablas)) {
+    tablas[[i]] <- poblacion_normalizar_claves(tablas[[i]])
+    if (!is.null(faltantes)) {
+      tablas[[i]] <- limpiar_faltantes(tablas[[i]], faltantes)
+    }
   }
-  datos
+  conversion <- poblacion_decidir_conversion(tablas, base)
+  for (i in seq_along(tablas)) {
+    tablas[[i]] <- aplicar_conversion(tablas[[i]], conversion)
+  }
+  unir_tablas(tablas)
 }
 
 # Motor -------------------------------------------------------------------------
@@ -561,7 +718,7 @@ poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
   base <- poblacion_validar_base(programa, year, base)
   tabla <- poblacion_validar_tabla(programa, year, base, tabla)
   nivel_explicito <- !is.null(nivel)
-  nivel <- poblacion_validar_nivel(base, nivel)
+  nivel <- poblacion_validar_nivel(programa, base, nivel)
   descripcion <- paste0(poblacion_nombre_base(base), " de ", year)
 
   archivos <- poblacion_archivos(programa, year, base)
@@ -571,6 +728,12 @@ poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
       ") no incluye ", descripcion, " (", nombre_programa, "). ",
       "Actualiza importinegi o rep\u00f3rtalo en https://github.com/crenteriam/importinegi/issues"
     )
+  }
+  if (is.null(estado)) {
+    estado <- poblacion_estado_omision(base, archivos)
+    if (estado != "00") {
+      poblacion_avisar_omision(base, archivos)
+    }
   }
   claves <- poblacion_claves(estado, archivos, descripcion)
   if ("nacional" %in% nivel && !identical(claves, "00")) {
@@ -585,20 +748,7 @@ poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
   }
 
   patron <- if (is.na(tabla)) NULL else poblacion_tablas(programa, year, base)[[tabla]]
-  tablas <- lapply(seq_len(nrow(seleccion)), function(i) {
-    poblacion_leer(
-      seleccion$url[i], seleccion$formato[i], tamano = seleccion$tamano[i],
-      patron = patron, tabla = tabla
-    )
-  })
-  datos <- combinar_tablas(tablas)
-
-  datos <- poblacion_normalizar_claves(datos)
-  faltantes <- poblacion_faltantes(base)
-  if (!is.null(faltantes)) {
-    datos <- limpiar_faltantes(datos, faltantes)
-  }
-  datos <- poblacion_convertir(datos, base)
+  datos <- poblacion_preparar(function() poblacion_leer_entidades(seleccion, patron, tabla), base)
   if (!is.null(nivel)) {
     datos <- poblacion_filtrar_nivel(datos, base, nivel, nivel_explicito)
   }

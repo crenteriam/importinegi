@@ -18,52 +18,7 @@ destino <- file.path(normalizePath("tests/testthat/fixtures"), "censo")
 unlink(destino, recursive = TRUE)
 dir.create(destino, recursive = TRUE)
 
-tabla <- function(...) data.frame(..., stringsAsFactors = FALSE)
-
-# Escribe un zip con las tablas indicadas. `tablas` es una lista con nombre:
-# el nombre es la ruta del archivo dentro del zip (dbf o csv).
-escribir_zip <- function(nombre, tablas, otros = list(), codificacion = "latin1") {
-  carpeta <- tempfile("muestra_")
-  dir.create(carpeta)
-  for (ruta in names(tablas)) {
-    archivo <- file.path(carpeta, ruta)
-    dir.create(dirname(archivo), recursive = TRUE, showWarnings = FALSE)
-    if (grepl("\\.dbf$", ruta, ignore.case = TRUE)) {
-      # Los DBF guardan el texto en una pagina de codigos anterior a UTF-8
-      datos <- tablas[[ruta]]
-      for (columna in names(datos)) {
-        if (is.character(datos[[columna]])) {
-          datos[[columna]] <- iconv(datos[[columna]], from = "UTF-8", to = codificacion)
-        }
-      }
-      temporal <- file.path(dirname(archivo), "temporal.dbf")
-      foreign::write.dbf(datos, temporal)
-      if (codificacion == "CP850") {
-        # Byte 29 del encabezado: pagina de codigos 850
-        conexion <- file(temporal, open = "r+b")
-        seek(conexion, where = 29, rw = "write")
-        writeBin(as.raw(0x02), conexion)
-        close(conexion)
-      }
-      file.rename(temporal, archivo)
-    } else {
-      conexion <- file(archivo, open = "wb")
-      writeBin(as.raw(c(0xef, 0xbb, 0xbf)), conexion)
-      texto <- utils::capture.output(utils::write.csv(tablas[[ruta]], row.names = FALSE, na = ""))
-      writeBin(charToRaw(enc2utf8(paste0(paste(texto, collapse = "\n"), "\n"))), conexion)
-      close(conexion)
-    }
-  }
-  for (ruta in names(otros)) {
-    archivo <- file.path(carpeta, ruta)
-    dir.create(dirname(archivo), recursive = TRUE, showWarnings = FALSE)
-    writeLines(otros[[ruta]], archivo)
-  }
-  anterior <- setwd(carpeta)
-  on.exit(setwd(anterior))
-  utils::zip(file.path(destino, nombre), list.files(".", recursive = TRUE), flags = "-r9Xq")
-  invisible(nombre)
-}
+source(file.path("data-raw", "muestras_comun.R"), encoding = "UTF-8")
 
 # ITER: principales resultados por localidad ----------------------------------
 
@@ -137,8 +92,16 @@ ageb_nayarit <- tabla(
 )
 escribir_zip("ageb_06.zip", list("RESAGEBURB_06DBF10.dbf" = ageb_colima))
 escribir_zip("ageb_18.zip", list("RESAGEBURB_18DBF10.dbf" = ageb_nayarit))
+# Aguascalientes: entidad que se descarga por omision en las bases sin archivo nacional
+escribir_zip("ageb_01.zip", list("RESAGEBURB_01DBF10.dbf" = tabla(
+  ENTIDAD = "01", NOM_ENT = "Aguascalientes", MUN = c("000", "001", "001"),
+  NOM_MUN = c("Total de la entidad Aguascalientes", "Aguascalientes", "Aguascalientes"),
+  LOC = c("0000", "0001", "0001"), NOM_LOC = c("Total de la entidad", "Total AGEB urbana", "Aguascalientes"),
+  AGEB = c("0000", "0230", "0230"), MZA = c("000", "000", "004"),
+  POBTOT = c("80", "80", "80"), POBMAS = c("39", "39", "39"), VIVTOT = c("21", "21", "21")
+)))
 
-# Muestra (cuestionario ampliado) ---------------------------------------------
+# Muestra ------------------------------------------------------------------------
 
 personas <- function(ent, n) {
   tabla(ENT = ent, MUN = sprintf("%03d", seq_len(n)), ID_VIV = sprintf("%s0000000%02d", ent, seq_len(n)),
@@ -159,6 +122,10 @@ escribir_zip("muestra2010_06.zip", list(
 escribir_zip("muestra2010_18.zip", list(
   "Personas_18.dbf" = personas("18", 2), "Viviendas_18.dbf" = viviendas("18", 1),
   "Migrantes_18.dbf" = migrantes("18")
+))
+escribir_zip("muestra2010_01.zip", list(
+  "Personas_01.dbf" = personas("01", 2), "Viviendas_01.dbf" = viviendas("01", 1),
+  "Migrantes_01.dbf" = migrantes("01")
 ))
 # 2000: otros nombres de archivo y extension en mayusculas
 escribir_zip("muestra2000_06.zip", list(
@@ -190,6 +157,10 @@ escribir_zip("localidades_00.zip", list("RESLOC_NAL_2010.dbf" = rbind(localidade
 escribir_zip("entorno_06.zip", list("MANZANA_EU_06.dbf" = tabla(
   ENT = "06", MUN = "002", LOC = "0001", AGEB = c("0012", "0012", "003A"), MZA = c("001", "002", "001"),
   CONJHAB = c("3", "3", "1"), RECUCALL_ = c("1", "2", "5"), ALUMPUB_ = c("1", "3", "5")
+)))
+escribir_zip("entorno_01.zip", list("MANZANA_EU_01.dbf" = tabla(
+  ENT = "01", MUN = "001", LOC = "0001", AGEB = "0230", MZA = "004",
+  CONJHAB = "2", RECUCALL_ = "1", ALUMPUB_ = "1"
 )))
 
 # Zip de "datos abiertos" en CSV ------------------------------------------------

@@ -26,6 +26,13 @@ test_that("las funciones censo_poblacion_*() ya no se exportan", {
   expect_true("censo" %in% getNamespaceExports("importinegi"))
 })
 
+test_that("censo() y conteo() tienen los mismos argumentos", {
+  expect_true("conteo" %in% getNamespaceExports("importinegi"))
+  expect_identical(formals(conteo), formals(censo))
+  expect_identical(names(formals(censo)), c("year", "base", "estado", "tabla", "nivel"))
+  expect_null(formals(censo)$estado)
+})
+
 test_that("se conservan los argumentos de la serie 1.x y su orden", {
   for (nombre in names(interfaz_1x)) {
     esperados <- interfaz_1x[[nombre]]

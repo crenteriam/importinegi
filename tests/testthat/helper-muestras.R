@@ -86,6 +86,38 @@ servidor_prueba <- function(entorno = parent.frame()) {
       }
     }
   )
+  # Archivos de los Conteos de Poblacion y Vivienda (1995 y 2005), en las rutas
+  # del registro del paquete. Responde con las muestras de fixtures/conteo para
+  # Aguascalientes (01), Colima (06) y el archivo nacional; para el resto, como
+  # el INEGI cuando un archivo no existe. Va antes que la ruta del censo, que
+  # atiende las demas direcciones de ccpv.
+  app$get(webfakes::new_regexp("^/contenidos/programas/ccpv/(1995|2005)/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_censo <- locales$descargas_censo + 1
+    year <- sub("^/contenidos/programas/ccpv/([0-9]{4})/.*$", "\\1", req$path)
+    reglas <- c(
+      iter = "/microdatos/iter/([0-9]{2})_",
+      muestra = "/microdatos/cpv95_([0-9]{2})_|/microdatos/muestra/cpv2005_([0-9]{2})_",
+      viviendas = "/microdatos/viviendas/vivloc2005_([0-9]{2}|nal)_"
+    )
+    archivo <- NA_character_
+    for (nombre in names(reglas)) {
+      hallado <- regmatches(req$path, regexec(reglas[[nombre]], req$path))[[1]]
+      clave <- hallado[-1][nzchar(hallado[-1])]
+      if (length(clave) == 1) {
+        archivo <- paste0(nombre, year, "_", sub("^nal$", "00", clave), ".zip")
+        break
+      }
+    }
+    carpeta <- file.path(locales$carpeta, "conteo")
+    if (!is.na(archivo) && file.exists(file.path(carpeta, archivo))) {
+      res$send_file(archivo, root = carpeta)
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
   # Archivos del Censo de Poblacion y Vivienda, en las rutas del registro del
   # paquete. Responde con las muestras de fixtures/censo para Colima (06),
   # Nayarit (18) y el archivo nacional; para el resto, como el INEGI cuando un
@@ -136,8 +168,13 @@ servidor_prueba <- function(entorno = parent.frame()) {
   webfakes::local_app_process(app, .local_envir = entorno)
 }
 
-# Servidor local con las muestras del censo y sin esperas entre reintentos.
+# Servidor local con las muestras del censo y del conteo, sin esperas entre
+# reintentos. Empieza sin las descargas que una llamada fallida haya dejado en la
+# carpeta temporal de la sesion (ver poblacion_leer_entidades()).
 censo_local <- function(entorno = parent.frame()) {
+  pendientes <- file.path(tempdir(), "importinegi", "descargas")
+  unlink(pendientes, recursive = TRUE)
+  withr::defer(unlink(pendientes, recursive = TRUE), envir = entorno)
   servidor <- servidor_prueba(entorno)
   withr::local_options(
     importinegi.base = sub("/$", "", servidor$url("/")),
@@ -149,7 +186,7 @@ censo_local <- function(entorno = parent.frame()) {
   servidor
 }
 
-# Numero de archivos del censo que se han pedido al servidor local.
+# Numero de archivos del censo y del conteo que se han pedido al servidor local.
 descargas_censo <- function(servidor) {
   as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/censo/descargas")))))
 }

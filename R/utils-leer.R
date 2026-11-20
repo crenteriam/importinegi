@@ -112,24 +112,66 @@ limpiar_faltantes <- function(datos, codigos = c("*", "N/D")) {
 # "0001"), porque suelen ser claves; con `ceros = TRUE` tambien las convierte.
 # Nunca convierte las columnas indicadas en `texto`.
 convertir_numericas <- function(datos, texto = NULL, ceros = FALSE) {
+  aplicar_conversion(datos, decidir_conversion(list(datos), texto = texto, ceros = ceros))
+}
+
+# Perfil de una columna de texto: cuantos valores tiene, si todos son numeros
+# y, en ese caso, si alguno tiene ceros a la izquierda o decimales y el mayor
+# valor absoluto de los que podrian no caber en un entero (los de 10 o mas
+# caracteres; los demas son menores que mil millones).
+perfil_numerico <- function(valores) {
+  presentes <- trimws(valores[!is.na(valores)])
+  numero <- all(grepl("^-?[0-9]+(\\.[0-9]+)?$", presentes))
+  if (!numero) {
+    return(list(n = length(presentes), numero = FALSE, clave = FALSE, punto = FALSE, maximo = 0))
+  }
+  punto <- any(grepl(".", presentes, fixed = TRUE))
+  largos <- if (punto) character() else presentes[nchar(presentes) >= 10]
+  list(
+    n = length(presentes),
+    numero = TRUE,
+    clave = any(grepl("^-?0[0-9]", presentes)),
+    punto = punto,
+    maximo = if (length(largos) > 0) max(abs(as.numeric(largos))) else 0
+  )
+}
+
+# Decide que columnas de texto se convierten a numero ("entero" o "real") con
+# los valores de una o varias tablas con las mismas columnas. Una columna se
+# convierte si es texto en todas las tablas y todos sus valores son numeros;
+# las que tienen ceros a la izquierda solo se convierten con `ceros = TRUE` o
+# si estan en `medidas`. Nunca se convierten las columnas de `texto`.
+decidir_conversion <- function(tablas, texto = NULL, ceros = FALSE, medidas = character()) {
   protegidas <- tolower(texto %||% character())
-  for (columna in names(datos)) {
-    valores <- datos[[columna]]
-    if (!is.character(valores) || tolower(columna) %in% protegidas) {
+  medidas <- tolower(medidas)
+  decision <- character()
+  for (columna in names(tablas[[1]])) {
+    if (tolower(columna) %in% protegidas) {
       next
     }
-    presentes <- trimws(valores[!is.na(valores)])
-    if (length(presentes) == 0) {
+    valores <- lapply(tablas, function(tabla) tabla[[columna]])
+    if (!all(vapply(valores, is.character, logical(1)))) {
       next
     }
-    es_numero <- grepl("^-?[0-9]+(\\.[0-9]+)?$", presentes)
-    es_clave <- grepl("^-?0[0-9]", presentes)
-    if (all(es_numero) && (ceros || !any(es_clave))) {
-      numeros <- as.numeric(valores)
-      enteros <- !any(grepl(".", presentes, fixed = TRUE)) &&
-        all(abs(numeros) <= .Machine$integer.max, na.rm = TRUE)
-      datos[[columna]] <- if (enteros) as.integer(numeros) else numeros
+    perfiles <- lapply(valores, perfil_numerico)
+    dato <- function(campo, tipo) vapply(perfiles, function(perfil) perfil[[campo]], tipo)
+    if (sum(dato("n", numeric(1))) == 0 || !all(dato("numero", logical(1)))) {
+      next
     }
+    if (any(dato("clave", logical(1))) && !(ceros || tolower(columna) %in% medidas)) {
+      next
+    }
+    enteros <- !any(dato("punto", logical(1))) && max(dato("maximo", numeric(1))) <= .Machine$integer.max
+    decision[[columna]] <- if (enteros) "entero" else "real"
+  }
+  decision
+}
+
+# Convierte las columnas segun lo que decidio decidir_conversion().
+aplicar_conversion <- function(datos, decision) {
+  for (columna in names(decision)) {
+    numeros <- as.numeric(datos[[columna]])
+    datos[[columna]] <- if (decision[[columna]] == "entero") as.integer(numeros) else numeros
   }
   datos
 }
