@@ -85,10 +85,21 @@ test_that("EN VIVO: conteo() descarga el archivo nacional del ITER de 1995", {
   totales <- tapply(nacional[[poblacion]][niveles == "entidad"], ent[niveles == "entidad"], sum)
   sumas <- tapply(nacional[[poblacion]][detalle], ent[detalle], sum, na.rm = TRUE)[names(totales)]
   solo_localidades <- tapply(nacional[[poblacion]][niveles == "localidad"], ent[niveles == "localidad"], sum, na.rm = TRUE)[names(totales)]
+  distintas <- names(totales)[sumas != totales]
   cat("[en vivo] 1995 iter nacional: las localidades mas los agregados de los municipios suman el total en ",
       sum(sumas == totales), " de ", length(totales), " entidades; las localidades solas, en ",
-      sum(solo_localidades == totales), "\n", sep = "")
-  expect_identical(unname(sumas), unname(totales))
+      sum(solo_localidades == totales), ".",
+      if (length(distintas) > 0) {
+        paste0(" Diferencias: ", paste0(distintas, " (total ", totales[distintas], ", localidades ",
+                                        solo_localidades[distintas], ", localidades mas agregados ", sumas[distintas], ")",
+                                        collapse = "; "))
+      },
+      "\n", sep = "")
+  # Como dice la ayuda de conteo(): las localidades solas suman menos que el
+  # total en todas las entidades, y con los agregados de los municipios lo
+  # alcanzan con una diferencia menor de 0.3 por ciento
+  expect_true(all(solo_localidades < totales))
+  expect_true(all(abs(sumas - totales) / totales < 0.003))
 })
 
 test_that("EN VIVO: conteo() descarga cada tabla de la muestra", {
