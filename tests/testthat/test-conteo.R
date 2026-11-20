@@ -20,16 +20,17 @@ test_that("conteo() descarga el ITER nacional por omision y devuelve solo locali
   servidor <- censo_local()
   expect_message(iter <- conteo(1995), "Descargando 00_nacional_1995_iter_dbf.zip \\(")
   expect_identical(descargas_censo(servidor), 1L)
-  expect_identical(iter$ENTIDAD, c("01", "06", "06", "06"))
-  expect_identical(iter$LOC, c("0001", "0001", "0010", "0001"))
-  expect_identical(iter$POBTOT, c(500L, 296L, 4L, 700L))
-  # Los agregados 9998 no se cuentan dos veces: las localidades suman el total
-  expect_identical(sum(iter$POBTOT), 1500L)
+  expect_identical(iter$ENTIDAD, c("01", "06", "06"))
+  expect_identical(iter$LOC, c("0001", "0001", "0001"))
+  expect_identical(iter$POBTOTAL, c(500L, 296L, 700L))
+  # En 1995, la localidad de una vivienda solo esta en los agregados 9998: las
+  # localidades suman un poco menos que el total nacional
+  expect_identical(sum(iter$POBTOTAL), 1496L)
   expect_match(attr(iter, "fuente"), "/contenidos/programas/ccpv/1995/microdatos/iter/00_nacional_1995_iter_dbf\\.zip$")
 
   nacional <- suppressMessages(conteo(1995, nivel = "nacional"))
-  expect_identical(nacional[, c("ENTIDAD", "MUN", "LOC", "POBTOT")],
-                   data.frame(ENTIDAD = "00", MUN = "000", LOC = "0000", POBTOT = 1500L))
+  expect_identical(nacional[, c("ENTIDAD", "MUN", "LOC", "POBTOTAL")],
+                   data.frame(ENTIDAD = "00", MUN = "000", LOC = "0000", POBTOTAL = 1500L))
 })
 
 test_that("conteo() descarga el ITER de una entidad y filtra sus niveles", {
@@ -37,28 +38,30 @@ test_that("conteo() descarga el ITER de una entidad y filtra sus niveles", {
   colima <- suppressMessages(conteo(2005, estado = "Colima"))
   expect_match(attr(colima, "fuente"), "/ccpv/2005/microdatos/iter/06_colima_2005_iter_dbf\\.zip$")
   expect_identical(colima$MUN, c("001", "001", "002"))
-  expect_identical(colima$POBMAS, c(148L, NA, 340L))
+  # En 2005, como en los censos, las localidades suman el total de la entidad
+  expect_identical(sum(colima$P_TOTAL), 1000L)
+  expect_identical(colima$P_MAS, c(148L, NA, 340L))
   expect_identical(colima$ALTITUD, c(20L, 50L, 490L))
   expect_identical(colima$LONGITUD, c("1035752", "1035910", "1034330"))
   expect_identical(colima$NOM_LOC[2], "Cofradía de Juárez")
 
   totales <- suppressMessages(conteo(2005, estado = "col", nivel = c("entidad", "municipio")))
-  expect_identical(totales$POBTOT, c(1000L, 300L, 700L))
+  expect_identical(totales$P_TOTAL, c(1000L, 300L, 700L))
   todos <- suppressMessages(conteo(2005, estado = 6, nivel = "todos"))
   expect_identical(nrow(todos), 8L)
   expect_identical(sum(todos$LOC == "9998"), 2L)
 
   aguascalientes <- suppressMessages(conteo("1995", estado = "Aguascalientes"))
   expect_match(attr(aguascalientes, "fuente"), "/ccpv/1995/microdatos/iter/01_aguascalientes_1995_iter_dbf\\.zip$")
-  expect_identical(aguascalientes$POBTOT, 500L)
+  expect_identical(aguascalientes$POBTOTAL, 500L)
 })
 
 # Muestra ------------------------------------------------------------------------
 
 test_that("conteo() descarga las dos tablas de la muestra de 1995", {
   censo_local()
-  # El zip de Colima trae cada tabla dos veces (en la raiz y en una carpeta);
-  # las copias son identicas, asi que se usa una
+  # El zip de Colima trae dentro, por error, el de Aguascalientes: se usan las
+  # tablas de la raiz
   personas <- suppressMessages(conteo(1995, "muestra", estado = "Colima"))
   expect_match(attr(personas, "fuente"), "/ccpv/1995/microdatos/cpv95_06_dbf\\.zip$")
   expect_named(personas, c("ENT", "ZONA", "ESTRATO", "TAM_LOC", "MUN", "UPM", "VIV", "HOGAR",

@@ -25,6 +25,8 @@
 #' @section Niveles de agregacion:
 #' Las bases \code{"iter"} y \code{"viviendas"} mezclan filas de detalle con filas de totales. El INEGI identifica los totales con claves en ceros: entidad \code{"00"} para el total nacional, municipio \code{"000"} para el total de la entidad y localidad \code{"0000"} para el total del municipio. El argumento \code{nivel} elige que filas se conservan; por omision, solo las localidades.
 #'
+#' En el ITER de 1995, las localidades de una y de dos viviendas no aparecen una por una: solo estan sumadas en las filas con clave de localidad \code{"9998"} y \code{"9999"} de cada municipio, que se repiten en las de la entidad. Por eso, la suma de las localidades de 1995 es un poco menor que el total de la entidad. En el ITER de 2005, como en los censos, esas localidades si aparecen una por una y las filas \code{"9998"} y \code{"9999"} repiten su poblacion. En los dos conteos, esas filas solo se incluyen con \code{nivel = "todos"}.
+#'
 #' @section Contenido de la tabla:
 #' Las columnas conservan los nombres que les da el INEGI. Las claves geograficas (entidad, municipio y localidad) son texto y conservan los ceros a la izquierda (\code{"09"}, \code{"001"}). Las columnas que solo contienen numeros se convierten a numero, salvo las que tienen valores con ceros a la izquierda, que se conservan como texto porque suelen ser codigos. En la muestra, en cambio, esas columnas tambien se convierten a numero (la edad \code{"008"} pasa a ser \code{8}), salvo las variables del diseño muestral de 1995 (\code{ESTRATO} y \code{UPM}). En las bases \code{"iter"} y \code{"viviendas"}, los datos que el INEGI reserva por confidencialidad (\code{"*"}) o marca como no disponibles (\code{"N/D"}) se convierten en \code{NA}.
 #'

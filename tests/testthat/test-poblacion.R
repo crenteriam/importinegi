@@ -199,18 +199,25 @@ test_that("poblacion_elegir_tabla() encuentra la tabla dentro del archivo descar
   expect_error(poblacion_elegir_tabla(carpeta, "dbf"), "m\u00e1s de un archivo para la tabla de datos")
   expect_error(poblacion_elegir_tabla(carpeta, "csv"), "no contiene lo que se esperaba")
 
-  # Una tabla repetida en dos carpetas: si las copias son identicas se usa una;
-  # si no, el error dice el nombre del zip y la ruta de cada archivo
+  # Una tabla repetida: se prefiere la menos anidada (la de un zip interno de
+  # otra entidad queda en una carpeta); entre copias identicas, la primera; si
+  # son distintas, el error dice el nombre del zip y la ruta de cada archivo
   repetida <- withr::local_tempdir()
-  dir.create(file.path(repetida, "copia"))
+  dir.create(file.path(repetida, "cpv95_12_dbf"))
   writeLines("a", file.path(repetida, "datgen95.dbf"))
-  writeLines("a", file.path(repetida, "copia", "DATGEN95.DBF"))
-  writeLines("b", file.path(repetida, "migint95.dbf"))
-  expect_identical(tolower(basename(poblacion_elegir_tabla(repetida, "dbf", "^datgen", "personas"))), "datgen95.dbf")
-  writeLines("distinta", file.path(repetida, "copia", "DATGEN95.DBF"))
+  writeLines("b", file.path(repetida, "cpv95_12_dbf", "DATGEN95.DBF"))
+  writeLines("c", file.path(repetida, "migint95.dbf"))
+  expect_identical(basename(poblacion_elegir_tabla(repetida, "dbf", "^datgen", "personas")), "datgen95.dbf")
+  copias <- withr::local_tempdir()
+  for (sub in c("x", "y")) {
+    dir.create(file.path(copias, sub))
+    writeLines("a", file.path(copias, sub, "trpmue03.DBF"))
+  }
+  expect_identical(basename(poblacion_elegir_tabla(copias, "dbf", "^trpmue", "personas")), "trpmue03.DBF")
+  writeLines("distinta", file.path(copias, "y", "trpmue03.DBF"))
   expect_error(
-    poblacion_elegir_tabla(repetida, "dbf", "^datgen", "personas", archivo = "cpv95_15_dbf.zip"),
-    "m\u00e1s de un archivo para la tabla \"personas\" en el archivo descargado cpv95_15_dbf.zip, que contiene: \"copia/DATGEN95.DBF\", \"datgen95.dbf\", \"migint95.dbf\""
+    poblacion_elegir_tabla(copias, "dbf", "^trpmue", "personas", archivo = "cpv2005_03_dbf.zip"),
+    "más de un archivo para la tabla \"personas\" en el archivo descargado cpv2005_03_dbf.zip, que contiene: \"x/trpmue03.DBF\", \"y/trpmue03.DBF\""
   )
 
   # En los zip de datos abiertos se descartan diccionario, catalogos y metadatos

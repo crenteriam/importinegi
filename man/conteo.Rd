@@ -49,6 +49,8 @@ El INEGI publica las muestras por entidad. Si no se indica \code{estado}, la fun
 \section{Niveles de agregacion}{
 
 Las bases \code{"iter"} y \code{"viviendas"} mezclan filas de detalle con filas de totales. El INEGI identifica los totales con claves en ceros: entidad \code{"00"} para el total nacional, municipio \code{"000"} para el total de la entidad y localidad \code{"0000"} para el total del municipio. El argumento \code{nivel} elige que filas se conservan; por omision, solo las localidades.
+
+En el ITER de 1995, las localidades de una y de dos viviendas no aparecen una por una: solo estan sumadas en las filas con clave de localidad \code{"9998"} y \code{"9999"} de cada municipio, que se repiten en las de la entidad. Por eso, la suma de las localidades de 1995 es un poco menor que el total de la entidad. En el ITER de 2005, como en los censos, esas localidades si aparecen una por una y las filas \code{"9998"} y \code{"9999"} repiten su poblacion. En los dos conteos, esas filas solo se incluyen con \code{nivel = "todos"}.
 }
 
 \section{Contenido de la tabla}{

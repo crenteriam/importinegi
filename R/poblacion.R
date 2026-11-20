@@ -417,10 +417,12 @@ poblacion_avisar_omision <- function(base, archivos) {
 
 # Elige, dentro de la carpeta descomprimida, el archivo que contiene la tabla.
 # Los zip de datos abiertos traen ademas el diccionario, los catalogos y los
-# metadatos; esos archivos se descartan. Algunos zip traen la misma tabla dos
-# veces (por ejemplo, en la raiz y en una carpeta): si las copias son
-# identicas, se usa la primera. `archivo` es el nombre del zip, para los
-# mensajes.
+# metadatos; esos archivos se descartan. Si la tabla aparece varias veces, se
+# prefiere la que esta menos anidada: algunos zip traen dentro, por error, el
+# zip de otra entidad (en la muestra del Conteo 1995, el de Chiapas trae el de
+# Guerrero y el de Chihuahua, el de Guanajuato), que se descomprime en una
+# carpeta. Si aun quedan varias copias identicas, se usa la primera.
+# `archivo` es el nombre del zip, para los mensajes.
 poblacion_elegir_tabla <- function(carpeta, formato, patron = NULL, tabla = NA_character_, archivo = NULL) {
   candidatos <- buscar_archivos(carpeta, extension = formato, exigir = TRUE)
   relativa <- tolower(substring(candidatos, nchar(carpeta) + 2))
@@ -437,13 +439,18 @@ poblacion_elegir_tabla <- function(carpeta, formato, patron = NULL, tabla = NA_c
   if (!is.null(patron)) {
     encontrados <- candidatos[grepl(patron, basename(candidatos), ignore.case = TRUE)]
   }
+  if (length(encontrados) > 1) {
+    relativas <- substring(encontrados, nchar(carpeta) + 2)
+    profundidad <- lengths(strsplit(relativas, "/", fixed = TRUE))
+    encontrados <- encontrados[profundidad == min(profundidad)]
+  }
   if (length(encontrados) > 1 && length(unique(tolower(basename(encontrados)))) == 1 &&
       length(unique(unname(tools::md5sum(encontrados)))) == 1) {
     encontrados <- encontrados[1]
   }
   if (length(encontrados) != 1) {
     detener(
-      if (length(encontrados) == 0) "No se encontró" else "Se encontró más de un archivo para",
+      if (length(encontrados) == 0) "No se encontr\u00f3" else "Se encontr\u00f3 m\u00e1s de un archivo para",
       if (!is.na(tabla)) paste0(" la tabla ", comillas(tabla)) else " la tabla de datos",
       " en el archivo descargado", if (!is.null(archivo)) paste0(" ", archivo), ", que contiene: ",
       enumerar(substring(candidatos, nchar(carpeta) + 2), maximo = 15), ". ",

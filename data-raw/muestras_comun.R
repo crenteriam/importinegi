@@ -5,8 +5,10 @@
 tabla <- function(...) data.frame(..., stringsAsFactors = FALSE)
 
 # Escribe un zip con las tablas indicadas. `tablas` es una lista con nombre:
-# el nombre es la ruta del archivo dentro del zip (dbf o csv).
-escribir_zip <- function(nombre, tablas, otros = list(), codificacion = "latin1") {
+# el nombre es la ruta del archivo dentro del zip (dbf o csv). `otros` agrega
+# archivos de texto y `binarios`, copias de archivos que ya existen (por
+# ejemplo, otro zip), con la ruta dentro del zip como nombre.
+escribir_zip <- function(nombre, tablas, otros = list(), codificacion = "latin1", binarios = character()) {
   carpeta <- tempfile("muestra_")
   dir.create(carpeta)
   for (ruta in names(tablas)) {
@@ -42,6 +44,11 @@ escribir_zip <- function(nombre, tablas, otros = list(), codificacion = "latin1"
     archivo <- file.path(carpeta, ruta)
     dir.create(dirname(archivo), recursive = TRUE, showWarnings = FALSE)
     writeLines(otros[[ruta]], archivo)
+  }
+  for (ruta in names(binarios)) {
+    archivo <- file.path(carpeta, ruta)
+    dir.create(dirname(archivo), recursive = TRUE, showWarnings = FALSE)
+    file.copy(binarios[[ruta]], archivo)
   }
   anterior <- setwd(carpeta)
   on.exit(setwd(anterior))

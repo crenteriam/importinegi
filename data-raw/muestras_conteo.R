@@ -24,8 +24,11 @@ source(file.path("data-raw", "muestras_comun.R"), encoding = "UTF-8")
 
 # ITER: principales resultados por localidad ----------------------------------
 #
-# Como en el censo: totales con claves en ceros y agregados de las localidades
-# de una y de dos viviendas (9998 y 9999), que repiten poblacion ya contada.
+# Totales con claves en ceros y agregados de las localidades de una y de dos
+# viviendas (9998 y 9999). En 2005, como en los censos, las localidades
+# pequeñas aparecen una por una y los agregados repiten su poblacion; en 1995
+# solo aparecen en los agregados. Las columnas de poblacion se llaman como en
+# los archivos del INEGI: POBTOTAL y POBTMAS en 1995, P_TOTAL y P_MAS en 2005.
 
 iter_colima <- tabla(
   ENTIDAD = "06", NOM_ENT = "Colima",
@@ -36,10 +39,10 @@ iter_colima <- tabla(
               "Ciudad de Armería", "Cofradía de Juárez", "Localidades de una vivienda",
               "Total del Municipio", "Colima"),
   LONGITUD = c(NA, NA, NA, "1035752", "1035910", NA, NA, "1034330"),
+  LATITUD  = c(NA, NA, NA, "185608", "185800", NA, NA, "191444"),
   ALTITUD  = c(NA, NA, NA, "0020", "0050", NA, NA, "0490"),
-  POBTOT  = c("1000", "4", "300", "296", "4", "4", "700", "700"),
-  POBMAS  = c("490", "2", "150", "148", "*", "2", "340", "340"),
-  VIVTOT  = c("250", "1", "75", "74", "1", "1", "175", "175")
+  P_TOTAL = c("1000", "4", "300", "296", "4", "4", "700", "700"),
+  P_MAS   = c("490", "2", "150", "148", "*", "2", "340", "340")
 )
 iter_aguascalientes <- tabla(
   ENTIDAD = "01", NOM_ENT = "Aguascalientes",
@@ -47,23 +50,32 @@ iter_aguascalientes <- tabla(
   NOM_MUN = c("Total de la entidad Aguascalientes", "Aguascalientes", "Aguascalientes"),
   LOC = c("0000", "0000", "0001"),
   NOM_LOC = c("Total de la Entidad", "Total del Municipio", "Aguascalientes"),
-  LONGITUD = c(NA, NA, "1021746"), ALTITUD = c(NA, NA, "1880"),
-  POBTOT = c("500", "500", "500"), POBMAS = c("240", "240", "240"), VIVTOT = c("120", "120", "120")
+  LONGITUD = c(NA, NA, "1021746"), LATITUD = c(NA, NA, "215247"), ALTITUD = c(NA, NA, "1880"),
+  P_TOTAL = c("500", "500", "500"), P_MAS = c("240", "240", "240")
 )
-iter_nacional <- rbind(
-  tabla(ENTIDAD = "00", NOM_ENT = "Total nacional", MUN = "000", NOM_MUN = "Total nacional",
-        LOC = c("0000", "9998"), NOM_LOC = c("Total nacional", "Localidades de una vivienda"),
-        LONGITUD = NA, ALTITUD = NA, POBTOT = c("1500", "4"), POBMAS = c("730", "2"),
-        VIVTOT = c("370", "1")),
-  iter_aguascalientes,
-  iter_colima
-)
-for (year in c("95", "05")) {
-  sufijo <- if (year == "95") "1995" else "2005"
-  escribir_zip(paste0("iter", sufijo, "_06.zip"), stats::setNames(list(iter_colima), paste0("ITER_06DBF", year, ".dbf")))
-  escribir_zip(paste0("iter", sufijo, "_00.zip"), stats::setNames(list(iter_nacional), paste0("ITER_NALDBF", year, ".dbf")))
+iter_nacional <- function(colima, aguascalientes) {
+  totales <- tabla(
+    ENTIDAD = "00", NOM_ENT = "Total nacional", MUN = "000", NOM_MUN = "Total nacional",
+    LOC = c("0000", "9998"), NOM_LOC = c("Total nacional", "Localidades de una vivienda"),
+    LONGITUD = NA, LATITUD = NA, ALTITUD = NA, P_TOTAL = c("1500", "4"), P_MAS = c("730", "2")
+  )
+  names(totales) <- names(colima)
+  rbind(totales, aguascalientes, colima)
 }
-escribir_zip("iter1995_01.zip", list("ITER_01DBF95.dbf" = iter_aguascalientes))
+# 1995: sin la localidad de una vivienda (solo esta en los agregados) y con los
+# nombres de columna de ese año
+a_1995 <- function(datos) {
+  names(datos)[names(datos) == "P_TOTAL"] <- "POBTOTAL"
+  names(datos)[names(datos) == "P_MAS"] <- "POBTMAS"
+  datos
+}
+colima_1995 <- a_1995(iter_colima[iter_colima$LOC != "0010", ])
+aguascalientes_1995 <- a_1995(iter_aguascalientes)
+escribir_zip("iter1995_06.zip", list("ITER_06DBF95.dbf" = colima_1995))
+escribir_zip("iter1995_01.zip", list("ITER_01DBF95.dbf" = aguascalientes_1995))
+escribir_zip("iter1995_00.zip", list("ITER_NALDBF95.dbf" = iter_nacional(colima_1995, aguascalientes_1995)))
+escribir_zip("iter2005_06.zip", list("ITER_06DBF05.dbf" = iter_colima))
+escribir_zip("iter2005_00.zip", list("ITER_NALDBF05.dbf" = iter_nacional(iter_colima, iter_aguascalientes)))
 
 # Muestra del Conteo 1995 (Encuesta del Conteo) ----------------------------------
 #
@@ -71,8 +83,9 @@ escribir_zip("iter1995_01.zip", list("ITER_01DBF95.dbf" = iter_aguascalientes))
 # vivienda y hogar, factores de expansion (FAC_POB, FAC_VIV) y preguntas
 # (P1_5, P7_10C...). P1_5 llega con ceros a la izquierda en Colima y sin ellos
 # en Aguascalientes; P7_10C trae un codigo con letra en Aguascalientes, asi
-# que queda como texto en las dos entidades. El zip de Colima trae las tablas
-# dos veces, en la raiz y en una carpeta, como alguno de los del INEGI.
+# que queda como texto en las dos entidades. El zip de Colima trae ademas, por
+# error, el zip de Aguascalientes, como en el INEGI el de Chiapas trae el de
+# Guerrero.
 
 personas1995 <- function(ent, edad, ocupacion) {
   n <- length(edad)
@@ -84,15 +97,18 @@ migrantes1995 <- function(ent) {
   tabla(ENT = ent, ZONA = "40", ESTRATO = "1", TAM_LOC = "4", MUN = "001", UPM = "01", VIV = 1L, HOGAR = 1L,
         FAC_VIV = "023", P9_1 = "11", P9_6B = "90")
 }
-colima1995 <- list(
-  "datgen95.dbf" = personas1995("06", c("034", "008", "061"), c("0123", "0201", NA)),
-  "migint95.dbf" = migrantes1995("06")
-)
-escribir_zip("muestra1995_06.zip", c(colima1995, stats::setNames(colima1995, paste0("cpv95_06/", names(colima1995)))))
 escribir_zip("muestra1995_01.zip", list(
   "datgen95.dbf" = personas1995("01", c("45", "12"), c("A10", "0410")),
   "migint95.dbf" = migrantes1995("01")
 ))
+escribir_zip(
+  "muestra1995_06.zip",
+  list(
+    "datgen95.dbf" = personas1995("06", c("034", "008", "061"), c("0123", "0201", NA)),
+    "migint95.dbf" = migrantes1995("06")
+  ),
+  binarios = c("cpv95_01_dbf.zip" = file.path(destino, "muestra1995_01.zip"))
+)
 
 # Muestra del Conteo 2005 (extracto del 10 % de las viviendas) ---------------
 #
