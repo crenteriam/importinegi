@@ -4,14 +4,14 @@
 \alias{censo}
 \title{Censo de Poblacion y Vivienda}
 \usage{
-censo(year, base = "iter", estado = "nacional", tabla = NULL, nivel = NULL)
+censo(year, base = "iter", estado = NULL, tabla = NULL, nivel = NULL)
 }
 \arguments{
 \item{year}{Año del censo, en formato numerico. Es obligatorio. Los censos disponibles son 1990, 2000, 2010 y 2020.}
 
 \item{base}{Base de datos que se descarga: \code{"iter"} (por omision), \code{"ageb"}, \code{"muestra"}, \code{"localidades"}, \code{"entorno"} o \code{"asistencia"}. No todas las bases existen para todos los censos (ver Detalles).}
 
-\item{estado}{Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos. Acepta varias entidades a la vez, que se combinan en una sola tabla. Por omision, \code{"nacional"} descarga el archivo nacional, en las bases que lo tienen. \code{"todas"} descarga las 32 entidades y las combina.}
+\item{estado}{Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos. Acepta varias entidades a la vez, que se combinan en una sola tabla. \code{"nacional"} devuelve la base de todo el pais: descarga el archivo nacional o, si el INEGI publica la base solo por entidad, descarga las 32 entidades y las combina. Por omision, \code{"Aguascalientes"} en la muestra y en las bases que se publican solo por entidad, con un aviso de cuanto pesaria la descarga de todo el pais, y \code{"nacional"} en las demas.}
 
 \item{tabla}{Solo para las bases que se publican en varias tablas. En \code{base = "muestra"}: \code{"personas"} (por omision), \code{"viviendas"} o \code{"migrantes"}; la muestra de 1990 se publica en una sola tabla y no usa este argumento. En \code{base = "entorno"} del Censo 2020: \code{"manzanas"} (por omision) o \code{"vialidades"}. En \code{base = "asistencia"}: \code{"alojamientos"} (por omision; una fila por alojamiento, con sus caracteristicas), \code{"usuarios"} (poblacion usuaria residente de cada alojamiento, por sexo y grupos de edad) o \code{"trabajadores"} (poblacion que trabaja en cada alojamiento).}
 
@@ -28,17 +28,17 @@ Una sola funcion da acceso a todas las bases de datos de cada censo. El argument
 \describe{
 \item{\code{"iter"}}{Principales resultados por localidad (ITER). Censos de 1990, 2000, 2010 y 2020. Tiene archivo nacional.}
 \item{\code{"ageb"}}{Principales resultados por AGEB y manzana urbana. Censos de 2010 y 2020. Se publica por entidad.}
-\item{\code{"muestra"}}{Microdatos de la muestra (cuestionario ampliado). Censos de 1990, 2000, 2010 y 2020. Se publica por entidad; en 2020 tambien hay archivo nacional.}
+\item{\code{"muestra"}}{Microdatos de la muestra censal. Censos de 1990, 2000, 2010 y 2020. Desde 2000, la muestra esta formada por las viviendas que respondieron el cuestionario ampliado. En 1990 no hubo cuestionario ampliado: la muestra es un extracto del 10 por ciento de las viviendas particulares, tomado del archivo completo del censo. Se publica por entidad; en 2020 tambien hay archivo nacional.}
 \item{\code{"localidades"}}{Resultados sobre las caracteristicas de las localidades pequeñas (con menos de 5 mil habitantes en 2010 y de 2,500 en 2020). Censos de 2010 y 2020. Tiene archivo nacional.}
 \item{\code{"entorno"}}{Resultados sobre infraestructura y caracteristicas del entorno urbano, por manzana. Censos de 2010 y 2020. Se publica por entidad; en 2020 tambien hay archivo nacional y una segunda tabla, por vialidad (ver el argumento \code{tabla}).}
 \item{\code{"asistencia"}}{Resultados sobre las caracteristicas de los alojamientos de asistencia social (por ejemplo, casas hogar para menores de edad o para personas adultas mayores y albergues), su poblacion usuaria residente y su poblacion trabajadora, en tres tablas (ver el argumento \code{tabla}). Censo de 2020. Tiene archivo nacional.}
 }
 
-Los Conteos de Poblacion y Vivienda (1995 y 2005) y las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta funcion.
+Los Conteos de Poblacion y Vivienda (1995 y 2005) se descargan con \code{\link{conteo}}. Las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta funcion.
 
 La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee. Hasta 2010 lee los archivos en formato DBF; en 2020, en formato CSV. Requiere conexion a internet.
 
-Algunas descargas son grandes. Antes de descargar varios archivos, la funcion indica cuanto pesan en total. Por ejemplo, la muestra del Censo 2010 de las 32 entidades pesa cerca de 350 MB. El tamaño de cada base se puede consultar antes con \code{\link{bases_importinegi}}.
+Algunas descargas son grandes. Antes de descargar varios archivos, la funcion indica cuanto pesan en total. Por ejemplo, la muestra del Censo 2010 de las 32 entidades pesa cerca de 350 MB. Por eso, si no se indica \code{estado}, en la muestra y en las bases que se publican solo por entidad la funcion descarga solo Aguascalientes y avisa cuanto pesaria la descarga de todo el pais. El tamaño de cada base se puede consultar antes con \code{\link{bases_importinegi}}.
 }
 \section{Niveles de agregacion}{
 

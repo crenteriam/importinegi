@@ -22,7 +22,7 @@ El paquete de R `importinegi` fue creado para facilitar la descarga y uso de las
 
 La version `2.0.0` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
 
-* Censo de Poblacion y Vivienda
+* Censo y Conteo de Poblacion y Vivienda
 * Censo Nacional de Gobiernos Municipales y Delegacionales
 * Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH)
 * Encuesta Nacional de Ocupación y Empleo (ENOE)
@@ -101,13 +101,13 @@ bases.censo = bases_importinegi(proyecto = "censo")
 bases.censo2020 = bases_importinegi(proyecto = "censo", year = 2020)
 ```
 
-La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo de Población y Vivienda. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
+La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
 
 ## Censo Nacional de Poblacion y Vivienda
 
 La función `censo()` descarga todas las bases de datos de los Censos de Población y Vivienda de 1990, 2000, 2010 y 2020. La sintaxis de la función tiene cinco parámetros, de los cuales solo el primero es indispensable.
 
-El primer parámetro es el año del censo (`year`) en formato numérico. Los años disponibles son 1990, 2000, 2010 y 2020. Los Conteos de Población y Vivienda (1995 y 2005) y las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta función.
+El primer parámetro es el año del censo (`year`) en formato numérico. Los años disponibles son 1990, 2000, 2010 y 2020. Los Conteos de Población y Vivienda (1995 y 2005) se descargan con la función `conteo()`, que se explica en la siguiente sección. Las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta función.
 
 El segundo parámetro es la base de datos (`base`) en formato alfanumérico. La selección por default es `iter`. No todas las bases de datos están disponibles para todos los años censales, como se muestra en la siguiente tabla. Esta información se puede consultar también con `bases_importinegi(proyecto = "censo")`.
 
@@ -115,14 +115,14 @@ El segundo parámetro es la base de datos (`base`) en formato alfanumérico. La 
 |:-------|:--------------|:-----------------|
 | `iter` | Principales resultados por localidad (ITER) | 1990, 2000, 2010 y 2020 |
 | `ageb` | Principales resultados por AGEB y manzana urbana | 2010 y 2020 |
-| `muestra` | Microdatos de la muestra (cuestionario ampliado) | 1990, 2000, 2010 y 2020 |
+| `muestra` | Microdatos de la muestra censal (cuestionario ampliado desde 2000; en 1990, extracto del 10 % de las viviendas) | 1990, 2000, 2010 y 2020 |
 | `localidades` | Características de las localidades pequeñas | 2010 y 2020 |
 | `entorno` | Características del entorno urbano, por manzana | 2010 y 2020 |
 | `asistencia` | Características de los alojamientos de asistencia social | 2020 |
 
-El tercer parámetro es la entidad federativa (`estado`) en formato alfanumérico. La selección por default es `nacional`, que descarga el archivo con los datos de todo el país. Las entidades se pueden escribir con su nombre, su abreviatura o su clave del INEGI, sin distinguir entre mayúsculas y minúsculas ni entre letras con y sin acento (p. ej. `San Luis Potosi`, `slp` o `24`). También se pueden indicar varias entidades a la vez, que la función combina en una sola base de datos.
+El tercer parámetro es la entidad federativa (`estado`) en formato alfanumérico. La selección por default es `nacional`, que descarga los datos de todo el país, salvo en la muestra y en las bases que se publican solamente por entidad, donde es `Aguascalientes` (ver el siguiente párrafo). Las entidades se pueden escribir con su nombre, su abreviatura o su clave del INEGI, sin distinguir entre mayúsculas y minúsculas ni entre letras con y sin acento (p. ej. `San Luis Potosi`, `slp` o `24`). También se pueden indicar varias entidades a la vez, que la función combina en una sola base de datos.
 
-El INEGI no publica un archivo nacional de todas las bases de datos. Las bases `ageb`, `muestra` (hasta 2010) y `entorno` (2010) se publican solamente por entidad federativa. En esos casos se debe indicar la entidad o las entidades que se desean descargar, o bien `estado = "todas"`, que descarga los archivos de las 32 entidades y los combina. Algunas de estas descargas son grandes (por ejemplo, la muestra del Censo 2010 de las 32 entidades pesa cerca de 350 MB), por lo que la función indica el tamaño total antes de descargar varios archivos.
+El INEGI no publica un archivo nacional de todas las bases de datos. Las bases `ageb`, `muestra` (hasta 2010) y `entorno` (2010) se publican solamente por entidad federativa. En esos casos, `estado = "nacional"` descarga los archivos de las 32 entidades y los combina. Algunas de estas descargas son grandes (por ejemplo, la muestra del Censo 2010 de las 32 entidades pesa cerca de 350 MB), por lo que la función indica el tamaño total antes de descargar varios archivos. Por la misma razón, en la muestra y en las bases que se publican solamente por entidad, la entidad por default es Aguascalientes, y la función avisa cuánto pesaría la descarga de todo el país.
 
 El cuarto parámetro es el nivel de agregación (`nivel`) y se utiliza solamente en las bases `iter` y `ageb`. Estas bases contienen, además de los datos por localidad o por manzana, los resultados agregados (totales) a nivel entidad, municipio, localidad y AGEB. Por default, la función devuelve solamente los datos del nivel de mayor detalle: las localidades en la base `iter` y las manzanas en la base `ageb`. Los niveles disponibles son `nacional`, `entidad`, `municipio` y `localidad` en la base `iter`, y `entidad`, `municipio`, `localidad`, `ageb` y `manzana` en la base `ageb`. Se puede indicar uno o varios niveles, o bien `todos`, que conserva todos los datos del archivo.
 
@@ -177,6 +177,33 @@ La función devuelve una base de datos (data.frame) con los nombres de variables
 ```{r, eval = FALSE}
 # Consultar la direccion de los archivos descargados
 attr(censo.jalisco, "fuente")
+```
+
+## Conteo de Poblacion y Vivienda
+
+Los Conteos de Población y Vivienda se levantaron a la mitad del periodo entre dos censos, en 1995 y en 2005. Al igual que un censo, enumeraron a toda la población. `conteo()` descarga sus bases con los mismos argumentos que `censo()`: `year` es obligatorio y `base` elige entre `"iter"` (por omisión), `"muestra"` y, en 2005, `"viviendas"`.
+
+Antes de usar las muestras conviene saber que se obtuvieron de forma distinta en cada conteo:
+
+- **1995.** El Conteo tuvo dos operativos: una enumeración de toda la población, con un cuestionario básico, y una encuesta por muestreo, con un cuestionario ampliado para obtener información más detallada de una muestra de viviendas. Se levantó del 23 de octubre al 18 de noviembre de 1995. La base `"muestra"` de 1995 contiene los microdatos de esa encuesta.
+- **2005.** El Conteo se levantó del 4 al 29 de octubre de 2005, con dos semanas adicionales para recuperar las viviendas pendientes. Su muestra no proviene de una encuesta aparte: es un extracto del archivo completo del Conteo, del que el INEGI tomó de forma sistemática el 10 % de las viviendas particulares de cada entidad, con todos sus ocupantes. Por eso tiene las mismas preguntas que el resto del Conteo de 2005. Se obtuvo de la misma forma que la muestra del Censo de 1990, y no como la muestra de 1995 ni las muestras censales de 2000 en adelante, que provienen de un cuestionario ampliado.
+
+El INEGI publica las muestras por entidad. Si no se indica `estado`, `conteo()` descarga la muestra de Aguascalientes y avisa cuánto pesaría la de todo el país; con `estado = "nacional"` descarga las 32 entidades y las combina. La muestra nacional de 2005 pesa unos 120 MB y tiene cerca de 10 millones de registros de personas, así que conviene pedirla solo cuando se necesita todo el país.
+
+En el ITER de 1995, las localidades de una y de dos viviendas no aparecen una por una: solo están sumadas en las filas con clave de localidad `9998` y `9999` de cada municipio, que se repiten en las de la entidad. Por eso, la suma de las localidades de 1995 es un poco menor que el total de la entidad. Con los agregados de los municipios, la suma coincide con el total en 29 entidades; en Chihuahua, Oaxaca y Querétaro difiere en menos de 0.3 %. En el ITER de 2005, como en los censos, esas localidades sí aparecen una por una y las filas `9998` y `9999` repiten su población. En los dos conteos, esas filas solo se incluyen con `nivel = "todos"`.
+
+```{r, eval = FALSE}
+# ITER del Conteo 2005, todo el país
+iter05 = conteo(2005)
+
+# Personas de la muestra del Conteo 1995 en Aguascalientes (entidad por omisión)
+personas95 = conteo(1995, base = "muestra")
+
+# Hogares de la muestra del Conteo 2005 en Yucatán
+hogares05 = conteo(2005, base = "muestra", estado = "Yucatán", tabla = "hogares")
+
+# Muestra del Conteo 2005 de todo el país: descarga y combina las 32 entidades
+personas05 = conteo(2005, base = "muestra", estado = "nacional")
 ```
 
 ## Censo de Gobiernos Municipales y Delegacionales

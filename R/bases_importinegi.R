@@ -4,7 +4,7 @@
 #'
 #' La tabla sale del registro de archivos del INEGI que se distribuye con el paquete, el mismo que usan las funciones de descarga para validar sus argumentos y encontrar la direccion de cada archivo. Por eso, lo que muestra esta funcion es lo que esas funciones pueden descargar. El atributo \code{"registro"} de la tabla indica la fecha en que se genero el registro: los archivos que el INEGI publique despues de esa fecha apareceran al actualizar el paquete.
 #'
-#' Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
+#' Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}) y el Conteo de Poblacion y Vivienda (\code{\link{conteo}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 #'
 #' A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 #'
@@ -34,7 +34,7 @@
 #'   \item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"} o \code{"csv"}).}
 #'   \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
 #' }
-#' @seealso \code{\link{censo}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
+#' @seealso \code{\link{censo}} y \code{\link{conteo}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 #' @export
 
 bases_importinegi <- function(proyecto = NULL, year = NULL) {
@@ -75,7 +75,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
       proyecto = bases$programa[i],
       year = bases$year[i],
       base = bases$base[i],
-      descripcion = poblacion_titulo_base(bases$base[i]),
+      descripcion = poblacion_titulo_base(bases$programa[i], bases$year[i], bases$base[i]),
       tablas = paste(tablas, collapse = ", "),
       cobertura = if (any(nacional)) "nacional y por entidad" else "por entidad",
       formato = archivos$formato[1],

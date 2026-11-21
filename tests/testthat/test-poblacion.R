@@ -74,6 +74,121 @@ test_that("combinar_tablas() une entidades con columnas o tipos distintos", {
   expect_identical(unida$Y, c(NA, NA, "z"))
 })
 
+# Conversion de tipos tal como la hacia el motor antes de convertir cada
+# entidad por separado: unir primero y convertir despues. Sirve de referencia
+# para comprobar que el resultado no cambio.
+convertir_original <- function(datos, texto = NULL, ceros = FALSE) {
+  protegidas <- tolower(texto %||% character())
+  for (columna in names(datos)) {
+    valores <- datos[[columna]]
+    if (!is.character(valores) || tolower(columna) %in% protegidas) {
+      next
+    }
+    presentes <- trimws(valores[!is.na(valores)])
+    if (length(presentes) == 0) {
+      next
+    }
+    es_numero <- grepl("^-?[0-9]+(\\.[0-9]+)?$", presentes)
+    es_clave <- grepl("^-?0[0-9]", presentes)
+    if (all(es_numero) && (ceros || !any(es_clave))) {
+      numeros <- as.numeric(valores)
+      enteros <- !any(grepl(".", presentes, fixed = TRUE)) &&
+        all(abs(numeros) <= .Machine$integer.max, na.rm = TRUE)
+      datos[[columna]] <- if (enteros) as.integer(numeros) else numeros
+    }
+  }
+  datos
+}
+
+preparar_original <- function(tablas, base) {
+  datos <- combinar_tablas(tablas)
+  datos <- poblacion_normalizar_claves(datos)
+  faltantes <- poblacion_faltantes(base)
+  if (!is.null(faltantes)) {
+    datos <- limpiar_faltantes(datos, faltantes)
+  }
+  datos <- convertir_original(datos, texto = columnas_texto(datos), ceros = base %in% c("muestra", "asistencia"))
+  altitud <- grep("^ALTITUD$", names(datos), ignore.case = TRUE, value = TRUE)
+  if (length(altitud) > 0) {
+    datos[altitud] <- convertir_original(datos[altitud], ceros = TRUE)
+  }
+  datos
+}
+
+test_that("poblacion_preparar() convierte cada entidad y da el mismo resultado que unir primero", {
+  a <- data.frame(
+    ENT = "06", MUN = c("1", "2"), EDAD = c("034", "008"), OCUPA = c("0123", "0201"),
+    PESO = c("1.5", "2"), GRANDE = c("2147483648", "1"), SALDO = c("-5", "3"), VACIA = NA_character_,
+    ALTITUD = c("0020", "1500"), NUMVIV = c("00001", "00002"), CODIGO = c("05", "12"), POBMAS = c("*", "7"),
+    stringsAsFactors = FALSE
+  )
+  b <- data.frame(
+    ENT = "18", MUN = "3", EDAD = "45", OCUPA = "A10", PESO = "3", GRANDE = "7", SALDO = "1",
+    VACIA = NA_character_, ALTITUD = "30", NUMVIV = "00009", CODIGO = "7", POBMAS = "N/D",
+    stringsAsFactors = FALSE
+  )
+  # Como la entrega un DBF: claves y edad numericas, y sin la columna CODIGO
+  c <- data.frame(
+    ENT = 1L, MUN = 4L, EDAD = 70L, OCUPA = "0300", PESO = "4", GRANDE = "8", SALDO = "0",
+    VACIA = NA_character_, ALTITUD = "0040", NUMVIV = "00010", POBMAS = "2", stringsAsFactors = FALSE
+  )
+  for (base in c("muestra", "iter", "asistencia")) {
+    for (tablas in list(list(a), list(b), list(a, b), list(b, a))) {
+      expect_identical(poblacion_preparar(function() tablas, base), preparar_original(tablas, base), info = base)
+    }
+    expect_warning(nuevo <- poblacion_preparar(function() list(a, b, c), base), "no tienen las mismas columnas")
+    expect_warning(original <- preparar_original(list(a, b, c), base), "no tienen las mismas columnas")
+    expect_identical(nuevo, original, info = base)
+  }
+
+  dos <- poblacion_preparar(function() list(a, b), "muestra")
+  expect_identical(dos$ENT, c("06", "06", "18"))
+  expect_identical(dos$MUN, c("001", "002", "003"))
+  expect_identical(dos$EDAD, c(34L, 8L, 45L))
+  # Una columna con un valor que no es numero en una entidad queda como texto
+  # en todas, con sus ceros
+  expect_identical(dos$OCUPA, c("0123", "0201", "A10"))
+  expect_identical(dos$PESO, c(1.5, 2, 3))
+  # Un valor que no cabe en un entero hace real la columna
+  expect_identical(dos$GRANDE, c(2147483648, 1, 7))
+  expect_identical(dos$SALDO, c(-5L, 3L, 1L))
+  expect_identical(dos$ALTITUD, c(20L, 1500L, 30L))
+  expect_identical(dos$NUMVIV, c("00001", "00002", "00009"))
+  expect_identical(dos$CODIGO, c(5L, 12L, 7L))
+  expect_identical(dos$VACIA, rep(NA_character_, 3))
+  iter <- poblacion_preparar(function() list(a, b), "iter")
+  expect_identical(iter$CODIGO, c("05", "12", "7"))
+  expect_identical(iter$POBMAS, c(NA, 7L, NA))
+})
+
+test_that("decidir_conversion() decide con los valores de todas las tablas", {
+  a <- data.frame(X = c("1", "2"), Y = c("01", "2"), Z = c("1.5", NA), stringsAsFactors = FALSE)
+  b <- data.frame(X = "3", Y = "4", Z = "x", stringsAsFactors = FALSE)
+  expect_identical(decidir_conversion(list(a, b)), c(X = "entero"))
+  expect_identical(decidir_conversion(list(a, b), ceros = TRUE), c(X = "entero", Y = "entero"))
+  expect_identical(decidir_conversion(list(a)), c(X = "entero", Z = "real"))
+  expect_identical(decidir_conversion(list(a, b), texto = "x", medidas = "Y"), c(Y = "entero"))
+  expect_identical(aplicar_conversion(a, c(X = "entero", Z = "real")),
+                   data.frame(X = 1:2, Y = c("01", "2"), Z = c(1.5, NA), stringsAsFactors = FALSE))
+})
+
+test_that("la entidad por omision es Aguascalientes en la muestra y en las bases sin archivo nacional", {
+  bases <- poblacion_bases()
+  for (i in seq_len(nrow(bases))) {
+    archivos <- poblacion_archivos(bases$programa[i], bases$year[i], bases$base[i])
+    esperada <- if (bases$base[i] == "muestra" || !"00" %in% archivos$clave) "01" else "00"
+    expect_identical(poblacion_estado_omision(bases$base[i], archivos), esperada,
+                     info = paste(bases$programa[i], bases$year[i], bases$base[i]))
+  }
+  expect_identical(poblacion_estado_omision("muestra", poblacion_archivos("censo", 2020L, "muestra")), "01")
+  expect_identical(poblacion_estado_omision("entorno", poblacion_archivos("censo", 2020L, "entorno")), "00")
+  expect_identical(poblacion_estado_omision("entorno", poblacion_archivos("censo", 2010L, "entorno")), "01")
+  expect_message(
+    poblacion_avisar_omision("muestra", poblacion_archivos("censo", 2020L, "muestra")),
+    "se descarga la muestra de Aguascalientes. Para todo el país usa estado = \"nacional\" \\(archivo nacional de 464 MB\\)\\."
+  )
+})
+
 test_that("poblacion_elegir_tabla() encuentra la tabla dentro del archivo descargado", {
   carpeta <- inegi_descomprimir(muestra("censo/muestra2000_06.zip"))
   withr::defer(unlink(carpeta, recursive = TRUE))
@@ -83,6 +198,27 @@ test_that("poblacion_elegir_tabla() encuentra la tabla dentro del archivo descar
                "No se encontr\u00f3 la tabla \"hogares\".*MIN_F06.DBF.*PER_F06.DBF.*VHO_F06.DBF")
   expect_error(poblacion_elegir_tabla(carpeta, "dbf"), "m\u00e1s de un archivo para la tabla de datos")
   expect_error(poblacion_elegir_tabla(carpeta, "csv"), "no contiene lo que se esperaba")
+
+  # Una tabla repetida: se prefiere la menos anidada (la de un zip interno de
+  # otra entidad queda en una carpeta); entre copias identicas, la primera; si
+  # son distintas, el error dice el nombre del zip y la ruta de cada archivo
+  repetida <- withr::local_tempdir()
+  dir.create(file.path(repetida, "cpv95_12_dbf"))
+  writeLines("a", file.path(repetida, "datgen95.dbf"))
+  writeLines("b", file.path(repetida, "cpv95_12_dbf", "DATGEN95.DBF"))
+  writeLines("c", file.path(repetida, "migint95.dbf"))
+  expect_identical(basename(poblacion_elegir_tabla(repetida, "dbf", "^datgen", "personas")), "datgen95.dbf")
+  copias <- withr::local_tempdir()
+  for (sub in c("x", "y")) {
+    dir.create(file.path(copias, sub))
+    writeLines("a", file.path(copias, sub, "trpmue03.DBF"))
+  }
+  expect_identical(basename(poblacion_elegir_tabla(copias, "dbf", "^trpmue", "personas")), "trpmue03.DBF")
+  writeLines("distinta", file.path(copias, "y", "trpmue03.DBF"))
+  expect_error(
+    poblacion_elegir_tabla(copias, "dbf", "^trpmue", "personas", archivo = "cpv2005_03_dbf.zip"),
+    "más de un archivo para la tabla \"personas\" en el archivo descargado cpv2005_03_dbf.zip, que contiene: \"x/trpmue03.DBF\", \"y/trpmue03.DBF\""
+  )
 
   # En los zip de datos abiertos se descartan diccionario, catalogos y metadatos
   abiertos <- inegi_descomprimir(muestra("censo/iter2020_06.zip"))
@@ -99,6 +235,14 @@ test_that("las tablas de bases y programas son coherentes", {
     expect_true(all(bases$year[bases$programa == programa] %in% programas[[programa]]$years), info = programa)
   }
   expect_false(anyNA(poblacion_nombre_base(unique(bases$base))))
+  titulos <- vapply(seq_len(nrow(bases)), function(i) {
+    poblacion_titulo_base(bases$programa[i], bases$year[i], bases$base[i])
+  }, character(1))
+  expect_false(anyNA(titulos))
+  expect_identical(poblacion_titulo_base("censo", 1990L, "muestra"), "Muestra (extracto del 10 % de las viviendas)")
+  expect_identical(poblacion_titulo_base("censo", 2000L, "muestra"), "Muestra (cuestionario ampliado)")
+  expect_identical(poblacion_titulo_base("conteo", 1995L, "muestra"), "Muestra (encuesta del Conteo, cuestionario ampliado)")
+  expect_identical(poblacion_titulo_base("conteo", 2005L, "muestra"), "Muestra (extracto del 10 % de las viviendas)")
   # Ningun año pertenece a dos programas
   expect_identical(anyDuplicated(unlist(lapply(programas, function(p) p$years))), 0L)
 })

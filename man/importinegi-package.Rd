@@ -17,9 +17,10 @@ Catalogo y documentacion de los proyectos estadisticos:
 \item \code{\link{bases_importinegi}}: bases de datos que se pueden descargar con el paquete, por proyecto y año, con su cobertura y su tamaño. No requiere conexion a internet.
 }
 
-Censo de Poblacion y Vivienda:
+Censo y Conteo de Poblacion y Vivienda:
 \itemize{
 \item \code{\link{censo}}: todas las bases de datos de los Censos de Poblacion y Vivienda de 1990 a 2020 (ITER, AGEB y manzana, muestra, localidades, entorno urbano y alojamientos de asistencia social) en una sola funcion.
+\item \code{\link{conteo}}: bases de datos de los Conteos de Poblacion y Vivienda de 1995 y 2005 (ITER, muestra y viviendas) en una sola funcion.
 }
 
 Censos de gobierno y encuestas en hogares:

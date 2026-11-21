@@ -15,6 +15,8 @@
 * Registro de direcciones de descarga generado con el script `data-raw/registro.R` a partir del servicio de descargas del INEGI, y tarea de GitHub Actions que lo ejecuta una vez al ano y avisa cuando el INEGI publica o cambia archivos.
 * El paquete incluye ya el registro de direcciones de descarga (2,469 archivos de 15 proyectos, actualizado el 13 de noviembre de 2026 con el Censo 2020). Las funciones nuevas buscan ahi la direccion de cada archivo en lugar de armarla a mano.
 * La lectura de archivos CSV reconoce la codificacion de cada valor (UTF-8 o Latin-1) en todo el archivo, no solo en sus primeras lineas.
+* En las descargas de varios archivos, si uno falla, los que ya se descargaron se conservan durante la sesion de R, para que al repetir la llamada solo se descarguen los que faltan.
+* Al combinar varias entidades, cada una se convierte a numero antes de unirlas, lo que reduce la memoria que se necesita.
 * La lectura de archivos DBF entrega el texto en UTF-8 (los DBF del INEGI usan paginas de codigos anteriores), para que los nombres con acentos se lean bien en cualquier sistema operativo.
 * Las descargas piden el contenido sin comprimir y no usan la decodificacion automatica de curl: el catalogo de la Red Nacional de Metadatos responde con una cabecera `Content-Encoding` que no es valida y curl rechazaba la respuesta.
 
@@ -28,19 +30,20 @@
     * `censo_poblacion_rural(2010, "Jalisco")` pasa a ser `censo(2010, "localidades", estado = "Jalisco")`.
     * `censo_poblacion_urbano(2010, "Jalisco")` pasa a ser `censo(2010, "entorno", estado = "Jalisco")`.
     * `censo_poblacion_muestra(2010, "Jalisco", "Personas")` pasa a ser `censo(2010, "muestra", estado = "Jalisco", tabla = "personas")`.
-    * Los Conteos de Poblacion y Vivienda de 1995 y 2005, que se descargaban con `censo_poblacion_iter()` y `censo_poblacion_muestra()`, no estan disponibles en esta version en desarrollo: tendran su propia funcion.
+    * Los Conteos de Poblacion y Vivienda de 1995 y 2005, que se descargaban con `censo_poblacion_iter()` y `censo_poblacion_muestra()`, se descargan ahora con `conteo()`: `censo_poblacion_iter(2005, "Jalisco")` pasa a ser `conteo(2005, estado = "Jalisco")` y `censo_poblacion_muestra(2005, "Jalisco", "Hogar")` pasa a ser `conteo(2005, "muestra", estado = "Jalisco", tabla = "hogares")`.
 * `censo()`:
     * `censo(year, base, estado, tabla, nivel)`: `year` es obligatorio; `base` elige entre `"iter"`, `"ageb"`, `"muestra"`, `"localidades"`, `"entorno"` y `"asistencia"` (alojamientos de asistencia social, Censo 2020).
     * El argumento `tabla` elige la tabla en las bases que se publican en varias: `"muestra"` (personas, viviendas, migrantes), `"entorno"` de 2020 (manzanas, vialidades) y `"asistencia"` (alojamientos, usuarios, trabajadores).
     * Censos de 1990, 2000, 2010 y 2020. El Censo 2020 es nuevo en el paquete; se lee de los archivos CSV del INEGI.
-    * `estado` acepta nombre, abreviatura o clave, sin distinguir mayusculas ni acentos, y varias entidades a la vez, que se combinan en una sola tabla. `"todas"` descarga las 32 entidades.
+    * `estado` acepta nombre, abreviatura o clave, sin distinguir mayusculas ni acentos, y varias entidades a la vez, que se combinan en una sola tabla. `"nacional"` devuelve todo el pais: el archivo nacional o, si el INEGI publica la base solo por entidad, las 32 entidades combinadas. Si no se indica `estado`, la muestra y las bases que se publican solo por entidad descargan Aguascalientes, con un aviso.
     * `nivel` sustituye a los argumentos `totalestado`, `totalmunicipio`, `localidades`, `totallocalidad`, `totalageb` y `manzana`.
     * Las direcciones salen del registro de archivos del INEGI. Con las funciones anteriores, la direccion del ITER 2010 se armaba mal para 6 entidades.
     * Las claves geograficas se devuelven como texto con ceros a la izquierda y los indicadores, como numero (antes eran texto). En la muestra, las respuestas codificadas, la edad y el factor de expansion tambien son numericos.
     * Los agregados de localidades de una y dos viviendas del ITER (claves 9998 y 9999) ya no se devuelven mezclados con las localidades.
     * La muestra funciona en cualquier sistema operativo (antes solo en Windows).
     * Mensajes de error que indican que años, bases y tablas existen.
-* Nueva funcion `bases_importinegi()`, que muestra las bases de datos que se pueden descargar con el paquete, por proyecto y año: tablas, cobertura (nacional o por entidad), formato y tamaño de la descarga. No descarga nada ni requiere conexion a internet. Usa el mismo registro de archivos que las funciones de descarga, de modo que no puede anunciar bases o años que no existan. Por ahora incluye el Censo de Poblacion y Vivienda; los demas proyectos se agregaran conforme se actualicen sus funciones.
+* Nueva funcion `conteo()`, con las bases de datos de los Conteos de Poblacion y Vivienda de 1995 y 2005: ITER, muestra y, en 2005, viviendas habitadas y deshabitadas por localidad. Tiene los mismos argumentos que `censo()`; en la muestra, `tabla` elige entre personas y migrantes (1995) o entre personas, viviendas y hogares (2005).
+* Nueva funcion `bases_importinegi()`, que muestra las bases de datos que se pueden descargar con el paquete, por proyecto y año: tablas, cobertura (nacional o por entidad), formato y tamaño de la descarga. No descarga nada ni requiere conexion a internet. Usa el mismo registro de archivos que las funciones de descarga, de modo que no puede anunciar bases o años que no existan. Por ahora incluye el Censo y el Conteo de Poblacion y Vivienda; los demas proyectos se agregaran conforme se actualicen sus funciones.
 * `catalogo_inegi()`:
     * Devuelve el catalogo completo de la Red Nacional de Metadatos. Antes solo devolvia los 500 proyectos mas recientes (de 825 en noviembre de 2026).
     * Nuevos argumentos `buscar` (texto en el nombre o la clave del proyecto, sin distinguir mayusculas ni acentos) y `year` (proyectos cuyo periodo incluye ese año).
@@ -55,6 +58,7 @@
 * Ayuda de `catalogo_inegi()`: describe las columnas del catalogo y agrega ejemplos de busqueda.
 * Ayuda de `censo()` y seccion del Censo de Poblacion y Vivienda de la viñeta, reescrita para `censo()`: bases disponibles por año, entidades, niveles de agregacion y tablas. La documentacion ya no menciona las funciones `censo_poblacion_*()`.
 * Ayuda de `bases_importinegi()` y nueva seccion de la viñeta, "Bases de datos disponibles".
+* Ayuda de `conteo()` y nueva seccion de la viñeta, "Conteo de Poblacion y Vivienda", que explica como se levantaron los conteos de 1995 y 2005.
 * La pagina de ayuda del paquete (`?importinegi`) incluye el indice de funciones por proyecto estadistico.
 * La ayuda de `sig_marcogeo()` y `sig_caminos_extrae()` indica que requieren el paquete `sf`.
 * Viñeta: nueva seccion sobre el catalogo de proyectos estadisticos y requisitos de la version; se corrigieron referencias que ya no eran vigentes (el paquete `rgdal` y dos nombres de funciones).

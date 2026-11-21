@@ -1,13 +1,20 @@
 # Pruebas en vivo: ejecutan las funciones del paquete contra el sitio real del
 # INEGI (tests/testthat/test-en-vivo-*.R). El resto de las pruebas no usa la red.
 #
-# - Manual: pestana Actions > pruebas-en-vivo.yaml > Run workflow.
+# - Manual: pestana Actions > pruebas-en-vivo.yaml > Run workflow. La opcion
+#   medir_memoria agrega una medicion de tiempo y memoria con la muestra
+#   nacional del Conteo 2005 (descarga 121 MB); no corre en los pull requests.
 # - En pull requests que tocan el codigo del paquete o estas pruebas.
 #
 # Si el sitio del INEGI no responde, esta tarea falla aunque el paquete este
 # bien; por eso va separada de R-CMD-check.
 on:
   workflow_dispatch:
+    inputs:
+      medir_memoria:
+        description: 'Medir tiempo y memoria con la muestra nacional del Conteo 2005 (descarga 121 MB)'
+        type: boolean
+        default: false
   pull_request:
     paths:
       - 'R/**'
@@ -27,6 +34,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       IMPORTINEGI_EN_VIVO: "true"
+      IMPORTINEGI_MEDIR_MEMORIA: ${{ inputs.medir_memoria && 'true' || 'false' }}
 
     steps:
       - uses: actions/checkout@v6
