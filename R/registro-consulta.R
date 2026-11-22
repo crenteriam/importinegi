@@ -24,9 +24,19 @@ registro_url <- function(filas) {
   url
 }
 
+# Suma de los tamanos de varios archivos, en bytes enteros. Los bytes del
+# registro se calculan con el texto que publica el INEGI ("6.49 MB") y tienen
+# decimales. Al sumarlos tal cual, el ultimo bit del resultado depende de la
+# plataforma (de si R suma con mas precision que la de un numero doble), y un
+# total que cae justo a la mitad (813.95 MB) se redondeaba a 814.0 en unos
+# equipos y a 813.9 en otros. La suma de bytes enteros es exacta en todos.
+sumar_bytes <- function(bytes) {
+  sum(round(bytes), na.rm = TRUE)
+}
+
 # Tamano en bytes como texto para los mensajes ("362 MB", "1.2 GB").
 tamano_texto <- function(bytes) {
-  bytes <- sum(bytes, na.rm = TRUE)
+  bytes <- sumar_bytes(bytes)
   if (bytes >= 1024^3) {
     paste(format(round(bytes / 1024^3, 1), nsmall = 1), "GB")
   } else if (bytes >= 10 * 1024^2) {

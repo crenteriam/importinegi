@@ -291,6 +291,17 @@ test_that("tamano_texto() resume los bytes de una descarga", {
   expect_identical(tamano_texto(c(1.5 * 1024^3, NA)), "1.5 GB")
 })
 
+test_that("sumar_bytes() suma bytes enteros, para que el total no dependa de la plataforma", {
+  expect_identical(sumar_bytes(c(1.4, 1.4, NA)), 2)
+  expect_identical(sumar_bytes(numeric()), 0)
+  # La muestra de la Encuesta Intercensal 2015 suma justo 813.95 MB: con los
+  # bytes con decimales, el redondeo a un decimal cambiaba entre plataformas
+  bytes <- poblacion_archivos("intercensal", 2015L, "muestra")$bytes
+  expect_identical(sumar_bytes(bytes) %% 1, 0)
+  expect_identical(round(sumar_bytes(bytes) / 1024^2, 1), 813.9)
+  expect_identical(tamano_texto(bytes), "814 MB")
+})
+
 test_that("leer_tabla() entrega en UTF-8 el texto de los DBF", {
   # iter_06: texto en Latin-1 sin pagina de codigos declarada
   carpeta <- inegi_descomprimir(muestra("censo/iter_06.zip"))

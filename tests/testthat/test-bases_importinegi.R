@@ -81,7 +81,7 @@ test_that("bases_importinegi() describe las bases de la Encuesta Intercensal", {
   expect_identical(fila(2025, "resultados")$tablas, "")
   expect_identical(fila(2025, "resultados")$formato, "xlsx")
   expect_identical(fila(2015, "muestra")$formato, "csv")
-  expect_equal(fila(2015, "muestra")$tamano_mb, 814)
+  expect_identical(fila(2015, "muestra")$tamano_mb, 813.9)
   expect_equal(fila(2025, "muestra")$tamano_mb, 727)
   expect_equal(fila(2025, "resultados")$tamano_mb, 28.3)
 })

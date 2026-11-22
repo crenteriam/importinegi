@@ -890,7 +890,7 @@ poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
       tamano_texto(seleccion$bytes), " en total)."
     )
   }
-  if (base == "muestra" && sum(seleccion$bytes, na.rm = TRUE) > 500 * 1024^2) {
+  if (base == "muestra" && sumar_bytes(seleccion$bytes) > 500 * 1024^2) {
     message(
       "Leer esta muestra (", tamano_texto(seleccion$bytes), " comprimidos) puede requerir m\u00e1s memoria ",
       "de la que tienen muchas computadoras. Si solo necesitas algunas entidades, ind\u00edcalas en `estado`."

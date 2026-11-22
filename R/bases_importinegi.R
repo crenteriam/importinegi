@@ -69,7 +69,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
       return(NULL)
     }
     nacional <- archivos$clave == "00"
-    bytes <- if (any(nacional)) archivos$bytes[nacional] else sum(archivos$bytes, na.rm = TRUE)
+    bytes <- sumar_bytes(if (any(nacional)) archivos$bytes[nacional] else archivos$bytes)
     tablas <- names(poblacion_tablas(bases$programa[i], bases$year[i], bases$base[i]))
     data.frame(
       proyecto = bases$programa[i],
