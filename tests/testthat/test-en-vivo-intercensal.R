@@ -122,7 +122,8 @@ test_that("EN VIVO: intercensal() lee los principales resultados por localidad d
   expect_true("ESTIMADOR" %in% names(todos))
   estimadores <- unique(todos$ESTIMADOR)
   cat("[en vivo] 2025 resultados ESTIMADOR: ", paste(estimadores, collapse = " | "), "\n", sep = "")
-  expect_length(estimadores, 5)
+  expect_identical(estimadores, c("Valor", "Error estándar", "Límite inferior de confianza",
+                                  "Límite superior de confianza", "Coeficiente de variación"))
   # Cada dominio ocupa cinco filas
   dominios <- table(paste(todos$CVE_ENT, todos$CVE_MUN, todos$CVE_LOC))
   expect_true(all(dominios == 5))
@@ -134,17 +135,65 @@ test_that("EN VIVO: intercensal() lee los principales resultados por localidad d
   expect_true(sum(niveles == "agregado") / 5 >= 30)
   expect_identical(nchar(unique(todos$CVEGEO)), rep(9L, length(unique(todos$CVEGEO))))
 
-  # Indicadores que quedaron como texto: revelan marcas de datos no disponibles
-  # distintas de "*" y "N/D"
+  # Los 341 indicadores son numeros. Si alguno queda como texto, el INEGI usa
+  # una marca de dato faltante distinta de "MI" (muestra insuficiente) y "NA"
+  # (no aplica), que son las que describe el descriptor de la base
   claves <- c("CVEGEO", "CVE_ENT", "NOM_ENT", "CVE_MUN", "NOM_MUN", "CVE_LOC", "NOM_LOC", "ESTIMADOR")
-  texto <- setdiff(names(todos)[vapply(todos, is.character, logical(1))], claves)
-  marcas <- unique(unlist(lapply(todos[texto], function(x) {
+  expect_identical(names(todos)[seq_along(claves)], claves)
+  indicadores <- setdiff(names(todos), claves)
+  expect_length(indicadores, 341)
+  texto <- indicadores[vapply(todos[indicadores], is.character, logical(1))]
+  otras <- unique(unlist(lapply(todos[texto], function(x) {
     x <- trimws(x[!is.na(x)])
     x[!grepl("^-?[0-9]+(\\.[0-9]+)?$", x)]
   })))
-  cat("[en vivo] 2025 resultados indicadores como texto: ", length(texto), " (",
+  cat("[en vivo] 2025 resultados indicadores que quedaron como texto: ", length(texto), " (",
       paste(utils::head(texto, 10), collapse = ", "), "); valores no numericos: ",
-      paste(utils::head(marcas, 10), collapse = " | "), "\n", sep = "")
+      paste(utils::head(otras, 10), collapse = " | "), "\n", sep = "")
+  expect_length(texto, 0)
+  enteros <- sum(vapply(todos[indicadores], is.integer, logical(1)))
+  cat("[en vivo] 2025 resultados indicadores: ", enteros, " enteros y ", length(indicadores) - enteros,
+      " con decimales. Nombres: ", paste(indicadores, collapse = " "), "\n", sep = "")
+
+  # Donde estan las marcas, en el archivo tal como se lee
+  crudo <- poblacion_normalizar_claves(leer_tabla(xlsx), "resultados")
+  nivel_crudo <- poblacion_clasificar_nivel(crudo, "resultados")
+  marcas <- vapply(crudo[indicadores], function(x) {
+    x <- trimws(x)
+    ifelse(is.na(x) | grepl("^-?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$", x), NA_character_, x)
+  }, character(nrow(crudo)))
+  cat("[en vivo] 2025 resultados celdas: ", length(marcas), "; vacias: ", sum(is.na(as.matrix(crudo[indicadores]))),
+      "; marcas: ", resumir_niveles(marcas[!is.na(marcas)]), "\n", sep = "")
+  for (marca in sort(unique(marcas[!is.na(marcas)]))) {
+    celdas <- !is.na(marcas) & marcas == marca
+    por_fila <- rowSums(celdas)
+    columnas <- colnames(celdas)[colSums(celdas) > 0]
+    cat("[en vivo] 2025 resultados marca ", marca, ": ", sum(celdas), " celdas en ", length(columnas),
+        " indicadores (", paste(utils::head(columnas, 8), collapse = ", "), "); filas con la marca: ",
+        sum(por_fila > 0), "; por estimador: ",
+        paste(names(tapply(por_fila, crudo$ESTIMADOR, sum)), tapply(por_fila, crudo$ESTIMADOR, sum),
+              sep = "=", collapse = ", "),
+        "; por nivel: ",
+        paste(names(tapply(por_fila, nivel_crudo, sum)), tapply(por_fila, nivel_crudo, sum), sep = "=", collapse = ", "),
+        "\n", sep = "")
+  }
+  expect_true(all(marcas[!is.na(marcas)] %in% poblacion_faltantes("resultados")))
+
+  # Nombres: el descriptor dice que un asterisco marca los municipios censados
+  # y dos, los de muestra insuficiente
+  for (columna in c("NOM_ENT", "NOM_MUN", "NOM_LOC")) {
+    nombres <- unique(todos[[columna]])
+    marcados <- nombres[grepl("[*]", nombres)]
+    cat("[en vivo] 2025 resultados ", columna, ": ", length(nombres), " nombres distintos; con asterisco: ",
+        length(marcados), " (", paste(utils::head(marcados, 5), collapse = " | "), "); con dos asteriscos: ",
+        sum(grepl("[*]{2}", nombres)), " (", paste(utils::head(nombres[grepl("[*]{2}", nombres)], 5), collapse = " | "),
+        ")\n", sep = "")
+  }
+  for (nivel in c("nacional", "entidad", "municipio", "localidad", "agregado")) {
+    fila <- todos[which(niveles == nivel)[1], claves]
+    cat("[en vivo] 2025 resultados primera fila de nivel ", nivel, ": ",
+        paste(names(fila), unlist(fila), sep = "=", collapse = ", "), "\n", sep = "")
+  }
 
   if ("POBTOT" %in% names(todos) && is.numeric(todos$POBTOT)) {
     nacional <- todos$POBTOT[niveles == "nacional"]

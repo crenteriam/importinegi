@@ -142,9 +142,10 @@ leer_xlsx <- function(archivo) {
   combinar_tablas(tablas)
 }
 
-# Convierte en NA los codigos de dato faltante de las columnas de texto.
-limpiar_faltantes <- function(datos, codigos = c("*", "N/D")) {
-  for (columna in names(datos)) {
+# Convierte en NA los codigos de dato faltante de las columnas de texto, salvo
+# en las columnas indicadas en `excepto`.
+limpiar_faltantes <- function(datos, codigos = c("*", "N/D"), excepto = NULL) {
+  for (columna in setdiff(names(datos), excepto)) {
     valores <- datos[[columna]]
     if (is.character(valores)) {
       valores[trimws(valores) %in% codigos] <- NA_character_

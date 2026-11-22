@@ -327,7 +327,7 @@ test_that("poblacion_descomprimir() extrae solo la tabla pedida cuando puede dec
   zip <- muestra("intercensal/muestra2025_00.zip")
   carpeta <- poblacion_descomprimir(zip, "csv", poblacion_tablas("intercensal", 2025L, "muestra")[["migrantes"]])
   withr::defer(unlink(carpeta, recursive = TRUE))
-  expect_identical(list.files(carpeta, recursive = TRUE), "Migrantes00.CSV")
+  expect_identical(list.files(carpeta, recursive = TRUE), "migrantes00.csv")
   # El diccionario del zip no cuenta como candidato
   expect_identical(poblacion_tabla_en_lista(c("Personas01.CSV", "diccionario_personas01.csv"), "csv", "persona"),
                    "Personas01.CSV")

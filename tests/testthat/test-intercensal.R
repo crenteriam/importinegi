@@ -40,16 +40,17 @@ test_that("intercensal() descarga Aguascalientes por omision en 2015 y lo avisa"
   expect_identical(descargas_censo(servidor), 1L)
   expect_match(attr(personas, "fuente"), "/intercensal/2015/microdatos/eic2015_01_csv\\.zip$")
   expect_named(personas, c("ID_VIV", "ID_PERSONA", "ENT", "NOM_ENT", "MUN", "NOM_MUN", "LOC50K", "NOM_LOC",
-                           "COBERTURA", "ESTRATO", "UPM", "NUMPER", "SEXO", "EDAD", "INGTRMEN", "TAMLOC", "FACTOR"))
+                           "COBERTURA", "ESTRATO", "UPM", "FACTOR", "NUMPER", "SEXO", "EDAD", "INGTRMEN", "TAMLOC"))
   # Claves, identificadores y variables del diseño muestral como texto; las
   # respuestas, incluso con ceros a la izquierda, como numero
   expect_identical(personas$ENT, rep("01", 3))
   expect_identical(personas$MUN, rep("001", 3))
-  expect_identical(personas$LOC50K, c("0001", "0001", NA))
-  expect_identical(personas$ID_VIV, c("010010000101", "010010000101", "010010000102"))
-  expect_identical(personas$ID_PERSONA[3], "01001000010203")
-  expect_identical(personas$UPM, c("0000120", "0000120", "0000121"))
-  expect_identical(personas$ESTRATO, rep("01-1-03", 3))
+  # Las localidades de menos de 50 mil habitantes tienen la clave "0000"
+  expect_identical(personas$LOC50K, c("0001", "0001", "0000"))
+  expect_identical(personas$ID_VIV, c("10010000001", "10010000001", "10010000002"))
+  expect_identical(personas$ID_PERSONA[3], "1001000000203")
+  expect_identical(personas$UPM, c("000120", "000120", "000121"))
+  expect_identical(personas$ESTRATO, rep("01-001-03", 3))
   expect_identical(personas$EDAD, c(34L, 8L, 0L))
   expect_identical(personas$INGTRMEN, c(8500L, 0L, NA))
   expect_identical(personas$NUMPER, 1:3)
@@ -58,7 +59,7 @@ test_that("intercensal() descarga Aguascalientes por omision en 2015 y lo avisa"
   expect_identical(suppressMessages(intercensal(2015, tabla = "personas")), personas)
 
   viviendas <- suppressMessages(intercensal(2015, tabla = "Viviendas"))
-  expect_identical(viviendas$ID_VIV, c("010010000101", "010010000102"))
+  expect_identical(viviendas$ID_VIV, c("10010000001", "10010000002"))
   expect_identical(viviendas$NUMPERS, c(2L, 1L))
   expect_identical(viviendas$INGTRHOG, c(12000L, 24000L))
   expect_true(all(personas$ID_VIV %in% viviendas$ID_VIV))
@@ -113,18 +114,30 @@ test_that("intercensal() descarga las tres tablas de la muestra de 2025", {
   )
   expect_identical(descargas_censo(servidor), 1L)
   expect_match(attr(personas, "fuente"), "/eic/2025/microdatos/eic2025_micro_01_csv\\.zip$")
-  # El zip trae ademas un diccionario de personas, que se ignora
+  # La muestra trae ademas un diccionario de personas, que se ignora
   expect_false("NOMBRE_CAMPO" %in% names(personas))
   expect_identical(personas$FACTOR, c(12L, 12L, 17L))
   expect_identical(personas$EDAD, c(34L, 8L, 0L))
+  # En 2025 las claves se llaman CVE_ENT y CVE_MUN, y CVEGEO une las dos: en la
+  # muestra tiene cinco digitos y no se completa a nueve, como en los resultados
+  expect_identical(personas$CVE_ENT, rep("01", 3))
+  expect_identical(personas$CVE_MUN, rep("001", 3))
+  expect_identical(personas$CVEGEO, rep("01001", 3))
+  expect_identical(personas$LOC50K, c("0001", "0001", "0000"))
+  expect_identical(personas$ID_PERSONA[3], "01001000000200003")
+  expect_identical(personas$ESTRATO, rep("01-001-0000-030", 3))
+  expect_identical(personas$INGTRMEN, c(8500L, 0L, NA))
 
   viviendas <- suppressMessages(intercensal(2025, tabla = "viviendas"))
-  expect_identical(viviendas$ID_VIV, c("010010000101", "010010000102"))
+  expect_identical(viviendas$ID_VIV, c("010010000001", "010010000002"))
+  expect_identical(viviendas$NUMPERS, c(2L, 1L))
+  expect_true(all(personas$ID_VIV %in% viviendas$ID_VIV))
   migrantes <- suppressMessages(intercensal(2025, estado = "Colima", tabla = "migrantes"))
-  expect_identical(migrantes$ENT, "06")
+  expect_identical(migrantes$CVE_ENT, "06")
+  expect_identical(migrantes$ID_MII, "06010000000101")
   expect_identical(migrantes$MEDAD, 27L)
-  expect_identical(migrantes$MPAIS, 221L)
-  expect_identical(migrantes$UPM, "0000120")
+  expect_identical(migrantes$MPAIDES_C, 221L)
+  expect_identical(migrantes$UPM, "00120")
 })
 
 test_that("intercensal() descarga el archivo nacional de la muestra de 2025 con estado = 'nacional'", {
@@ -132,7 +145,7 @@ test_that("intercensal() descarga el archivo nacional de la muestra de 2025 con 
   mensajes <- testthat::capture_messages(nacional <- intercensal(2025, estado = "nacional", tabla = "viviendas"))
   expect_identical(descargas_censo(servidor), 1L)
   expect_match(attr(nacional, "fuente"), "/eic2025_micro_00_csv\\.zip$")
-  expect_identical(nacional$ENT, c("01", "01", "06"))
+  expect_identical(nacional$CVE_ENT, c("01", "01", "06"))
   # Un solo archivo de 727 MB: no hay aviso de varios archivos, si de memoria
   expect_false(any(grepl("Se descargar", mensajes)))
   expect_true(any(grepl("Leer esta muestra \\(727 MB comprimidos\\)", mensajes)))
@@ -149,22 +162,24 @@ test_that("intercensal() lee los resultados de 2025 y devuelve las localidades p
   expect_match(attr(localidades, "fuente"), "/eic/2025/microdatos/eic2025_micro_105\\.xlsx$")
   expect_named(localidades, c("CVEGEO", "CVE_ENT", "NOM_ENT", "CVE_MUN", "NOM_MUN", "CVE_LOC", "NOM_LOC",
                               "ESTIMADOR", "POBTOT", "PROM_HNV", "PCN_POB_AFRO"))
-  # Tres localidades, cinco estimaciones de cada una. Las claves, que el XLSX
-  # guarda como numeros, vuelven como texto con ceros a la izquierda
+  # Tres localidades, cinco estimaciones de cada una. Las claves son texto con
+  # ceros a la izquierda
   expect_identical(nrow(localidades), 15L)
   expect_identical(unique(localidades$CVEGEO), c("010010001", "060020001", "060100001"))
   expect_identical(unique(localidades$CVE_ENT), c("01", "06"))
   expect_identical(unique(localidades$CVE_LOC), "0001")
-  expect_identical(localidades$ESTIMADOR[1:5], c("Valor puntual", "Error estándar", "Límite inferior",
-                                                 "Límite superior", "Coeficiente de variación"))
-  puntual <- localidades[localidades$ESTIMADOR == "Valor puntual", ]
+  expect_identical(localidades$ESTIMADOR[1:5],
+                   c("Valor", "Error estándar", "Límite inferior de confianza", "Límite superior de confianza",
+                     "Coeficiente de variación"))
+  puntual <- localidades[localidades$ESTIMADOR == "Valor", ]
   expect_type(localidades$POBTOT, "double")
   expect_equal(puntual$POBTOT, c(900000, 250000, 150000))
   expect_equal(puntual$PROM_HNV, c(1.89, 1.94, 1.96))
   expect_identical(puntual$NOM_LOC[3], "Ciudad de Villa de Álvarez")
-  # El dato reservado ("*") es NA; la columna es numerica
+  # El dato sin muestra suficiente ("MI") es NA; la columna es numerica
   expect_type(localidades$PCN_POB_AFRO, "double")
   expect_identical(is.na(puntual$PCN_POB_AFRO), c(FALSE, TRUE, FALSE))
+  expect_equal(puntual$PCN_POB_AFRO[c(1, 3)], c(2.4, 2.4))
 })
 
 test_that("intercensal() filtra los niveles de los resultados", {
@@ -172,18 +187,18 @@ test_that("intercensal() filtra los niveles de los resultados", {
   censo_local()
   municipios <- suppressMessages(intercensal(2025, "resultados", nivel = "municipio"))
   expect_identical(unique(paste(municipios$CVE_ENT, municipios$CVE_MUN)), c("01 001", "01 005", "06 002", "06 010"))
-  expect_equal(municipios$POBTOT[municipios$ESTIMADOR == "Valor puntual"], c(1000000, 500000, 300000, 200000))
+  expect_equal(municipios$POBTOT[municipios$ESTIMADOR == "Valor"], c(1000000, 500000, 300000, 200000))
 
   todos <- suppressMessages(intercensal(2025, "resultados", nivel = "todos"))
   expect_identical(nrow(todos), 60L)
   expect_identical(todos$CVEGEO[1], "000000000")
   # El agregado de las localidades menores de cada entidad (997/9997) solo
-  # aparece con nivel = "todos"; el dato no disponible ("N/D") es NA
+  # aparece con nivel = "todos"; el dato que no aplica ("NA") es NA
   agregados <- todos[todos$CVE_MUN == "997", ]
   expect_identical(unique(agregados$CVE_LOC), "9997")
   expect_identical(unique(agregados$CVEGEO), c("019979997", "069979997"))
   expect_true(all(is.na(agregados$PCN_POB_AFRO[agregados$CVE_ENT == "01"])))
-  puntual <- todos[todos$ESTIMADOR == "Valor puntual", ]
+  puntual <- todos[todos$ESTIMADOR == "Valor", ]
   # Las localidades mas el agregado suman la entidad
   entidades <- puntual[puntual$CVE_MUN == "000" & puntual$CVE_ENT != "00", ]
   detalle <- puntual[puntual$CVE_LOC != "0000", ]
@@ -191,7 +206,7 @@ test_that("intercensal() filtra los niveles de los resultados", {
 
   nacional <- suppressMessages(intercensal(2025, "resultados", nivel = "nacional"))
   expect_identical(nrow(nacional), 5L)
-  expect_equal(nacional$POBTOT[nacional$ESTIMADOR == "Valor puntual"], 2000000)
+  expect_equal(nacional$POBTOT[nacional$ESTIMADOR == "Valor"], 2000000)
   dos <- suppressMessages(intercensal(2025, "resultados", nivel = c("entidad", "localidad")))
   expect_identical(nrow(dos), 25L)
 })
@@ -231,12 +246,44 @@ test_that("intercensal() pide readxl antes de descargar los resultados", {
 test_that("la lectura de XLSX encuentra la tabla o avisa que no la hay", {
   testthat::skip_if_not_installed("readxl")
   datos <- leer_tabla(muestra("intercensal/resultados2025_00.xlsx"))
-  # Se descartan el titulo, la fila vacia, la nota al pie y la hoja de notas
   expect_identical(nrow(datos), 60L)
   expect_identical(names(datos)[1:3], c("CVEGEO", "CVE_ENT", "NOM_ENT"))
   expect_type(datos$POBTOT, "character")
+  # Las marcas del INEGI llegan como texto; se limpian despues
+  expect_true(all(c("MI", "NA") %in% datos$PCN_POB_AFRO))
   expect_error(leer_tabla(muestra("intercensal/sin_claves.xlsx")),
                "ninguna hoja tiene una columna con la clave de la entidad")
+})
+
+test_that("la lectura de XLSX encuentra la tabla aunque tenga titulo, notas y claves numericas", {
+  testthat::skip_if_not_installed("readxl")
+  # Si el INEGI cambiara la forma del archivo: se descartan el titulo, la fila
+  # vacia, la nota al pie y la hoja de notas
+  datos <- leer_tabla(muestra("intercensal/con_titulo.xlsx"))
+  expect_named(datos, c("CVEGEO", "CVE_ENT", "NOM_ENT", "CVE_MUN", "CVE_LOC", "ESTIMADOR", "POBTOT"))
+  expect_identical(nrow(datos), 2L)
+  # Las claves escritas como numeros vuelven como texto con ceros a la izquierda
+  claves <- poblacion_normalizar_claves(datos, "resultados")
+  expect_identical(claves$CVEGEO, c("010010001", "060020001"))
+  expect_identical(claves$CVE_ENT, c("01", "06"))
+  expect_identical(claves$CVE_MUN, c("001", "002"))
+  expect_identical(claves$CVE_LOC, c("0001", "0001"))
+})
+
+test_that("las marcas de dato faltante dependen de la base y no se buscan en los nombres", {
+  expect_identical(poblacion_faltantes("iter"), c("*", "N/D"))
+  expect_identical(poblacion_faltantes("resultados"), c("MI", "NA"))
+  expect_null(poblacion_faltantes("muestra"))
+  datos <- data.frame(CVE_ENT = "01", NOM_LOC = "NA", ESTIMADOR = "MI", TGF = c("MI"), PROM_HNV = "NA",
+                      POBTOT = "*", stringsAsFactors = FALSE)
+  limpio <- limpiar_faltantes(datos, poblacion_faltantes("resultados"),
+                              excepto = poblacion_identificacion(datos, "resultados"))
+  expect_identical(limpio$NOM_LOC, "NA")
+  expect_identical(limpio$ESTIMADOR, "MI")
+  expect_identical(c(limpio$TGF, limpio$PROM_HNV), c(NA_character_, NA_character_))
+  # "*" no es una marca de esta base
+  expect_identical(limpio$POBTOT, "*")
+  expect_null(poblacion_identificacion(datos, "iter"))
 })
 
 test_that("intercensal() avisa si el INEGI no tiene el archivo XLSX", {

@@ -58,7 +58,7 @@ Cada entidad tiene, ademas, una fila con el conjunto de sus localidades de menos
 
 Las columnas conservan los nombres que les da el INEGI. Las claves geograficas son texto y conservan los ceros a la izquierda (\code{"09"}, \code{"001"}). En la muestra, las columnas que solo contienen numeros se convierten a numero, incluso las que tienen ceros a la izquierda (la edad \code{"008"} pasa a ser \code{8}), salvo los identificadores de la vivienda y de la persona, la clave de la localidad (\code{LOC50K}) y las variables del diseño muestral (\code{ESTRATO} y \code{UPM}), que se conservan como texto.
 
-En la base \code{"resultados"}, el pais, cada entidad, cada municipio y cada localidad ocupan cinco filas, una por cada tipo de estimacion, que indica la columna \code{ESTIMADOR}: el valor puntual, el error estandar, los limites inferior y superior del intervalo de confianza al 90 por ciento y el coeficiente de variacion. La clave integrada \code{CVEGEO} es texto de 9 digitos. Los datos que el INEGI reserva (\code{"*"}) o marca como no disponibles (\code{"N/D"}) se convierten en \code{NA}.
+En la base \code{"resultados"}, el pais, cada entidad, cada municipio y cada localidad ocupan cinco filas, una por cada tipo de estimacion, que indica la columna \code{ESTIMADOR}: el valor puntual, el error estandar, los limites inferior y superior del intervalo de confianza al 90 por ciento y el coeficiente de variacion. La clave integrada \code{CVEGEO} es texto de 9 digitos. Los datos que el INEGI marca como no disponibles por muestra insuficiente (\code{"MI"}) o como no aplicables (\code{"NA"}) se convierten en \code{NA}.
 }
 
 \examples{

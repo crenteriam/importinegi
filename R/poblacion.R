@@ -188,10 +188,31 @@ poblacion_niveles <- function(base) {
   )
 }
 
-# Bases en las que el INEGI reserva datos con asterisco o los marca como no
-# disponibles ("N/D").
+# Marcas que el INEGI escribe en lugar de un dato; se convierten en NA. En los
+# resultados de los censos y de los conteos, "*" (dato reservado) y "N/D" (no
+# disponible). En los principales resultados por localidad de la Encuesta
+# Intercensal 2025, "MI" (no disponible por muestra insuficiente) y "NA" (no
+# aplica), segun el descriptor de esa base de datos.
 poblacion_faltantes <- function(base) {
-  if (base %in% c("iter", "ageb", "localidades", "viviendas", "resultados")) c("*", "N/D") else NULL
+  switch(
+    base,
+    iter = ,
+    ageb = ,
+    localidades = ,
+    viviendas = c("*", "N/D"),
+    resultados = c("MI", "NA"),
+    NULL
+  )
+}
+
+# Columnas de identificacion de los resultados (claves, nombres y tipo de
+# estimacion): en ellas no se buscan las marcas de dato faltante, que solo
+# aparecen en los indicadores.
+poblacion_identificacion <- function(datos, base) {
+  if (base != "resultados") {
+    return(NULL)
+  }
+  grep("^CVE|^NOM_|^ESTIMADOR$", names(datos), value = TRUE, ignore.case = TRUE)
 }
 
 # Formatos de archivo que se leen en cada base. Los principales resultados por
@@ -827,7 +848,8 @@ poblacion_preparar <- function(leer, base) {
   for (i in seq_along(tablas)) {
     tablas[[i]] <- poblacion_normalizar_claves(tablas[[i]], base)
     if (!is.null(faltantes)) {
-      tablas[[i]] <- limpiar_faltantes(tablas[[i]], faltantes)
+      identificacion <- poblacion_identificacion(tablas[[i]], base)
+      tablas[[i]] <- limpiar_faltantes(tablas[[i]], faltantes, excepto = identificacion)
     }
   }
   conversion <- poblacion_decidir_conversion(tablas, base)
