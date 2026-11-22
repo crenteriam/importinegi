@@ -11,8 +11,8 @@ test_that("bases_importinegi() lista las bases del paquete sin conexion", {
   expect_false(anyNA(bases))
   expect_identical(anyDuplicated(bases[, c("proyecto", "year", "base")]), 0L)
   expect_true(all(bases$tamano_mb > 0))
-  expect_true(all(bases$cobertura %in% c("nacional y por entidad", "por entidad")))
-  expect_true(all(bases$formato %in% c("dbf", "csv")))
+  expect_true(all(bases$cobertura %in% c("nacional y por entidad", "por entidad", "nacional")))
+  expect_true(all(bases$formato %in% c("dbf", "csv", "xlsx")))
 })
 
 test_that("bases_importinegi() describe las bases del Censo de Poblacion y Vivienda", {
@@ -65,8 +65,29 @@ test_that("bases_importinegi() describe las bases del Conteo de Poblacion y Vivi
   expect_equal(fila(2005, "muestra")$tamano_mb, 120.7, tolerance = 0.01)
 })
 
-test_that("bases_importinegi() coincide con lo que censo() y conteo() pueden descargar", {
-  for (programa in c("censo", "conteo")) {
+test_that("bases_importinegi() describe las bases de la Encuesta Intercensal", {
+  eic <- bases_importinegi("intercensal")
+  expect_identical(unique(eic$proyecto), "intercensal")
+  expect_identical(paste(eic$year, eic$base), c("2015 muestra", "2025 muestra", "2025 resultados"))
+  fila <- function(year, base) eic[eic$year == year & eic$base == base, ]
+  expect_identical(fila(2015, "muestra")$descripcion, "Muestra (microdatos de la encuesta)")
+  expect_identical(fila(2015, "muestra")$tablas, "personas, viviendas")
+  expect_identical(fila(2025, "muestra")$tablas, "personas, viviendas, migrantes")
+  expect_identical(fila(2015, "muestra")$cobertura, "por entidad")
+  expect_identical(fila(2025, "muestra")$cobertura, "nacional y por entidad")
+  expect_identical(fila(2025, "resultados")$cobertura, "nacional")
+  expect_identical(fila(2025, "resultados")$descripcion,
+                   "Principales resultados por localidad de 50 000 y m\u00e1s habitantes")
+  expect_identical(fila(2025, "resultados")$tablas, "")
+  expect_identical(fila(2025, "resultados")$formato, "xlsx")
+  expect_identical(fila(2015, "muestra")$formato, "csv")
+  expect_equal(fila(2015, "muestra")$tamano_mb, 814)
+  expect_equal(fila(2025, "muestra")$tamano_mb, 727)
+  expect_equal(fila(2025, "resultados")$tamano_mb, 28.3)
+})
+
+test_that("bases_importinegi() coincide con lo que censo(), conteo() e intercensal() pueden descargar", {
+  for (programa in c("censo", "conteo", "intercensal")) {
     tabla <- bases_importinegi(programa)
     curadas <- poblacion_bases()
     curadas <- curadas[curadas$programa == programa, ]
@@ -75,7 +96,8 @@ test_that("bases_importinegi() coincide con lo que censo() y conteo() pueden des
       etiqueta <- paste(programa, tabla$year[i], tabla$base[i])
       expect_identical(poblacion_validar_base(programa, tabla$year[i], tabla$base[i]), tabla$base[i], info = etiqueta)
       archivos <- poblacion_archivos(programa, tabla$year[i], tabla$base[i])
-      expect_identical("00" %in% archivos$clave, tabla$cobertura[i] == "nacional y por entidad", info = etiqueta)
+      cobertura <- if (all(archivos$clave == "00")) "nacional" else if ("00" %in% archivos$clave) "nacional y por entidad" else "por entidad"
+      expect_identical(tabla$cobertura[i], cobertura, info = etiqueta)
     }
   }
 })
@@ -96,8 +118,8 @@ test_that("bases_importinegi() coincide con lo que censo() puede descargar", {
 
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CENSO "), bases_importinegi("censo"))
-  expect_identical(unique(bases_importinegi()$proyecto), c("censo", "conteo"))
-  expect_identical(bases_importinegi(c("censo", "conteo")), bases_importinegi())
+  expect_identical(unique(bases_importinegi()$proyecto), c("censo", "conteo", "intercensal"))
+  expect_identical(bases_importinegi(c("censo", "conteo", "intercensal")), bases_importinegi())
   de_2020 <- bases_importinegi(year = 2020)
   expect_identical(unique(de_2020$year), 2020L)
   expect_identical(nrow(de_2020), 6L)
@@ -110,14 +132,18 @@ test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(unique(conteos$proyecto), "conteo")
   expect_identical(nrow(conteos), 5L)
 
-  # Un año sin bases (la Encuesta Intercensal todavia no esta en el paquete)
-  expect_message(vacia <- bases_importinegi(year = 2015), "no tiene bases de datos para esa consulta")
+  intercensales <- bases_importinegi(year = c(2015, 2025))
+  expect_identical(unique(intercensales$proyecto), "intercensal")
+  expect_identical(nrow(intercensales), 3L)
+
+  # Un año sin bases
+  expect_message(vacia <- bases_importinegi(year = 2012), "no tiene bases de datos para esa consulta")
   expect_identical(nrow(vacia), 0L)
   expect_named(vacia, names(bases_importinegi()))
 })
 
 test_that("bases_importinegi() valida sus argumentos", {
-  expect_error(bases_importinegi("enoe"), "`proyecto = \"enoe\"` no es una opci\u00f3n v\u00e1lida. Proyectos disponibles: \"censo\", \"conteo\"")
+  expect_error(bases_importinegi("enoe"), "`proyecto = \"enoe\"` no es una opci\u00f3n v\u00e1lida. Proyectos disponibles: \"censo\", \"conteo\", \"intercensal\"")
   expect_error(bases_importinegi(2020), "`proyecto` debe ser el nombre de un proyecto")
   expect_error(bases_importinegi(NA_character_), "`proyecto` debe ser el nombre de un proyecto")
   expect_error(bases_importinegi(year = "dos mil"), "`year` debe ser uno o varios a\u00f1os")
@@ -130,7 +156,7 @@ test_that("bases_importinegi() solo muestra lo que esta en el registro", {
   withr::local_options(importinegi.registro = registro)
   bases <- bases_importinegi()
   expect_false(2020L %in% bases$year)
-  expect_identical(nrow(bases), 14L)
+  expect_identical(nrow(bases), 17L)
   expect_identical(attr(bases, "registro"), "2026-11-11")
 })
 

@@ -107,10 +107,11 @@ ruta_cache <- function(url) {
 #
 # El sitio del INEGI responde con una pagina "no encontrada" y codigo 200 cuando
 # un archivo no existe, asi que para los zip se verifica el contenido recibido.
+# Los XLSX tambien son zip, asi que se verifican igual.
 inegi_descargar <- function(url, destino = NULL, tamano = NULL, silencioso = FALSE,
                             cache = getOption("importinegi.cache", FALSE)) {
   url <- inegi_url(url)
-  espera_zip <- grepl("\\.zip$", url, ignore.case = TRUE)
+  espera_zip <- grepl("\\.(zip|xlsx)$", url, ignore.case = TRUE)
 
   if (isTRUE(cache)) {
     destino <- destino %||% ruta_cache(url)

@@ -17,10 +17,11 @@ Catalogo y documentacion de los proyectos estadisticos:
 \item \code{\link{bases_importinegi}}: bases de datos que se pueden descargar con el paquete, por proyecto y año, con su cobertura y su tamaño. No requiere conexion a internet.
 }
 
-Censo y Conteo de Poblacion y Vivienda:
+Censo y Conteo de Poblacion y Vivienda, y Encuesta Intercensal:
 \itemize{
 \item \code{\link{censo}}: todas las bases de datos de los Censos de Poblacion y Vivienda de 1990 a 2020 (ITER, AGEB y manzana, muestra, localidades, entorno urbano y alojamientos de asistencia social) en una sola funcion.
 \item \code{\link{conteo}}: bases de datos de los Conteos de Poblacion y Vivienda de 1995 y 2005 (ITER, muestra y viviendas) en una sola funcion.
+\item \code{\link{intercensal}}: bases de datos de las Encuestas Intercensales de 2015 y 2025 (muestra y, en 2025, principales resultados por localidad de 50 000 y mas habitantes) en una sola funcion.
 }
 
 Censos de gobierno y encuestas en hogares:
@@ -40,7 +41,7 @@ Informacion georreferenciada:
 \section{Paquetes opcionales}{
 
 
-Las funciones \code{\link{sig_marcogeo}} y \code{\link{sig_caminos_extrae}} requieren el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}.
+Las funciones \code{\link{sig_marcogeo}} y \code{\link{sig_caminos_extrae}} requieren el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}. La base \code{"resultados"} de \code{\link{intercensal}} requiere el paquete \code{readxl}, que se instala con \code{install.packages("readxl")}.
 }
 
 \section{Guia de uso}{

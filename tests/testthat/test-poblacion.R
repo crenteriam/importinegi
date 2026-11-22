@@ -229,7 +229,8 @@ test_that("poblacion_elegir_tabla() encuentra la tabla dentro del archivo descar
 test_that("las tablas de bases y programas son coherentes", {
   bases <- poblacion_bases()
   programas <- poblacion_programas()
-  expect_false(anyNA(bases$reconoce))
+  # Cada base se reconoce por el titulo y la descripcion, o por la ruta
+  expect_true(all(!is.na(bases$reconoce) | !is.na(bases$ruta)))
   expect_identical(anyDuplicated(bases[, c("programa", "year", "base")]), 0L)
   for (programa in unique(bases$programa)) {
     expect_true(all(bases$year[bases$programa == programa] %in% programas[[programa]]$years), info = programa)
@@ -243,6 +244,7 @@ test_that("las tablas de bases y programas son coherentes", {
   expect_identical(poblacion_titulo_base("censo", 2000L, "muestra"), "Muestra (cuestionario ampliado)")
   expect_identical(poblacion_titulo_base("conteo", 1995L, "muestra"), "Muestra (encuesta del Conteo, cuestionario ampliado)")
   expect_identical(poblacion_titulo_base("conteo", 2005L, "muestra"), "Muestra (extracto del 10 % de las viviendas)")
+  expect_identical(poblacion_titulo_base("intercensal", 2015L, "muestra"), "Muestra (microdatos de la encuesta)")
   # Ningun año pertenece a dos programas
   expect_identical(anyDuplicated(unlist(lapply(programas, function(p) p$years))), 0L)
 })
@@ -308,4 +310,55 @@ test_that("leer_tabla() entrega en UTF-8 el texto de los DBF", {
   archivo850 <- buscar_archivos(carpeta850, extension = "dbf")
   expect_identical(dbf_codificacion(archivo850), "CP850")
   expect_identical(leer_tabla(archivo850)$NOM_LOC, c("El Para\u00edso", "Rinc\u00f3n de L\u00f3pez"))
+})
+
+test_that("poblacion_descomprimir() extrae solo la tabla pedida cuando puede decidir cual es", {
+  zip <- muestra("intercensal/muestra2025_00.zip")
+  carpeta <- poblacion_descomprimir(zip, "csv", poblacion_tablas("intercensal", 2025L, "muestra")[["migrantes"]])
+  withr::defer(unlink(carpeta, recursive = TRUE))
+  expect_identical(list.files(carpeta, recursive = TRUE), "Migrantes00.CSV")
+  # El diccionario del zip no cuenta como candidato
+  expect_identical(poblacion_tabla_en_lista(c("Personas01.CSV", "diccionario_personas01.csv"), "csv", "persona"),
+                   "Personas01.CSV")
+  # Con zip dentro del zip, o sin un candidato unico, se descomprime todo
+  expect_identical(poblacion_tabla_en_lista(c("datgen95.dbf", "cpv95_12_dbf.zip"), "dbf", "^datgen"), NA_character_)
+  expect_identical(poblacion_tabla_en_lista(c("Personas01.CSV", "Personas01_b.csv"), "csv", "persona"), NA_character_)
+  expect_identical(poblacion_tabla_en_lista(character(), "csv"), NA_character_)
+  # Se prefiere la tabla menos anidada y la de conjunto_de_datos
+  expect_identical(poblacion_tabla_en_lista(c("x/TR_PERSONA01.CSV", "TR_PERSONA01.CSV"), "csv", "persona"),
+                   "TR_PERSONA01.CSV")
+  expect_identical(poblacion_tabla_en_lista(c("iter/conjunto_de_datos/a.csv", "iter/diccionario_de_datos/b.csv",
+                                              "iter/metadatos/c.csv"), "csv"),
+                   "iter/conjunto_de_datos/a.csv")
+  todo <- poblacion_descomprimir(muestra("censo/muestra2000_06.zip"), "dbf", NULL)
+  withr::defer(unlink(todo, recursive = TRUE))
+  expect_gt(length(list.files(todo, recursive = TRUE)), 1L)
+})
+
+test_that("poblacion_archivos() reconoce las cuatro formas de describir los archivos del registro", {
+  base <- registro_archivos[0, ]
+  fila <- function(proyecto, edicion, titulo, ruta, formato = "csv", descripcion = "Descarga") {
+    data.frame(proyecto = proyecto, edicion = edicion, id_api = 1L, id_archivo = "1", titulo = titulo,
+               descripcion = descripcion, anio = edicion, formato = formato,
+               sufijo = if (formato %in% c("xls", "xlsx")) paste0(".", formato) else paste0("_", formato, ".zip"),
+               tamano = "1 MB", bytes = 1024^2, ruta = ruta, url = NA_character_, stringsAsFactors = FALSE)
+  }
+  registro <- rbind(
+    base,
+    fila("eic", 2015L, " México    ", "/programas/intercensal/2015/microdatos/eic2015_15"),
+    fila("eic", 2015L, "Colima", "/programas/intercensal/2015/microdatos/eic2015_06"),
+    fila("eic", 2015L, "Descriptor de archivos (FD)", "/programas/intercensal/2015/doc/eic2015_fd", "xls"),
+    fila("eic", 2025L, "Encuesta Intercensal|Bases de datos|Colima", "/programas/eic/2025/microdatos/eic2025_micro_06"),
+    fila("eic", 2025L, "Encuesta Intercensal|Documentación de la base de datos|Clasificaciones (CSV)",
+         "/programas/eic/2025/microdatos/889463931966"),
+    fila("eic", 2025L, "Principales resultados por localidad de 50 000 y más habitantes|Base de datos",
+         "/programas/eic/2025/microdatos/eic2025_micro_105", "xlsx")
+  )
+  attr(registro, "generado") <- "2026-11-22"
+  withr::local_options(importinegi.registro = registro)
+  expect_identical(poblacion_archivos("intercensal", 2015L, "muestra")$clave, c("06", "15"))
+  expect_identical(poblacion_archivos("intercensal", 2025L, "muestra")$clave, "06")
+  resultados <- poblacion_archivos("intercensal", 2025L, "resultados")
+  expect_identical(resultados$clave, "00")
+  expect_identical(resultados$formato, "xlsx")
 })

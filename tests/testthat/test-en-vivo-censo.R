@@ -13,7 +13,7 @@ years_censo <- function() {
   poblacion_programas()$censo$years
 }
 
-test_that("EN VIVO (informativo): bases del censo y del conteo que tiene el registro del paquete", {
+test_that("EN VIVO (informativo): bases del censo, del conteo y de la Encuesta Intercensal que tiene el registro del paquete", {
   en_vivo()
   bases <- poblacion_bases()
   for (i in seq_len(nrow(bases))) {

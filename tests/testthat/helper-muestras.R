@@ -86,6 +86,36 @@ servidor_prueba <- function(entorno = parent.frame()) {
       }
     }
   )
+  # Archivos de las Encuestas Intercensales (2015 y 2025), en las rutas del
+  # registro del paquete. Responde con las muestras de fixtures/intercensal para
+  # Aguascalientes (01), Colima (06), el archivo nacional de la muestra de 2025 y
+  # el XLSX de los resultados de 2025; para el resto, como el INEGI cuando un
+  # archivo no existe.
+  app$get(webfakes::new_regexp("^/contenidos/programas/(intercensal/2015|eic/2025)/microdatos/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_censo <- locales$descargas_censo + 1
+    reglas <- c(
+      muestra2015 = "/intercensal/2015/microdatos/eic2015_([0-9]{2})_csv[.]zip$",
+      muestra2025 = "/eic/2025/microdatos/eic2025_micro_([0-9]{2})_csv[.]zip$",
+      resultados2025 = "/eic/2025/microdatos/eic2025_micro_(105)[.]xlsx$"
+    )
+    archivo <- NA_character_
+    for (nombre in names(reglas)) {
+      hallado <- regmatches(req$path, regexec(reglas[[nombre]], req$path))[[1]]
+      if (length(hallado) == 2) {
+        archivo <- if (nombre == "resultados2025") "resultados2025_00.xlsx" else paste0(nombre, "_", hallado[2], ".zip")
+        break
+      }
+    }
+    carpeta <- file.path(locales$carpeta, "intercensal")
+    if (!is.na(archivo) && file.exists(file.path(carpeta, archivo))) {
+      res$send_file(archivo, root = carpeta)
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
   # Archivos de los Conteos de Poblacion y Vivienda (1995 y 2005), en las rutas
   # del registro del paquete. Responde con las muestras de fixtures/conteo para
   # Aguascalientes (01), Colima (06) y el archivo nacional; para el resto, como
@@ -168,9 +198,10 @@ servidor_prueba <- function(entorno = parent.frame()) {
   webfakes::local_app_process(app, .local_envir = entorno)
 }
 
-# Servidor local con las muestras del censo y del conteo, sin esperas entre
-# reintentos. Empieza sin las descargas que una llamada fallida haya dejado en la
-# carpeta temporal de la sesion (ver poblacion_leer_entidades()).
+# Servidor local con las muestras del censo, del conteo y de la Encuesta
+# Intercensal, sin esperas entre reintentos. Empieza sin las descargas que una
+# llamada fallida haya dejado en la carpeta temporal de la sesion (ver
+# poblacion_leer_entidades()).
 censo_local <- function(entorno = parent.frame()) {
   pendientes <- file.path(tempdir(), "importinegi", "descargas")
   unlink(pendientes, recursive = TRUE)
@@ -186,7 +217,19 @@ censo_local <- function(entorno = parent.frame()) {
   servidor
 }
 
-# Numero de archivos del censo y del conteo que se han pedido al servidor local.
+# Registro del paquete sin las entidades de una base que no esten en `claves`:
+# sirve para probar estado = "nacional" con las entidades del servidor local.
+registro_reducido <- function(programa, year, base, claves) {
+  registro <- registro_archivos
+  archivos <- poblacion_archivos(programa, year, base)
+  quitar <- archivos$url[!archivos$clave %in% claves]
+  registro <- registro[!registro_url(registro) %in% quitar, ]
+  attr(registro, "generado") <- registro_generado()
+  registro
+}
+
+# Numero de archivos del censo, del conteo y de la Encuesta Intercensal que se
+# han pedido al servidor local.
 descargas_censo <- function(servidor) {
   as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/censo/descargas")))))
 }
