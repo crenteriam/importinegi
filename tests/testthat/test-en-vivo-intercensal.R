@@ -14,8 +14,8 @@
 # Cifras publicadas por el INEGI para Baja California Sur, con las que se compara
 # la suma del factor de expansion. 2025: 955 465 habitantes de viviendas
 # particulares y 311 591 viviendas particulares habitadas (comunicado de prensa
-# 57/26). 2015: 712 029 habitantes en total, que incluyen la estimacion aparte de
-# la poblacion en viviendas colectivas, sin vivienda y del Servicio Exterior.
+# 57/26). 2015: 712 029 habitantes. En la prueba del 22 de noviembre de 2026, la
+# suma del factor reprodujo las tres cifras sin diferencia.
 publicadas_bcs <- list(
   "2015" = c(personas = 712029, tolerancia = 0.01),
   "2025" = c(personas = 955465, viviendas = 311591, tolerancia = 0.005)
@@ -96,6 +96,10 @@ test_that("EN VIVO: intercensal() descarga Aguascalientes por omision en la mues
 
 test_that("EN VIVO: intercensal() lee los principales resultados por localidad de 2025", {
   en_vivo()
+  # Sin readxl esta prueba falla en lugar de saltarse: una ejecucion en vivo no
+  # debe terminar en verde sin haber leido el XLSX (paso en la primera del PR #21)
+  expect_true(requireNamespace("readxl", quietly = TRUE),
+              info = "Las pruebas en vivo de la base resultados necesitan el paquete readxl")
   testthat::skip_if_not_installed("readxl")
   archivos <- poblacion_archivos("intercensal", 2025L, "resultados")
   xlsx <- suppressMessages(inegi_descargar(archivos$url))

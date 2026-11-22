@@ -2,8 +2,9 @@
 # INEGI (tests/testthat/test-en-vivo-*.R). El resto de las pruebas no usa la red.
 #
 # - Manual: pestana Actions > pruebas-en-vivo.yaml > Run workflow. La opcion
-#   medir_memoria agrega una medicion de tiempo y memoria con la muestra
-#   nacional del Conteo 2005 (descarga 121 MB); no corre en los pull requests.
+#   medir_memoria agrega mediciones de tiempo y memoria con la muestra nacional
+#   del Conteo 2005 (descarga 121 MB) y con la entidad mas grande de las
+#   Encuestas Intercensales 2015 y 2025 (148 MB); no corren en los pull requests.
 # - En pull requests que tocan el codigo del paquete o estas pruebas.
 #
 # Si el sitio del INEGI no responde, esta tarea falla aunque el paquete este
@@ -12,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       medir_memoria:
-        description: 'Medir tiempo y memoria con la muestra nacional del Conteo 2005 (descarga 121 MB)'
+        description: 'Medir tiempo y memoria con las muestras mas grandes (descarga 269 MB)'
         type: boolean
         default: false
   pull_request:
@@ -44,7 +45,8 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"hard"'
-          extra-packages: any::pkgload, any::testthat, any::withr, any::webfakes
+          # readxl: lo necesita la base "resultados" de intercensal()
+          extra-packages: any::pkgload, any::testthat, any::withr, any::webfakes, any::readxl
 
       - name: Pruebas en vivo contra el INEGI
         run: Rscript -e 'testthat::test_local(filter = "en-vivo", stop_on_failure = TRUE)'

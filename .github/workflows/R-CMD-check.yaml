@@ -42,9 +42,12 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
 
+      # readxl (paquete opcional, solo para la base "resultados" de
+      # intercensal()) requiere R 4.2 o posterior: en R 4.1 no se instala y las
+      # pruebas que lo usan se saltan.
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, readxl=?ignore-before-r=4.2.0
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
