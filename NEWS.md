@@ -51,14 +51,14 @@
 * Nueva funcion `conteo()`, con las bases de datos de los Conteos de Poblacion y Vivienda de 1995 y 2005: ITER, muestra y, en 2005, viviendas habitadas y deshabitadas por localidad. Tiene los mismos argumentos que `censo()`; en la muestra, `tabla` elige entre personas y migrantes (1995) o entre personas, viviendas y hogares (2005).
 * Nueva funcion `intercensal()`, que descarga las Encuestas Intercensales de 2015 y 2025 con los mismos argumentos que `censo()` y `conteo()`: la muestra (personas, viviendas y, en 2025, migrantes) y, en 2025, los principales resultados por localidad de 50 000 y mas habitantes.
 * Nueva funcion `bases_importinegi()`, que muestra las bases de datos que se pueden descargar con el paquete, por proyecto y año: tablas, cobertura (nacional o por entidad), formato y tamaño de la descarga. No descarga nada ni requiere conexion a internet. Usa el mismo registro de archivos que las funciones de descarga, de modo que no puede anunciar bases o años que no existan. Por ahora incluye el Censo y el Conteo de Poblacion y Vivienda, la Encuesta Intercensal, el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico y la serie tradicional de la ENIGH; los demas proyectos se agregaran conforme se actualicen sus funciones.
-* Nueva funcion `cng_municipal()`, que descarga el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (CNGMD) de 2011 a 2025, por modulo y tema. Es la primera de las tres funciones de los censos nacionales de gobierno (municipal, estatal y federal).
-* **Cambio incompatible:** se elimino `censo_municipal()`. `cng_municipal()` la sustituye: el argumento `fuente` pasa a ser `modulo` y el argumento `datos` pasa a ser `tema`.
-    * `censo_municipal(2011, "ayuntamiento", "estructura")` pasa a ser `cng_municipal(2011, "ayuntamiento", "estructura")`.
-    * `censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "comision")` pasa a ser `cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "comision")`.
+* Nueva funcion `cngmd()`, que descarga el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (CNGMD) de 2011 a 2025, por modulo y tema. Es la primera de las tres funciones de los censos nacionales de gobierno (municipal, estatal y federal).
+* **Cambio incompatible:** se elimino `censo_municipal()`. `cngmd()` la sustituye: el argumento `fuente` pasa a ser `modulo` y el argumento `datos` pasa a ser `tema`.
+    * `censo_municipal(2011, "ayuntamiento", "estructura")` pasa a ser `cngmd(2011, "ayuntamiento", "estructura")`.
+    * `censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "comision")` pasa a ser `cngmd(year = 2011, modulo = "ayuntamiento", tema = "comision")`.
     * Los valores de `datos` siguen sirviendo como `tema` en las ediciones donde el tema existe, salvo `"recursos"` en el modulo `"administracion"` de 2017, que coincide con varios temas.
-    * `censo_municipal()` sin argumentos abria la pagina del censo en el navegador. Los temas de cada edicion se consultan ahora con `bases_importinegi("cng_municipal")`.
-* `cng_municipal()`:
-    * `cng_municipal(year, modulo, tema, tabla, estado)`: `year` es obligatorio; `modulo` elige entre `"ayuntamiento"`, `"administracion"`, `"catastro"`, `"territorio"`, `"seguridad"`, `"proteccion_civil"`, `"justicia"`, `"agua"` y `"residuos"`; `tema` acepta una parte del titulo que el INEGI le da al tema o del nombre de su archivo.
+    * `censo_municipal()` sin argumentos abria la pagina del censo en el navegador. Los temas de cada edicion se consultan ahora con `bases_importinegi("cngmd")`.
+* `cngmd()`:
+    * `cngmd(year, modulo, tema, tabla, estado)`: `year` es obligatorio; `modulo` elige entre `"ayuntamiento"`, `"administracion"`, `"catastro"`, `"territorio"`, `"seguridad"`, `"proteccion_civil"`, `"justicia"`, `"agua"` y `"residuos"`; `tema` acepta una parte del titulo que el INEGI le da al tema o del nombre de su archivo.
     * Ediciones de 2011 a 2025. Las de 2019, 2021, 2023 y 2025 son nuevas en el paquete, igual que los modulos de catastro, planeacion y gestion territorial, proteccion civil, agua potable y saneamiento, y residuos solidos urbanos.
     * Devuelve una lista con todas las tablas del tema, como antes, o una sola tabla si se indica `tabla`. `tabla` tambien da acceso al indice de las tablas (`"indice"`), a los catalogos de las variables codificadas (`"catalogos"`) y al diccionario de datos (`"diccionario"`).
     * El argumento `estado` conserva las filas de una o varias entidades.
@@ -95,7 +95,7 @@
 * Ayuda de `bases_importinegi()` y nueva seccion de la viñeta, "Bases de datos disponibles".
 * Ayuda de `conteo()` y nueva seccion de la viñeta, "Conteo de Poblacion y Vivienda", que explica como se levantaron los conteos de 1995 y 2005.
 * Ayuda de `intercensal()` y nueva seccion de la viñeta, "Encuesta Intercensal", que explica como se levantaron las encuestas de 2015 y 2025.
-* Ayuda de `cng_municipal()` y seccion de la viñeta sobre el Censo Nacional de Gobiernos Municipales, reescrita para `cng_municipal()`: modulos por edicion, temas, tablas, catalogos y siglas del INEGI. La documentacion ya no menciona `censo_municipal()`.
+* Ayuda de `cngmd()` y seccion de la viñeta sobre el Censo Nacional de Gobiernos Municipales, reescrita para `cngmd()`: modulos por edicion, temas, tablas, catalogos y siglas del INEGI. La documentacion ya no menciona `censo_municipal()`.
 * Ayuda de `enigh_tradicional()` y nueva subseccion de la viñeta, "Serie tradicional": tablas por edicion, como unirlas con el identificador del hogar, donde esta el factor de expansion y como se devuelven las columnas. La seccion de la ENIGH de la viñeta presenta ahora las tres series de la encuesta.
 * La pagina de ayuda del paquete (`?importinegi`) incluye el indice de funciones por proyecto estadistico.
 * La ayuda de `sig_marcogeo()` y `sig_caminos_extrae()` indica que requieren el paquete `sf`.

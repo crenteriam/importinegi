@@ -1,4 +1,4 @@
-# Pruebas en vivo de cng_municipal(): descargan archivos reales del INEGI. Solo
+# Pruebas en vivo de cngmd(): descargan archivos reales del INEGI. Solo
 # corren con IMPORTINEGI_EN_VIVO=true (ver .github/workflows/pruebas-en-vivo.yaml).
 #
 # La forma de los archivos se reviso el 22 de noviembre de 2026 en el indice de
@@ -18,15 +18,15 @@ con_siglas <- function(tabla) {
   names(tabla)[vapply(tabla, function(x) is.character(x) && any(x %in% c("NSS", "ND", "NP")), logical(1))]
 }
 
-test_that("EN VIVO: cng_municipal() lee el tema mas peque\u00f1o de cada modulo y edicion", {
+test_that("EN VIVO: cngmd() lee el tema mas peque\u00f1o de cada modulo y edicion", {
   en_vivo()
-  temas <- gobierno_temas("cng_municipal")
-  grupos <- split(temas, paste(temas$year, match(temas$modulo, gobierno_modulos("cng_municipal")$modulo)))
+  temas <- gobierno_temas("cngmd")
+  grupos <- split(temas, paste(temas$year, match(temas$modulo, gobierno_modulos("cngmd")$modulo)))
   expect_identical(length(grupos), 61L)
   for (grupo in grupos) {
     tema <- grupo[which.min(grupo$bytes), ]
     etiqueta <- paste(tema$year, tema$modulo, tema$base)
-    tablas <- tryCatch(suppressMessages(cng_municipal(tema$year, tema$modulo, tema$base)), error = function(e) e)
+    tablas <- tryCatch(suppressMessages(cngmd(tema$year, tema$modulo, tema$base)), error = function(e) e)
     expect_false(inherits(tablas, "error"), info = paste(etiqueta, if (inherits(tablas, "error")) conditionMessage(tablas)))
     if (inherits(tablas, "error")) {
       cat("[en vivo] ", etiqueta, ": ERROR ", conditionMessage(tablas), "\n", sep = "")
@@ -67,7 +67,7 @@ test_that("EN VIVO: cng_municipal() lee el tema mas peque\u00f1o de cada modulo 
         cat("[en vivo] ", etiqueta, " tablas que el indice no describe: ",
             paste(indice$tabla[is.na(indice$contenido)], collapse = ", "), "\n", sep = "")
       }
-      diccionario <- tryCatch(suppressMessages(cng_municipal(tema$year, tema$modulo, tema$base, tabla = "diccionario")),
+      diccionario <- tryCatch(suppressMessages(cngmd(tema$year, tema$modulo, tema$base, tabla = "diccionario")),
                               error = function(e) e)
       expect_false(inherits(diccionario, "error"),
                    info = paste(etiqueta, "diccionario:", if (inherits(diccionario, "error")) substr(conditionMessage(diccionario), 1, 300)))
@@ -95,18 +95,18 @@ test_that("EN VIVO: cng_municipal() lee el tema mas peque\u00f1o de cada modulo 
 test_that("EN VIVO: los temas de los ejemplos tienen la forma documentada", {
   en_vivo()
   # Comisiones e iniciativas de los ayuntamientos, 2011: cinco tablas
-  comision <- suppressMessages(cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "comision"))
+  comision <- suppressMessages(cngmd(year = 2011, modulo = "ayuntamiento", tema = "comision"))
   expect_named(comision, c("act_ayun", "com_ayun", "com_tasu", "in_teasu", "ini_ayun"))
   clave <- clave_municipio(comision$act_ayun)
   expect_false(is.na(clave))
   describir_tabla("2011 comision act_ayun", comision$act_ayun)
   cat("[en vivo] 2011 comision: municipios en act_ayun = ", length(unique(comision$act_ayun[[clave]])), " (", clave, ")", "\n", sep = "")
-  estructura <- suppressMessages(cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "estructura"))
+  estructura <- suppressMessages(cngmd(year = 2011, modulo = "ayuntamiento", tema = "estructura"))
   cat("[en vivo] 2011 estructura: ", paste(names(estructura), collapse = ", "), "\n", sep = "")
   expect_gt(length(estructura), 0)
 
   # Ayuntamientos, 2025: una tabla por pregunta, con indice, catalogos y diccionario
-  ayuntamientos <- suppressMessages(cng_municipal(2025, "ayuntamiento", "ayuntamientos"))
+  ayuntamientos <- suppressMessages(cngmd(2025, "ayuntamiento", "ayuntamientos"))
   expect_identical(length(ayuntamientos), 24L)
   expect_identical(names(ayuntamientos)[1:3], c("m1s1p1", "m1s1p2", "m1s1p3"))
   expect_identical(names(ayuntamientos)[24], "m1s1p19b")
@@ -121,11 +121,11 @@ test_that("EN VIVO: los temas de los ejemplos tienen la forma documentada", {
       "; tablas con columnas de texto por NSS, ND o NP: ", sum(lengths(siglas) > 0), " de 24; en m1s1p3: ",
       paste(siglas$m1s1p3, collapse = ", "), "\n", sep = "")
 
-  jalisco <- suppressMessages(cng_municipal(2025, "ayuntamiento", "ayuntamientos", tabla = "m1s1p3", estado = "Jalisco"))
+  jalisco <- suppressMessages(cngmd(2025, "ayuntamiento", "ayuntamientos", tabla = "m1s1p3", estado = "Jalisco"))
   expect_identical(unique(substr(jalisco$cvegeo, 1, 2)), "14")
   expect_identical(nrow(jalisco), sum(sindicas$cve_ent == "14"))
 
-  catalogos <- suppressMessages(cng_municipal(2025, "ayuntamiento", "ayuntamientos", tabla = "catalogos"))
+  catalogos <- suppressMessages(cngmd(2025, "ayuntamiento", "ayuntamientos", tabla = "catalogos"))
   expect_true("sexo_i" %in% names(catalogos))
   codificadas <- intersect(names(sindicas), names(catalogos))
   cat("[en vivo] 2025 ayuntamientos: ", length(catalogos), " catalogos (", paste(utils::head(names(catalogos), 8), collapse = ", "),
@@ -135,12 +135,12 @@ test_that("EN VIVO: los temas de los ejemplos tienen la forma documentada", {
   }
 
   # El tema tambien se elige con el nombre de su archivo
-  integrantes <- suppressMessages(cng_municipal(2017, "ayuntamiento", "integrantes_ayuntami"))
+  integrantes <- suppressMessages(cngmd(2017, "ayuntamiento", "integrantes_ayuntami"))
   cat("[en vivo] 2017 integrantes_ayuntami: ", paste(names(integrantes), collapse = ", "), "\n", sep = "")
   expect_gt(length(integrantes), 0)
 
   # Agua potable de 2011: solo en DBF
-  agua <- suppressMessages(cng_municipal(2011, "agua"))
+  agua <- suppressMessages(cngmd(2011, "agua"))
   cat("[en vivo] 2011 agua (DBF): ", length(agua), " tablas (", paste(names(agua), collapse = ", "), "); clave: ",
       paste(unique(vapply(agua, clave_municipio, character(1))), collapse = ", "), "\n", sep = "")
   expect_gt(length(agua), 0)

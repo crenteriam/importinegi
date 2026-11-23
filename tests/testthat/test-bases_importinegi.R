@@ -11,7 +11,7 @@ test_that("bases_importinegi() lista las bases del paquete sin conexion", {
   expect_false(anyNA(bases[setdiff(names(bases), c("modulo", "tablas"))]))
   expect_identical(anyDuplicated(bases[, c("proyecto", "year", "modulo", "base")]), 0L)
   # Solo los censos de gobierno tienen modulo, y no listan sus tablas
-  gobierno <- bases$proyecto == "cng_municipal"
+  gobierno <- bases$proyecto == "cngmd"
   expect_true(all(is.na(bases$modulo[!gobierno])) && !anyNA(bases$modulo[gobierno]))
   expect_true(all(is.na(bases$tablas[gobierno])) && !anyNA(bases$tablas[!gobierno]))
   expect_true(all(bases$tamano_mb > 0))
@@ -123,8 +123,8 @@ test_that("bases_importinegi() coincide con lo que censo() puede descargar", {
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CENSO "), bases_importinegi("censo"))
   expect_identical(unique(bases_importinegi()$proyecto),
-                   c("censo", "conteo", "intercensal", "cng_municipal", "enigh_tradicional"))
-  expect_identical(bases_importinegi(c("censo", "conteo", "intercensal", "cng_municipal", "enigh_tradicional")),
+                   c("censo", "conteo", "intercensal", "cngmd", "enigh_tradicional"))
+  expect_identical(bases_importinegi(c("censo", "conteo", "intercensal", "cngmd", "enigh_tradicional")),
                    bases_importinegi())
   de_2020 <- bases_importinegi(year = 2020)
   expect_identical(unique(de_2020$year), 2020L)
@@ -142,7 +142,7 @@ test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
 
   # En 2015 y 2025 hay Encuesta Intercensal y censo de gobiernos municipales
   de_2015_y_2025 <- bases_importinegi(year = c(2015, 2025))
-  expect_identical(unique(de_2015_y_2025$proyecto), c("intercensal", "cng_municipal"))
+  expect_identical(unique(de_2015_y_2025$proyecto), c("intercensal", "cngmd"))
   intercensales <- bases_importinegi("intercensal", year = c(2015, 2025))
   expect_identical(intercensales, structure(de_2015_y_2025[de_2015_y_2025$proyecto == "intercensal", ],
                                             registro = registro_generado()))
@@ -173,8 +173,8 @@ test_that("bases_importinegi() solo muestra lo que esta en el registro", {
   # Sin los archivos de un proyecto, no se listan sus temas
   sin_gobierno <- registro_archivos[registro_archivos$proyecto != "cngmd", ]
   withr::local_options(importinegi.registro = sin_gobierno)
-  expect_false("cng_municipal" %in% bases_importinegi()$proyecto)
-  expect_error(cng_municipal(2025, "agua", "x"), "`year = 2025` no est\u00e1 disponible")
+  expect_false("cngmd" %in% bases_importinegi()$proyecto)
+  expect_error(cngmd(2025, "agua", "x"), "`year = 2025` no est\u00e1 disponible")
 })
 
 test_that("los errores de censo() remiten a bases_importinegi()", {

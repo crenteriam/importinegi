@@ -17,7 +17,7 @@
 #'   \item{\code{"residuos"}}{Residuos solidos urbanos. Todas las ediciones.}
 #' }
 #'
-#' Los temas cambian de una edicion a otra: el censo paso de 17 temas en 2011 a 130 en 2025. \code{\link{bases_importinegi}} los lista sin descargar nada, por ejemplo con \code{bases_importinegi("cng_municipal", 2025)}. El argumento \code{tema} acepta una parte del titulo que el INEGI le da al tema o una parte del nombre de su archivo, sin distinguir mayusculas ni acentos. Si el texto es igual al titulo o al nombre del archivo de un tema, la funcion elige ese tema; si no, el texto debe coincidir con un solo tema del modulo. Cuando coincide con varios temas o con ninguno, la funcion se detiene y muestra los temas del modulo.
+#' Los temas cambian de una edicion a otra: el censo paso de 17 temas en 2011 a 130 en 2025. \code{\link{bases_importinegi}} los lista sin descargar nada, por ejemplo con \code{bases_importinegi("cngmd", 2025)}. El argumento \code{tema} acepta una parte del titulo que el INEGI le da al tema o una parte del nombre de su archivo, sin distinguir mayusculas ni acentos. Si el texto es igual al titulo o al nombre del archivo de un tema, la funcion elige ese tema; si no, el texto debe coincidir con un solo tema del modulo. Cuando coincide con varios temas o con ninguno, la funcion se detiene y muestra los temas del modulo.
 #'
 #' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga el archivo en una carpeta temporal y lo lee. Usa los archivos de datos abiertos del INEGI, en formato CSV; los modulos \code{"agua"} y \code{"residuos"} de 2011, que el INEGI publica solo en formato DBF, se leen de ese formato. Todos los archivos son nacionales. Requiere conexion a internet.
 #'
@@ -27,7 +27,7 @@
 #' Hasta la edicion 2019, las tablas tienen nombres cortos (\code{"act_ayun"}, \code{"com_ayun"}). Desde la edicion 2021 hay una tabla por cada pregunta del cuestionario, y su nombre indica el modulo, la seccion y la pregunta: \code{"m1s1p3"} es la pregunta 3 de la seccion 1 del modulo 1. Desde esa edicion, cada archivo incluye un indice que describe el contenido de cada tabla; se obtiene con \code{tabla = "indice"}.
 #'
 #' @section Contenido de las tablas:
-#' Las columnas conservan los nombres que les da el INEGI. La clave del municipio conserva tambien su nombre, que cambia con la edicion (por ejemplo, \code{ubic_geo} en 2011 y \code{cvegeo} en 2025), y se devuelve siempre como texto de 5 digitos, con ceros a la izquierda (\code{"01001"}).
+#' Las columnas conservan los nombres que les da el INEGI. La clave del municipio conserva tambien su nombre, que cambia con la edicion y con la tabla (por ejemplo, \code{ubic_geo} en 2011 y \code{cvegeo} en 2025), y se devuelve siempre como texto de 5 digitos, con ceros a la izquierda (\code{"01001"}).
 #'
 #' La mayoria de las variables estan codificadas. La funcion devuelve los codigos y no los sustituye por su descripcion. Cada archivo incluye un catalogo por cada variable codificada, con el mismo nombre que la columna; \code{tabla = "catalogos"} los devuelve. Los nombres de los municipios no estan en las tablas, sino en uno de los catalogos.
 #'
@@ -42,37 +42,37 @@
 #' @examples
 #'
 #' # Consulta los temas del CNGMD 2025, con su modulo y el tamaño de cada descarga
-#' temas <- bases_importinegi("cng_municipal", 2025)
+#' temas <- bases_importinegi("cngmd", 2025)
 #'
 #' # Descarga los microdatos de la estructura de los ayuntamientos en 2011
-#' \dontrun{estruct <- cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "estructura")}
+#' \dontrun{estruct <- cngmd(year = 2011, modulo = "ayuntamiento", tema = "estructura")}
 #'
 #' # Descarga las comisiones e iniciativas de los ayuntamientos en 2011 y extrae una tabla
-#' \dontrun{comisiones <- cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "comisiones")}
+#' \dontrun{comisiones <- cngmd(year = 2011, modulo = "ayuntamiento", tema = "comisiones")}
 #' \dontrun{actas <- comisiones$act_ayun}
 #'
 #' # Descarga una sola tabla: personas sindicas de los ayuntamientos en 2025
-#' \dontrun{sindicas <- cng_municipal(2025, "ayuntamiento", "ayuntamientos", tabla = "m1s1p3")}
+#' \dontrun{sindicas <- cngmd(2025, "ayuntamiento", "ayuntamientos", tabla = "m1s1p3")}
 #'
 #' # Descarga todas las tablas del tema, solo con los municipios de Jalisco
-#' \dontrun{jalisco <- cng_municipal(2025, "ayuntamiento", "ayuntamientos", estado = "Jalisco")}
+#' \dontrun{jalisco <- cngmd(2025, "ayuntamiento", "ayuntamientos", estado = "Jalisco")}
 #'
 #' # Indice de las tablas del tema y catalogos para interpretar los codigos
-#' \dontrun{indice <- cng_municipal(2025, "ayuntamiento", "ayuntamientos", tabla = "indice")}
-#' \dontrun{catalogos <- cng_municipal(2025, "ayuntamiento", "ayuntamientos", tabla = "catalogos")}
+#' \dontrun{indice <- cngmd(2025, "ayuntamiento", "ayuntamientos", tabla = "indice")}
+#' \dontrun{catalogos <- cngmd(2025, "ayuntamiento", "ayuntamientos", tabla = "catalogos")}
 #'
 #' # El tema tambien se puede indicar con el nombre de su archivo
-#' \dontrun{integrantes <- cng_municipal(2017, "ayuntamiento", "integrantes_ayuntami")}
+#' \dontrun{integrantes <- cngmd(2017, "ayuntamiento", "integrantes_ayuntami")}
 #'
 #' @return Si no se indica \code{tabla}, o si se indican varias tablas, una lista con un data.frame por tabla, cada uno con el nombre de su tabla. Si se indica una sola tabla, un data.frame. Con \code{tabla = "indice"}, un data.frame con el nombre de cada tabla y, desde la edicion 2021, su contenido. Con \code{tabla = "catalogos"}, una lista con los catalogos del tema. Con \code{tabla = "diccionario"}, un data.frame con la descripcion de las variables de cada tabla (ediciones de 2021 en adelante). El atributo \code{"fuente"} contiene la direccion del archivo descargado y, en las listas de tablas, el atributo \code{"indice"} contiene el indice del tema.
 #' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, los temas de cada modulo y edicion y cuanto pesan. \code{\link{catalogo_inegi}} para la documentacion del censo en la Red Nacional de Metadatos. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion con ejemplos.
 #' @export
-cng_municipal <- function(year, modulo, tema = NULL, tabla = NULL, estado = NULL) {
+cngmd <- function(year, modulo, tema = NULL, tabla = NULL, estado = NULL) {
   if (missing(year)) {
     year <- NULL
   }
   if (missing(modulo)) {
     modulo <- NULL
   }
-  gobierno_obtener("cng_municipal", year, modulo, tema, tabla, estado)
+  gobierno_obtener("cngmd", year, modulo, tema, tabla, estado)
 }
