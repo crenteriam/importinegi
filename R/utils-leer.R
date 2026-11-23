@@ -123,15 +123,28 @@ dbf_codificacion <- function(archivo) {
 # UTF-8 (a veces con BOM) y algunos en Latin-1. El archivo se lee completo como
 # UTF-8 y despues se convierten desde Latin-1 los valores que no son UTF-8
 # valido, para no depender de que la primera parte del archivo tenga acentos.
+#
+# Algunos CSV de pocas filas no terminan con un salto de linea (por ejemplo, las
+# tablas de una sola fila del censo de derechos humanos federal de 2017 a
+# 2019). read.csv() los lee completos, pero avisa ("incomplete final line found
+# by readTableHeader"); ese aviso se omite porque no hay nada que corregir. Se
+# reconoce por el nombre de la funcion, que no cambia con el idioma de R.
 leer_csv <- function(archivo) {
-  datos <- utils::read.csv(
-    archivo,
-    colClasses = "character",
-    encoding = "UTF-8",
-    check.names = FALSE,
-    na.strings = "",
-    strip.white = TRUE,
-    stringsAsFactors = FALSE
+  datos <- withCallingHandlers(
+    utils::read.csv(
+      archivo,
+      colClasses = "character",
+      encoding = "UTF-8",
+      check.names = FALSE,
+      na.strings = "",
+      strip.white = TRUE,
+      stringsAsFactors = FALSE
+    ),
+    warning = function(aviso) {
+      if (grepl("readTableHeader", conditionMessage(aviso), fixed = TRUE)) {
+        invokeRestart("muffleWarning")
+      }
+    }
   )
   nombres <- names(datos)
   invalidos <- !validUTF8(nombres)

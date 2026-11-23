@@ -216,6 +216,28 @@ servidor_prueba <- function(entorno = parent.frame()) {
       res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
     }
   })
+  # Archivos del Censo Nacional de Derechos Humanos Federal, en las rutas del
+  # registro del paquete. Responde con las muestras de
+  # fixtures/cndhf (dos temas de 2025, uno de 2021 y uno de 2017); para el
+  # resto, como el INEGI cuando un archivo no existe.
+  app$get(webfakes::new_regexp("^/contenidos/programas/cndhf/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_censo <- locales$descargas_censo + 1
+    reglas <- c(
+      cndhf2025_consejo = "/2025/datosabiertos/conjunto_de_datos_consejo_consultivo_cndhf2025_csv[.]zip$",
+      cndhf2025_hechos = "/2025/datosabiertos/m2/conjunto_de_datos_exploespec_hechoviola_dh_selec_cndhf2025_csv[.]zip$",
+      cndhf2021_seguimiento = "/2021/datosabiertos/m2/seguimiento_cndhf2021_csv[.]zip$",
+      cndhf2017_participacion = "/2017/datosabiertos/m1/Participacion_ciudada_cndhf2017_csv[.]zip$"
+    )
+    archivo <- names(reglas)[vapply(reglas, function(regla) grepl(regla, req$path), logical(1))]
+    if (length(archivo) == 1) {
+      res$send_file(paste0(archivo, ".zip"), root = file.path(locales$carpeta, "cndhf"))
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
   # Archivos de la serie tradicional de la ENIGH, en las rutas del registro del
   # paquete. Responde con las muestras de fixtures/enigh (algunas tablas de las
   # ediciones 1984, 1994, 2006, 2008, 2010 y 2014); para el resto, como el INEGI

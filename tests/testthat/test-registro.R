@@ -104,6 +104,20 @@ test_that("inegi_api_id() lee el identificador del proyecto en la pagina del pro
   expect_error(inegi_api_id("sin/identificador"), "No se encontr\u00f3 el identificador del proyecto")
 })
 
+test_that("inegi_api_id() lee el identificador con comillas, con ap\u00f3strofos o sin comillas", {
+  paginas <- c(
+    con_comillas = "<menu-gen idm=\"3383\" tipo=\"1\" url=\"\" class=\"col-lg-3 col-12\"></menu-gen>",
+    sin_comillas = "<menu-gen idm=2937 tipo=1 url=\"\" class=\"col-lg-3 col-12\"></menu-gen>",
+    apostrofos = "<menu-gen tipo='1' idm='3360' url=''></menu-gen>",
+    sin_identificador = "<menu-gen url='qsomos' class='col-lg-3 col-12'></menu-gen>"
+  )
+  local_mocked_bindings(inegi_texto = function(url) paginas[[sub("^.*/programas/([a-z_]+)/$", "\\1", url)]])
+  expect_identical(inegi_api_id("con_comillas"), 3383L)
+  expect_identical(inegi_api_id("sin_comillas"), 2937L)
+  expect_identical(inegi_api_id("apostrofos"), 3360L)
+  expect_error(inegi_api_id("sin_identificador"), "No se encontr\u00f3 el identificador del proyecto")
+})
+
 test_that("inegi_api_archivos() rechaza una respuesta que no es un listado", {
   local_mocked_bindings(inegi_texto = function(url) "<html>Error</html>")
   expect_error(inegi_api_archivos(1780), "no devolvi\u00f3 un listado de archivos v\u00e1lido para el proyecto 1780")

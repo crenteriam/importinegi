@@ -405,7 +405,8 @@ test_that("bases_importinegi() lista los temas del censo municipal", {
     gobierno_elegir_tema("cngmd", 2025, fila$modulo, fila$descripcion)$url
   )
   # Los demas proyectos no cambian y no tienen modulo
-  expect_identical(nrow(bases_importinegi(year = 2020)), 6L)
-  expect_identical(unique(bases_importinegi()$proyecto), c("censo", "conteo", "intercensal", "cngmd", "enigh_tradicional"))
+  expect_identical(nrow(bases_importinegi("censo", 2020)), 6L)
+  expect_identical(unique(bases_importinegi()$proyecto),
+                   c("censo", "conteo", "intercensal", "cngmd", "cndhf", "enigh_tradicional"))
   expect_error(bases_importinegi("censo_municipal"), "Proyectos disponibles: .*\"cngmd\"")
 })

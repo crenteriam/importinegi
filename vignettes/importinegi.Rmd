@@ -25,6 +25,7 @@ La version `2.0.0` permite descargar y gestionar las bases de datos de los sigui
 * Censo y Conteo de Poblacion y Vivienda
 * Encuesta Intercensal
 * Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México (CNGMD)
+* Censo Nacional de Derechos Humanos Federal (CNDHF)
 * Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH)
 * Encuesta Nacional de Ocupación y Empleo (ENOE)
 
@@ -87,7 +88,7 @@ El catálogo se descarga una sola vez por sesión de R: las consultas posteriore
 
 La función `bases_importinegi()` muestra las bases de datos que se pueden descargar con las funciones de este paquete. A diferencia de `catalogo_inegi()`, que consulta en línea todos los proyectos estadísticos que documenta el INEGI, esta función muestra solamente lo que `importinegi` puede descargar. La función no descarga ningún archivo ni requiere conexión a internet.
 
-El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla. En el Censo Nacional de Gobiernos Municipales, cada fila es un tema del censo y la columna `modulo` indica el módulo al que pertenece. En la serie tradicional de la ENIGH, cada fila es una edición de la encuesta y la columna `tablas` indica las tablas que se pueden descargar.
+El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla. En el Censo Nacional de Gobiernos Municipales y en el Censo Nacional de Derechos Humanos Federal, cada fila es un tema del censo y la columna `modulo` indica el módulo al que pertenece. En la serie tradicional de la ENIGH, cada fila es una edición de la encuesta y la columna `tablas` indica las tablas que se pueden descargar.
 
 La función tiene dos parámetros, ambos opcionales. El parámetro `proyecto` limita la consulta a un proyecto estadístico y el parámetro `year` la limita a uno o varios años. El siguiente bloque de código presenta tres ejemplos de consulta.
 
@@ -102,7 +103,7 @@ bases.censo = bases_importinegi(proyecto = "censo")
 bases.censo2020 = bases_importinegi(proyecto = "censo", year = 2020)
 ```
 
-La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda, de la Encuesta Intercensal, del Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México y de la serie tradicional de la ENIGH. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
+La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda, de la Encuesta Intercensal, del Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México, del Censo Nacional de Derechos Humanos Federal y de la serie tradicional de la ENIGH. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
 
 ## Censo Nacional de Poblacion y Vivienda
 
@@ -305,6 +306,65 @@ sindicas = cngmd(2025, modulo = "ayuntamiento", tema = "ayuntamientos", tabla = 
 catalogos = cngmd(2025, modulo = "ayuntamiento", tema = "ayuntamientos", tabla = "catalogos")
 ```
 
+## Censo Nacional de Derechos Humanos Federal
+
+La función `cndhf()` descarga las bases de datos del Censo Nacional de Derechos Humanos Federal (CNDHF), un proyecto estadístico sobre la gestión y el desempeño de la Comisión Nacional de los Derechos Humanos (CNDH). El censo se levanta cada año y pregunta por el año anterior; por ejemplo, el CNDHF de 2025 informa de 2024. La función se utiliza de la misma manera que `cngmd()` y tiene tres parámetros indispensables. Primero, se debe establecer en formato numérico el año del levantamiento del CNDHF (`year`), que puede ser cualquiera de 2017 a 2025. En el parámetro `modulo`, se debe definir en formato alfanumérico el módulo del censo. Finalmente, en el parámetro `tema`, se debe definir en formato alfanumérico el tema del módulo, que es el conjunto de bases de datos requerido.
+
+El CNDHF tiene dos módulos, disponibles en todos los años de levantamiento, como se muestra en la siguiente tabla.
+
+| `modulo` | Módulo | Temas del CNDHF de 2025 |
+|:---------|:-------|:------------------------|
+| `estructura` | Estructura organizacional y recursos | 12 temas; entre ellos, Consejo Consultivo, recursos humanos, recursos presupuestales, y control interno y anticorrupción |
+| `proteccion` | Capacitación, difusión, defensa y protección de los derechos humanos (hasta 2019, "Ejercicio de la función en materia de protección de derechos humanos"; en 2020, "Protección de derechos humanos") | 10 temas; entre ellos, solicitudes de queja, expedientes calificados, expedientes concluidos y seguimiento |
+
+El CNDHF tiene entre 17 y 22 temas en cada edición, y sus nombres cambian de una edición a otra. Se recomienda consultar los temas de cada módulo y año de levantamiento con la función `bases_importinegi()`, como se muestra en el siguiente bloque de código. En el resultado, la columna `modulo` indica el módulo; la columna `descripcion`, el título del tema, y la columna `base`, el nombre de su archivo.
+
+```{r, eval = FALSE}
+# Temas del CNDHF 2025, con su módulo y el tamaño de cada descarga
+temas.2025 = bases_importinegi(proyecto = "cndhf", year = 2025)
+
+# Temas del módulo de protección de derechos humanos en todas las ediciones
+temas = bases_importinegi(proyecto = "cndhf")
+temas.proteccion = temas[temas$modulo == "proteccion", ]
+```
+
+Al igual que en el CNGMD, el tema se indica con una parte del título que le da el INEGI o con una parte del nombre de su archivo, sin distinguir entre mayúsculas y minúsculas ni entre letras con y sin acento. Por ejemplo, el tema "Expedientes calificados" de 2025, cuyo archivo aparece en `bases_importinegi()` como `exped_calificado`, se puede pedir con `tema = "expedientes calificados"` o con `tema = "exped_calificado"`. Si el texto coincide con varios temas del módulo o con ninguno, la función se detiene y muestra los temas del módulo.
+
+Al elegir un módulo y un tema específicos, la función descarga una lista de R con las bases de datos del tema. Cada base de datos se extrae de la lista con su posición o con su nombre, como en el CNGMD. También se puede descargar una sola base de datos con el parámetro `tabla`; en ese caso, la función devuelve la base de datos y no una lista. En el siguiente bloque de código, se descarga el tema "Consejo Consultivo" del módulo `estructura` y se extrae la base de datos de las personas consejeras; después, se descarga una sola base de datos del tema "Expedientes calificados" del módulo `proteccion`.
+
+```{r, eval = FALSE}
+# Descargar el tema "Consejo Consultivo" del CNDHF 2025
+datos.consejo = cndhf(year = 2025, modulo = "estructura", tema = "consejo consultivo")
+
+# Explorar la posición de cada base de datos en la lista
+summary(datos.consejo)
+
+# Extraer la base de datos de las personas consejeras con su nombre
+datos.consejeras = datos.consejo$m1s1p2
+
+# Descargar una sola base de datos: hechos presuntamente violatorios, por tipo de hecho
+datos.hechos = cndhf(2025, modulo = "proteccion", tema = "expedientes calificados", tabla = "m2s5p24")
+```
+
+El nombre de las bases de datos cambia con la edición. Hasta el CNDHF de 2019, tienen nombres cortos (por ejemplo, `partciud`). Desde el CNDHF de 2020, el INEGI publica una base de datos por cada pregunta del cuestionario: en 2020, su nombre indica el módulo y la pregunta (`m1p2`) y, desde 2021, el módulo, la sección y la pregunta (`m1s1p4` es la pregunta 4 de la sección 1 del módulo 1). Desde el CNDHF de 2020, cada tema incluye también un índice que describe el contenido de cada base de datos, y que se obtiene con `tabla = "indice"`.
+
+El contenido de las bases de datos sigue las mismas reglas que en el CNGMD. Las columnas conservan los nombres que les da el INEGI. La mayoría de las variables de clasificación están codificadas; la función devuelve los códigos, y su descripción está en los catálogos del tema, que se obtienen con `tabla = "catalogos"`. De las siglas que el INEGI escribe en lugar de un dato, la función convierte `NA` (no aplica) en el valor perdido de R (`NA`) y conserva `NSS`, `ND` y `NP` como las publica el INEGI. Por lo tanto, las columnas de cantidades que contienen alguna de estas tres siglas se devuelven como texto.
+
+A diferencia del CNGMD, el CNDHF tiene un solo informante, la CNDH; por lo tanto, la función `cndhf()` no tiene el parámetro `estado`. Sin embargo, desde el CNDHF de 2020, algunas bases de datos desglosan la información por entidad federativa o por municipio. De 2020 a 2022, la clave del municipio viene en una sola columna (`ubicageo_b` en 2020, `ubicageo_c` en 2021 y `ubicageo_e` en 2022), que se devuelve como texto de cinco dígitos, para que se pueda combinar con las bases de datos de otros proyectos. Desde 2022, la clave de la entidad federativa viene en la columna `enticve1`, que se devuelve como texto de dos dígitos, y desde 2023, la clave del municipio viene en la columna `municve1`, que se devuelve como texto de tres dígitos. En estas últimas ediciones, la clave de cinco dígitos del municipio se obtiene al unir las dos columnas, como se muestra en el siguiente bloque de código.
+
+```{r, eval = FALSE}
+# Índice de las bases de datos del tema "Expedientes calificados" del CNDHF 2025
+indice = cndhf(2025, modulo = "proteccion", tema = "expedientes calificados", tabla = "indice")
+
+# Catálogos del tema, para interpretar los códigos
+catalogos = cndhf(2025, modulo = "proteccion", tema = "expedientes calificados", tabla = "catalogos")
+
+# Hechos violatorios seleccionados, por municipio, en el CNDHF 2025
+datos.municipios = cndhf(2025, modulo = "proteccion", tema = "hechos violatorios", tabla = "m2s9p2cp4")
+
+# Clave de cinco dígitos del municipio, a partir de las claves de la entidad y del municipio
+datos.municipios$cvegeo = paste0(datos.municipios$enticve1, datos.municipios$municve1)
+```
 
 ## Encuesta Nacional de Ingreso y Gasto de los Hogares
 

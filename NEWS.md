@@ -14,7 +14,7 @@
 * Nuevas utilidades internas compartidas, todavia sin efecto en las funciones exportadas: descarga con `httr2` (reintentos, limites de tiempo, copia local opcional y verificacion de que el archivo recibido sea un zip valido), descompresion en una carpeta propia por llamada, lectura de DBF y CSV, catalogo unico de entidades federativas y validacion de argumentos.
 * Nuevas dependencias: `httr2` y `jsonlite`.
 * Registro de direcciones de descarga generado con el script `data-raw/registro.R` a partir del servicio de descargas del INEGI, y tarea de GitHub Actions que lo ejecuta una vez al ano y avisa cuando el INEGI publica o cambia archivos.
-* El paquete incluye ya el registro de direcciones de descarga (3,550 archivos de 36 proyectos, actualizado el 22 de noviembre de 2026 con las Encuestas Intercensales 2015 y 2025, con las ocho ediciones del Censo Nacional de Gobiernos Municipales y con las 15 ediciones de la serie tradicional de la ENIGH). Las funciones nuevas buscan ahi la direccion de cada archivo en lugar de armarla a mano.
+* El paquete incluye ya el registro de direcciones de descarga (3,725 archivos de 45 proyectos, actualizado el 23 de noviembre de 2026 con las Encuestas Intercensales 2015 y 2025, con las ocho ediciones del Censo Nacional de Gobiernos Municipales, con las 15 ediciones de la serie tradicional de la ENIGH y con las nueve ediciones del Censo Nacional de Derechos Humanos Federal). Las funciones nuevas buscan ahi la direccion de cada archivo en lugar de armarla a mano.
 * La lectura de archivos CSV reconoce la codificacion de cada valor (UTF-8 o Latin-1) en todo el archivo, no solo en sus primeras lineas.
 * En las descargas de varios archivos, si uno falla, los que ya se descargaron se conservan durante la sesion de R, para que al repetir la llamada solo se descarguen los que faltan.
 * Al combinar varias entidades, cada una se convierte a numero antes de unirlas, lo que reduce la memoria que se necesita.
@@ -24,6 +24,7 @@
 * La lectura de archivos DBF entrega el texto en UTF-8 (los DBF del INEGI usan paginas de codigos anteriores), para que los nombres con acentos se lean bien en cualquier sistema operativo.
 * Las descargas piden el contenido sin comprimir y no usan la decodificacion automatica de curl: el catalogo de la Red Nacional de Metadatos responde con una cabecera `Content-Encoding` que no es valida y curl rechazaba la respuesta.
 * La lectura de archivos DBF omite los registros marcados como borrados, que `foreign::read.dbf()` devuelve como si fueran datos. Los hay en archivos de la ENIGH (por ejemplo, dos en los ingresos no monetarios de 1989 y dos en las erogaciones de 2006), y la documentacion del INEGI no los cuenta. El cambio aplica a todas las funciones que leen DBF con las utilidades nuevas.
+* La lectura de archivos CSV ya no muestra una advertencia cuando el archivo no termina con un salto de linea, como ocurre en tablas de una sola fila del Censo Nacional de Derechos Humanos Federal.
 * Nuevo motor compartido para las series de la ENIGH, que ubica cada tabla en el archivo del INEGI que la contiene: en la serie tradicional, 126 tablas en 106 archivos, con nombres de DBF que cambian de una edicion a otra. Cada archivo se descarga una sola vez aunque se pidan varias de sus tablas.
 
 ## Funciones
@@ -68,6 +69,13 @@
     * Los DBF de agua potable y de residuos solidos de 2011 declaran mas registros de los que contienen; la funcion devuelve solo los registros reales, sin filas vacias.
     * Las direcciones salen del registro de archivos del INEGI. Las que armaba `censo_municipal()` habian dejado de funcionar.
     * Funciona en cualquier sistema operativo (sin argumentos, `censo_municipal()` solo funcionaba en Windows).
+* Nueva funcion `cndhf()`, que descarga el Censo Nacional de Derechos Humanos Federal (CNDHF) de 2017 a 2025, por modulo y tema. Se usa igual que `cngmd()` y comparte su programacion.
+    * `cndhf(year, modulo, tema, tabla)`: `year` y `modulo` son obligatorios; `modulo` elige entre `"estructura"` (estructura organizacional y recursos de la Comision Nacional de los Derechos Humanos) y `"proteccion"` (capacitacion, difusion, defensa y proteccion de los derechos humanos); `tema` y `tabla` funcionan como en `cngmd()`.
+    * No tiene el argumento `estado`: el censo tiene un solo informante, la Comision Nacional de los Derechos Humanos.
+    * Lee los archivos de datos abiertos del INEGI, en formato CSV. La sigla `"NA"` (no aplica) se convierte en `NA`; las demas siglas se conservan.
+    * En las tablas que desglosan por municipio, la clave del municipio en una sola columna (`ubicageo_b`, `ubicageo_c`, `ubicageo_e`; ediciones de 2020 a 2022) se devuelve como texto de 5 digitos. La clave de la entidad (`enticve1`, desde la edicion 2022) y la del municipio (`municve1`, desde la edicion 2023) se devuelven como texto de 2 y de 3 digitos. No se crean columnas.
+    * El indice de las tablas y el diccionario de datos estan disponibles como tablas desde la edicion 2020.
+* Las bitacoras de cambios que algunos temas de los censos de gobierno traen junto a sus tablas (`..._bitacora_de_cambios.csv`) ya no se leen como tablas.
 * Nueva funcion `enigh_tradicional()`, que descarga la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH), de 1984 a 2014, por tabla. Es la primera de las tres funciones de la ENIGH (serie tradicional, Nueva construccion y Nueva serie).
 * `enigh_tradicional()`:
     * `enigh_tradicional(year, tabla)`: `year` es obligatorio; `tabla` elige una o varias tablas de la edicion y, por omision, descarga `"concentrado"`, la tabla con una fila por hogar, su factor de expansion y los agregados de ingreso y de gasto.
@@ -97,6 +105,7 @@
 * Ayuda de `intercensal()` y nueva seccion de la viñeta, "Encuesta Intercensal", que explica como se levantaron las encuestas de 2015 y 2025.
 * Ayuda de `cngmd()` y seccion de la viñeta sobre el Censo Nacional de Gobiernos Municipales, reescrita para `cngmd()`: modulos por edicion, temas, tablas, catalogos y siglas del INEGI. La documentacion ya no menciona `censo_municipal()`.
 * Ayuda de `enigh_tradicional()` y nueva subseccion de la viñeta, "Serie tradicional": tablas por edicion, como unirlas con el identificador del hogar, donde esta el factor de expansion y como se devuelven las columnas. La seccion de la ENIGH de la viñeta presenta ahora las tres series de la encuesta.
+* Ayuda de `cndhf()` y nueva seccion de la viñeta, "Censo Nacional de Derechos Humanos Federal": modulos, temas, tablas, catalogos, siglas del INEGI y claves de la entidad y del municipio.
 * La pagina de ayuda del paquete (`?importinegi`) incluye el indice de funciones por proyecto estadistico.
 * La ayuda de `sig_marcogeo()` y `sig_caminos_extrae()` indica que requieren el paquete `sf`.
 * Viñeta: nueva seccion sobre el catalogo de proyectos estadisticos y requisitos de la version; se corrigieron referencias que ya no eran vigentes (el paquete `rgdal` y dos nombres de funciones).

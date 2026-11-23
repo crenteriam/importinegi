@@ -3,23 +3,43 @@
 # El INEGI publica cada censo nacional de gobierno por edicion, modulo y tema.
 # Cada tema es un zip con varias tablas, un catalogo por variable codificada y
 # un diccionario de datos. Este archivo reune lo que comparten las funciones de
-# esos censos; por ahora, cngmd().
+# esos censos: cngmd() y cndhf().
 #
 # Los temas salen del registro de archivos del INEGI: el titulo de cada archivo
 # es "Modulo|Tema". Se leen los archivos de datos abiertos (CSV); los DBF solo
 # se usan en los modulos que el INEGI no publica como datos abiertos (agua
 # potable y residuos solidos del censo municipal de 2011).
+#
+# Lo que cambia de un censo a otro esta en tres funciones: gobierno_programas()
+# (siglas de los archivos y primera edicion con indice y diccionario en forma
+# de tabla), gobierno_modulos() y gobierno_claves() (claves geograficas). Las
+# demas reciben el censo en `programa`.
 
 # Programas, modulos y temas ----------------------------------------------------
 
 # Censos de gobierno que descarga el paquete: la funcion y su proyecto en el
-# registro.
+# registro. `sufijo` reconoce las siglas del censo con la edicion al final del
+# nombre de un archivo ("_cngmd2025", "_cndhf2021"). `documentado` es la primera
+# edicion en que el INEGI publica el indice de tablas y el diccionario de datos
+# como tablas; antes, el diccionario es un documento.
 gobierno_programas <- function() {
   data.frame(
-    programa = "cngmd",
-    proyecto = "cngmd",
+    programa = c("cngmd", "cndhf"),
+    proyecto = c("cngmd", "cndhf"),
+    sufijo = c("_cng[a-z]+[0-9]{3,4}$", "_cndhf[0-9]{4}$"),
+    documentado = c(2021L, 2020L),
     stringsAsFactors = FALSE
   )
+}
+
+# Dato de un censo en gobierno_programas().
+gobierno_dato <- function(programa, dato) {
+  programas <- gobierno_programas()
+  fila <- match(programa, programas$programa)
+  if (is.na(fila)) {
+    detener("No se reconoce el censo de gobierno \"", programa, "\".")
+  }
+  programas[[dato]][fila]
 }
 
 # Modulos de un censo. `patron` reconoce el modulo en el titulo que le da el
@@ -37,6 +57,16 @@ gobierno_modulos <- function(programa) {
                  "^justicia", "^agua potable", "^residuos solidos"),
       stringsAsFactors = FALSE
     ),
+    # El segundo modulo cambio de titulo: "Ejercicio de la funcion en materia
+    # de proteccion de derechos humanos" (2017 a 2019), "Proteccion de derechos
+    # humanos" (2020) y "Capacitacion, difusion, defensa y proteccion de los
+    # derechos humanos" (desde 2021).
+    cndhf = data.frame(
+      modulo = c("estructura", "proteccion"),
+      patron = c("^estructura organizacional y recursos",
+                 "^(ejercicio de la funcion|proteccion de derechos humanos|capacitacion)"),
+      stringsAsFactors = FALSE
+    ),
     detener("No se reconoce el censo de gobierno \"", programa, "\".")
   )
 }
@@ -44,10 +74,10 @@ gobierno_modulos <- function(programa) {
 # Nombre del archivo de un tema sin lo que no lo distingue: el prefijo
 # "conjunto_de_datos_" y las siglas del censo con la edicion. Es el nombre corto
 # que muestra bases_importinegi().
-gobierno_identificador <- function(archivo) {
+gobierno_identificador <- function(archivo, programa = "cngmd") {
   nombre <- tolower(archivo)
   nombre <- sub("^conjunto_de_datos_", "", nombre)
-  sub("_cng[a-z]+[0-9]{3,4}$", "", nombre)
+  sub(gobierno_dato(programa, "sufijo"), "", nombre)
 }
 
 # Temas de un censo, uno por fila, con su modulo, su titulo, el nombre de su
@@ -79,7 +109,7 @@ gobierno_temas <- function(programa, year = NULL) {
     year = filas$edicion,
     modulo = modulo,
     tema = trimws(tema),
-    base = gobierno_identificador(archivo),
+    base = gobierno_identificador(archivo, programa),
     archivo = archivo,
     formato = filas$formato,
     bytes = filas$bytes,
@@ -218,7 +248,7 @@ gobierno_especiales <- function() {
   c("indice", "catalogos", "diccionario")
 }
 
-gobierno_validar_tabla <- function(tabla) {
+gobierno_validar_tabla <- function(tabla, programa = "cngmd") {
   if (is.null(tabla)) {
     return(NULL)
   }
@@ -239,7 +269,7 @@ gobierno_validar_tabla <- function(tabla) {
     }
     return(normalizar_texto(tabla))
   }
-  unique(gobierno_nombre_tabla(tabla))
+  unique(gobierno_nombre_tabla(tabla, programa))
 }
 
 # Claves de las entidades pedidas en `estado`, o NULL para todo el pais.
@@ -258,17 +288,19 @@ gobierno_entidades <- function(estado) {
 
 # Nombre de una tabla: el del archivo, en minusculas, sin extension y sin las
 # siglas del censo con la edicion ("m1s1p3_cngmd2025.csv" pasa a ser "m1s1p3").
-gobierno_nombre_tabla <- function(archivo) {
+gobierno_nombre_tabla <- function(archivo, programa = "cngmd") {
   nombre <- tolower(sub("\\.(csv|dbf)$", "", archivo, ignore.case = TRUE))
-  sub("_cng[a-z]+[0-9]{3,4}$", "", nombre)
+  sub(gobierno_dato(programa, "sufijo"), "", nombre)
 }
 
 # Clasifica los archivos del zip de un tema. Los zip del INEGI no tienen todos
 # la misma forma: la carpeta de las tablas puede estar dentro de otra, llamarse
 # "conjunto_de datos" o "Bases_Datos", y 45 zip de datos abiertos usan "\" como
 # separador de carpetas. `original` es el nombre con que el zip guarda el
-# archivo y `ruta`, el mismo nombre con "/" como separador.
-gobierno_contenido <- function(zip, formato) {
+# archivo y `ruta`, el mismo nombre con "/" como separador. Las bitacoras de
+# cambios que algunos temas traen en la carpeta de las tablas no son tablas del
+# censo ("m2s8p1_cndhf2021_bitacora_de_cambios.csv").
+gobierno_contenido <- function(zip, formato, programa = "cngmd") {
   lista <- tryCatch(utils::unzip(zip, list = TRUE), error = function(e) NULL)
   if (is.null(lista) || nrow(lista) == 0) {
     detener("No se pudo leer el contenido de ", basename(zip), ".")
@@ -287,6 +319,7 @@ gobierno_contenido <- function(zip, formato) {
     ajenas <- en("(metadatos|modelo[^/]*|descripcion[^/]*)")
     datos <- extension == formato & !catalogo & !diccionario & !ajenas
   }
+  datos <- datos & !grepl("bitacora_de_cambios", tolower(archivo), fixed = TRUE)
   tipo <- rep("otro", length(ruta))
   tipo[diccionario] <- "diccionario"
   tipo[catalogo] <- "catalogo"
@@ -294,7 +327,7 @@ gobierno_contenido <- function(zip, formato) {
   tipo[datos & grepl("^0_indice", tolower(archivo))] <- "indice"
   tipo[grepl("/$", ruta)] <- "carpeta"
 
-  tabla <- gobierno_nombre_tabla(archivo)
+  tabla <- gobierno_nombre_tabla(archivo, programa)
   for (clase in c("datos", "catalogo")) {
     tabla[tipo == clase] <- make.unique(tabla[tipo == clase], sep = "_")
   }
@@ -342,17 +375,34 @@ gobierno_extraer <- function(zip, filas) {
 # Claves geograficas de los censos de gobierno, con el ancho que usa el INEGI.
 # El nombre de la clave del municipio cambia con la edicion y con la tabla:
 # ubic_geo, ubi_geo, ub_geo, ubicageo_c, ubicageo_f o cvegeo.
-gobierno_claves <- function() {
-  list(
-    municipio = list(patron = "^(ub(ic?a?)?_?geo[a-z_]*|cvegeo)$", ancho = 5),
-    entidad = list(patron = "^(cve_ent|cve_entidad|entidad)$", ancho = 2),
-    mun = list(patron = "^cve_mun$", ancho = 3)
+#
+# El censo de derechos humanos federal no tiene clave del informante (es uno
+# solo, la CNDH), pero algunas de sus tablas desglosan por municipio. De 2020 a
+# 2022 traen la clave del municipio en una columna (ubicageo_b, ubicageo_c,
+# ubicageo_e), que se deja en 5 digitos. La clave de la entidad viene aparte
+# desde 2022 (enticve1) y la del municipio, desde 2023 (municve1); se dejan en
+# 2 y en 3 digitos. Las columnas de entidad con catalogo (entidad_c, entfede_c)
+# no son claves: se conservan como numero, igual que en su catalogo.
+gobierno_claves <- function(programa = "cngmd") {
+  switch(
+    programa,
+    cngmd = list(
+      municipio = list(patron = "^(ub(ic?a?)?_?geo[a-z_]*|cvegeo)$", ancho = 5),
+      entidad = list(patron = "^(cve_ent|cve_entidad|entidad)$", ancho = 2),
+      mun = list(patron = "^cve_mun$", ancho = 3)
+    ),
+    cndhf = list(
+      municipio = list(patron = "^ubicageo_[a-z]+$", ancho = 5),
+      entidad = list(patron = "^enticve[0-9]*$", ancho = 2),
+      mun = list(patron = "^municve[0-9]*$", ancho = 3)
+    ),
+    detener("No se reconoce el censo de gobierno \"", programa, "\".")
   )
 }
 
 # Columnas de una tabla que son claves geograficas, por tipo.
-gobierno_columnas_clave <- function(datos) {
-  lapply(gobierno_claves(), function(clave) {
+gobierno_columnas_clave <- function(datos, programa = "cngmd") {
+  lapply(gobierno_claves(programa), function(clave) {
     names(datos)[grepl(clave$patron, tolower(names(datos)))]
   })
 }
@@ -375,10 +425,10 @@ gobierno_rellenar <- function(valores, ancho) {
 # que les da el INEGI, y las columnas que solo contienen numeros se convierten
 # a numero. Las siglas "NSS", "ND" y "NP" se conservan, asi que las columnas
 # que las contienen quedan como texto.
-gobierno_preparar <- function(datos) {
+gobierno_preparar <- function(datos, programa = "cngmd") {
   datos <- limpiar_faltantes(datos, "NA")
-  columnas <- gobierno_columnas_clave(datos)
-  claves <- gobierno_claves()
+  columnas <- gobierno_columnas_clave(datos, programa)
+  claves <- gobierno_claves(programa)
   for (tipo in names(columnas)) {
     for (columna in columnas[[tipo]]) {
       datos[[columna]] <- gobierno_rellenar(datos[[columna]], claves[[tipo]]$ancho)
@@ -390,7 +440,7 @@ gobierno_preparar <- function(datos) {
 # Lee una tabla y la prepara. El formato se indica en lugar de deducirlo del
 # nombre del archivo: algunos zip guardan sus carpetas con nombres que no son
 # texto valido en UTF-8.
-gobierno_leer_tabla <- function(archivo, formato) {
+gobierno_leer_tabla <- function(archivo, formato, programa = "cngmd") {
   datos <- if (identical(formato, "dbf")) {
     reparado <- gobierno_reparar_dbf(archivo)
     if (!identical(reparado, archivo)) {
@@ -400,7 +450,7 @@ gobierno_leer_tabla <- function(archivo, formato) {
   } else {
     leer_csv(archivo)
   }
-  gobierno_preparar(datos)
+  gobierno_preparar(datos, programa)
 }
 
 # Algunos DBF del censo municipal de 2011 declaran en su encabezado mas
@@ -436,8 +486,8 @@ gobierno_reparar_dbf <- function(archivo) {
 # Clave de la entidad de cada fila: los dos primeros digitos de la clave del
 # municipio o, si la tabla no la tiene, la clave de la entidad. NULL si la
 # tabla no tiene ninguna de las dos.
-gobierno_entidad_fila <- function(datos) {
-  columnas <- gobierno_columnas_clave(datos)
+gobierno_entidad_fila <- function(datos, programa = "cngmd") {
+  columnas <- gobierno_columnas_clave(datos, programa)
   if (length(columnas$municipio) > 0) {
     return(substr(datos[[columnas$municipio[1]]], 1, 2))
   }
@@ -449,8 +499,8 @@ gobierno_entidad_fila <- function(datos) {
 
 # Conserva las filas de las entidades pedidas. Devuelve NULL si la tabla no
 # tiene clave geografica.
-gobierno_filtrar_entidades <- function(datos, entidades) {
-  entidad <- gobierno_entidad_fila(datos)
+gobierno_filtrar_entidades <- function(datos, entidades, programa = "cngmd") {
+  entidad <- gobierno_entidad_fila(datos, programa)
   if (is.null(entidad)) {
     return(NULL)
   }
@@ -460,9 +510,9 @@ gobierno_filtrar_entidades <- function(datos, entidades) {
 }
 
 # Indice de las tablas de un tema: el nombre de cada tabla y su contenido. El
-# INEGI incluye el indice en los zip desde la edicion 2021; en las anteriores,
-# el contenido queda como NA.
-gobierno_indice <- function(tablas, archivo = NA_character_) {
+# INEGI incluye el indice en los zip desde la edicion 2021 (2020 en el censo de
+# derechos humanos federal); en las anteriores, el contenido queda como NA.
+gobierno_indice <- function(tablas, archivo = NA_character_, programa = "cngmd") {
   indice <- data.frame(tabla = tablas, contenido = rep(NA_character_, length(tablas)),
                        stringsAsFactors = FALSE)
   if (is.na(archivo)) {
@@ -473,15 +523,15 @@ gobierno_indice <- function(tablas, archivo = NA_character_) {
   if (is.null(crudo) || !all(c("archivo", "contenido") %in% nombres)) {
     return(indice)
   }
-  descritas <- gobierno_nombre_tabla(crudo[[match("archivo", nombres)]])
+  descritas <- gobierno_nombre_tabla(crudo[[match("archivo", nombres)]], programa)
   indice$contenido <- crudo[[match("contenido", nombres)]][match(indice$tabla, descritas)]
   indice
 }
 
 # Tabla a la que corresponde un archivo del diccionario de datos: el nombre de
 # la tabla forma parte del nombre del archivo.
-gobierno_tabla_diccionario <- function(archivo, tablas) {
-  nombre <- sub("^(diccionario(_de)?_datos|dd|fd)_", "", gobierno_nombre_tabla(archivo))
+gobierno_tabla_diccionario <- function(archivo, tablas, programa = "cngmd") {
+  nombre <- sub("^(diccionario(_de)?_datos|dd|fd)_", "", gobierno_nombre_tabla(archivo, programa))
   if (nombre %in% tablas) {
     return(nombre)
   }
@@ -494,7 +544,7 @@ gobierno_tabla_diccionario <- function(archivo, tablas) {
 # Diccionario de datos de un tema en una sola tabla. Desde la edicion 2021 el
 # INEGI publica un CSV por tabla, con una fila por variable; antes, el
 # diccionario era un documento.
-gobierno_diccionario <- function(archivos, tablas) {
+gobierno_diccionario <- function(archivos, tablas, programa = "cngmd") {
   partes <- lapply(archivos, function(archivo) {
     crudo <- tryCatch(leer_csv(archivo), error = function(e) NULL)
     if (is.null(crudo) || nrow(crudo) == 0) {
@@ -511,7 +561,7 @@ gobierno_diccionario <- function(archivos, tablas) {
     if (!all(c("COLUMNA", "DESCRIPCION") %in% names(crudo))) {
       return(NULL)
     }
-    data.frame(tabla = gobierno_tabla_diccionario(basename(gobierno_ruta(archivo)), tablas), crudo,
+    data.frame(tabla = gobierno_tabla_diccionario(basename(gobierno_ruta(archivo)), tablas, programa), crudo,
                stringsAsFactors = FALSE, check.names = FALSE)
   })
   partes <- partes[!vapply(partes, is.null, logical(1))]
@@ -532,12 +582,13 @@ gobierno_diccionario <- function(archivos, tablas) {
 
 # Descarga y lectura -----------------------------------------------------------------
 
-# Descarga el archivo de un tema y devuelve lo que pide `tabla`.
-gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado) {
+# Descarga el archivo de un tema y devuelve lo que pide `tabla`. `estado` solo
+# lo usan los censos con un informante por municipio o por entidad.
+gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado = NULL) {
   year <- gobierno_validar_year(programa, year)
   modulo <- gobierno_validar_modulo(programa, year, modulo)
   elegido <- gobierno_elegir_tema(programa, year, modulo, tema)
-  tabla <- gobierno_validar_tabla(tabla)
+  tabla <- gobierno_validar_tabla(tabla, programa)
   entidades <- gobierno_entidades(estado)
   etiqueta <- paste0("\"", elegido$tema, "\" (", year, ")")
 
@@ -545,7 +596,7 @@ gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado) {
   if (!isTRUE(getOption("importinegi.cache", FALSE))) {
     on.exit(unlink(zip), add = TRUE)
   }
-  contenido <- gobierno_contenido(zip, elegido$formato)
+  contenido <- gobierno_contenido(zip, elegido$formato, programa)
   datos <- contenido[contenido$tipo == "datos", ]
   datos <- datos[gobierno_orden_natural(datos$tabla), ]
   if (nrow(datos) == 0) {
@@ -567,7 +618,7 @@ gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado) {
   }
   indice_del_tema <- function() {
     fila <- contenido[contenido$tipo == "indice", ]
-    gobierno_indice(datos$tabla, if (nrow(fila) > 0) extraer(fila[1, ]) else NA_character_)
+    gobierno_indice(datos$tabla, if (nrow(fila) > 0) extraer(fila[1, ]) else NA_character_, programa)
   }
 
   if (identical(tabla, "indice")) {
@@ -579,18 +630,19 @@ gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado) {
     if (nrow(filas) == 0) {
       detener("El archivo del tema ", etiqueta, " no incluye cat\u00e1logos.")
     }
-    catalogos <- lapply(extraer(filas), gobierno_leer_tabla, formato = elegido$formato)
+    catalogos <- lapply(extraer(filas), gobierno_leer_tabla, formato = elegido$formato, programa = programa)
     names(catalogos) <- filas$tabla
     return(con_fuente(catalogos))
   }
   if (identical(tabla, "diccionario")) {
     filas <- contenido[contenido$tipo == "diccionario", ]
     filas <- filas[gobierno_orden_natural(basename(filas$ruta)), ]
-    diccionario <- if (nrow(filas) > 0) gobierno_diccionario(extraer(filas), datos$tabla) else NULL
+    diccionario <- if (nrow(filas) > 0) gobierno_diccionario(extraer(filas), datos$tabla, programa) else NULL
     if (is.null(diccionario)) {
       detener(
         "El diccionario de datos del tema ", etiqueta, " no es una tabla: el INEGI lo publica ",
-        "como tabla desde la edici\u00f3n 2021. En las ediciones anteriores es un documento que ",
+        "como tabla desde la edici\u00f3n ", gobierno_dato(programa, "documentado"),
+        ". En las ediciones anteriores es un documento que ",
         "viene dentro del archivo del tema: ", elegido$url
       )
     }
@@ -610,9 +662,9 @@ gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado) {
   archivos <- extraer(datos)
   sin_clave <- character()
   tablas <- lapply(seq_len(nrow(datos)), function(i) {
-    leida <- gobierno_leer_tabla(archivos[i], elegido$formato)
+    leida <- gobierno_leer_tabla(archivos[i], elegido$formato, programa)
     if (!is.null(entidades)) {
-      filtrada <- gobierno_filtrar_entidades(leida, entidades)
+      filtrada <- gobierno_filtrar_entidades(leida, entidades, programa)
       if (is.null(filtrada)) {
         sin_clave <<- c(sin_clave, datos$tabla[i])
       } else {
