@@ -28,6 +28,7 @@ sig_caminos_extrae <- function(. = NA, mapa = NA){
   message("Obteniendo Shapefile...")
   map_output = sf::st_read(dsn = ., layer = mapa)
 
-  return(map_output)
+  # El texto "NULL" se convierte en NA, como en todas las funciones del paquete
+  return(nulos_a_na(map_output))
 
 } # End of Function

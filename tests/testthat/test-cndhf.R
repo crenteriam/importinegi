@@ -197,15 +197,23 @@ test_that("las claves de cada censo no se aplican al otro", {
   expect_identical(federal$cve_ent, c(1L, 14L))
 })
 
-test_that("solo la sigla NA pasa a ser NA; NSS, ND, NP y NULL se conservan", {
-  lista <- gobierno_preparar(data.frame(
-    limpia = c("5", "NA", "12"), con_sigla = c("5", "NSS", "NA"), con_null = c("NULL", "3", "NA"),
-    texto = c("ND", "NP", "a"), stringsAsFactors = FALSE
-  ), "cndhf")
+test_that("la sigla NA y el texto NULL pasan a ser NA; NSS, ND y NP se conservan", {
+  archivo <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c(
+    "limpia,con_sigla,con_null,texto,enticve1",
+    "5,5,NULL,ND,1",
+    "NA,NSS,3,NP,null",
+    "12,NA,Null,a,14"
+  ), archivo)
+  lista <- gobierno_leer_tabla(archivo, "csv", "cndhf")
   expect_identical(lista$limpia, c(5L, NA, 12L))
   expect_identical(lista$con_sigla, c("5", "NSS", NA))
-  expect_identical(lista$con_null, c("NULL", "3", NA))
+  # Sin el texto "NULL", la columna queda con numeros y se convierte
+  # No distingue mayusculas de minusculas
+  expect_identical(lista$con_null, c(NA, 3L, NA))
   expect_identical(lista$texto, c("ND", "NP", "a"))
+  # En una clave geografica tambien pasa a ser NA; las demas se rellenan
+  expect_identical(lista$enticve1, c("01", NA, "14"))
 })
 
 # Descarga y lectura ---------------------------------------------------------------------

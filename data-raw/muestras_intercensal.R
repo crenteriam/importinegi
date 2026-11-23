@@ -29,6 +29,8 @@
 # - con_titulo.xlsx y sin_claves.xlsx no imitan ningun archivo real: prueban
 #   que la lectura de XLSX encuentra la tabla si el INEGI le agrega titulo y
 #   notas, y que avisa si no la encuentra.
+# - con_nulos.xlsx tampoco imita un archivo real: prueba que el texto "NULL" de
+#   una celda se convierte en NA.
 
 if (!file.exists("DESCRIPTION")) {
   stop("Ejecuta este script desde la carpeta raiz del paquete importinegi.")
@@ -234,5 +236,14 @@ sin_claves <- openxlsx::createWorkbook()
 openxlsx::addWorksheet(sin_claves, "Hoja1")
 openxlsx::writeData(sin_claves, 1, tabla(INDICADOR = c("POBTOT", "TGF"), VALOR = c(1, 2)))
 openxlsx::saveWorkbook(sin_claves, file.path(destino, "sin_claves.xlsx"), overwrite = TRUE)
+
+# XLSX con el texto "NULL" en dos celdas: la lectura las devuelve como NA
+con_nulos <- openxlsx::createWorkbook()
+openxlsx::addWorksheet(con_nulos, "Hoja1")
+openxlsx::writeData(con_nulos, 1, tabla(
+  CVE_ENT = c("01", "06", "14"), NOM_ENT = c("Aguascalientes", "NULL", "Jalisco"),
+  POBTOT = c("900000", "250000", "NULL"), NOTA = c("NULL en otro texto", "nulo", "null")
+))
+openxlsx::saveWorkbook(con_nulos, file.path(destino, "con_nulos.xlsx"), overwrite = TRUE)
 
 message("Muestras escritas en ", destino)

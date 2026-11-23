@@ -57,7 +57,7 @@ leer_dbf <- function(archivo) {
     }
     datos[[columna]] <- convertidos
   }
-  datos
+  nulos_a_na(datos)
 }
 
 # Registros de un DBF marcados como borrados: un valor logico por registro. El
@@ -158,7 +158,7 @@ leer_csv <- function(archivo) {
       datos[[columna]] <- valores
     }
   }
-  datos
+  nulos_a_na(datos)
 }
 
 # Lee un archivo XLSX del INEGI con el paquete readxl (opcional). Los XLSX
@@ -204,7 +204,41 @@ leer_xlsx <- function(archivo) {
       "https://github.com/crenteriam/importinegi/issues"
     )
   }
-  combinar_tablas(tablas)
+  nulos_a_na(combinar_tablas(tablas))
+}
+
+# Convierte en NA el texto "NULL", escrito con mayusculas o con minusculas
+# ("NULL", "Null", "null"). Algunos archivos del INEGI traen "NULL" en las
+# celdas que no tenian valor en la base de datos de origen: los diccionarios de
+# los censos de gobierno lo listan entre los valores validos de las columnas,
+# sin definirlo. La regla es del paquete, no de un proyecto: la aplican
+# leer_dbf(), leer_csv() y leer_xlsx(), y las funciones que todavia leen sus
+# archivos por su cuenta la aplican a su resultado.
+#
+# Solo cuenta la celda completa: un texto que contiene la palabra no cambia.
+# Para no recorrer dos veces las tablas grandes, primero se buscan las celdas
+# que contienen "null" (pocas o ninguna) y solo en ellas se comprueba que no
+# tengan nada mas que espacios alrededor. Tambien revisa los factores; no toca
+# las columnas de otro tipo (numeros, fechas, geometrias).
+nulos_a_na <- function(datos) {
+  for (columna in seq_along(datos)) {
+    valores <- datos[[columna]]
+    if (is.factor(valores)) {
+      nulos <- toupper(trimws(levels(valores))) == "NULL"
+      if (any(nulos)) {
+        levels(valores)[nulos] <- NA
+        datos[[columna]] <- valores
+      }
+    } else if (is.character(valores)) {
+      candidatos <- which(grepl("null", valores, ignore.case = TRUE, perl = TRUE, useBytes = TRUE))
+      nulos <- candidatos[toupper(trimws(valores[candidatos])) == "NULL"]
+      if (length(nulos) > 0) {
+        valores[nulos] <- NA_character_
+        datos[[columna]] <- valores
+      }
+    }
+  }
+  datos
 }
 
 # Convierte en NA los codigos de dato faltante de las columnas de texto, salvo

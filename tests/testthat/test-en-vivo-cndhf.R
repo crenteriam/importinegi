@@ -72,11 +72,10 @@ test_that("EN VIVO: cndhf() lee el tema mas pequeno de cada modulo y edicion", {
     }
     contenido <- gobierno_contenido(ruta_cache(tema$url), tema$formato, "cndhf")
     siglas <- unlist(lapply(tablas, con_siglas_cndhf))
-    nulos <- unlist(lapply(tablas, con_siglas_cndhf, siglas = "NULL"))
     cat("[en vivo] ", etiqueta, " (", tema$tamano, "): ", length(tablas), " tablas (",
         paste(utils::head(names(tablas), 4), collapse = ", "), if (length(tablas) > 4) ", ...", "); filas de ",
         min(vapply(tablas, nrow, integer(1))), " a ", max(vapply(tablas, nrow, integer(1))),
-        "; columnas con NSS, ND o NP: ", length(siglas), "; con NULL: ", length(nulos),
+        "; columnas con NSS, ND o NP: ", length(siglas),
         "; archivos: ", paste(names(table(contenido$tipo)), table(contenido$tipo), sep = "=", collapse = ", "),
         if (any(grepl("\\", contenido$original, fixed = TRUE, useBytes = TRUE))) "; rutas con \\", "\n", sep = "")
     # Encabezados reales de la primera tabla: no se pudieron ver sin descargar

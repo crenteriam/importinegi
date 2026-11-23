@@ -265,6 +265,7 @@ if (year == 2012) {nuevaconstruccion = tolower(nuevaconstruccion)} else{}
               data.enigh = data.enigh.N5
             } # End of NoAgro
 
-if (exists("data.enigh")) {return(data.enigh)}
+# El texto "NULL" se convierte en NA, como en todas las funciones del paquete
+if (exists("data.enigh")) {return(nulos_a_na(data.enigh))}
 else {stop(message("\nLa opcion tecleada en el parametro 'datos' es incorrecta."))}
 } # End of Function

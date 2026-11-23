@@ -424,7 +424,8 @@ gobierno_rellenar <- function(valores, ancho) {
 # claves geograficas quedan como texto con ceros a la izquierda, con el nombre
 # que les da el INEGI, y las columnas que solo contienen numeros se convierten
 # a numero. Las siglas "NSS", "ND" y "NP" se conservan, asi que las columnas
-# que las contienen quedan como texto.
+# que las contienen quedan como texto. El texto "NULL" ya llega convertido en
+# NA desde la lectura (ver nulos_a_na()).
 gobierno_preparar <- function(datos, programa = "cngmd") {
   datos <- limpiar_faltantes(datos, "NA")
   columnas <- gobierno_columnas_clave(datos, programa)
