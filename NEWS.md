@@ -24,6 +24,7 @@
 * La lectura de archivos DBF entrega el texto en UTF-8 (los DBF del INEGI usan paginas de codigos anteriores), para que los nombres con acentos se lean bien en cualquier sistema operativo.
 * Las descargas piden el contenido sin comprimir y no usan la decodificacion automatica de curl: el catalogo de la Red Nacional de Metadatos responde con una cabecera `Content-Encoding` que no es valida y curl rechazaba la respuesta.
 * La lectura de archivos DBF omite los registros marcados como borrados, que `foreign::read.dbf()` devuelve como si fueran datos. Los hay en archivos de la ENIGH (por ejemplo, dos en los ingresos no monetarios de 1989 y dos en las erogaciones de 2006), y la documentacion del INEGI no los cuenta. El cambio aplica a todas las funciones que leen DBF con las utilidades nuevas.
+* La lectura de archivos CSV ya no muestra una advertencia cuando el archivo no termina con un salto de linea, como ocurre en tablas de una sola fila del Censo Nacional de Derechos Humanos Federal.
 * Nuevo motor compartido para las series de la ENIGH, que ubica cada tabla en el archivo del INEGI que la contiene: en la serie tradicional, 126 tablas en 106 archivos, con nombres de DBF que cambian de una edicion a otra. Cada archivo se descarga una sola vez aunque se pidan varias de sus tablas.
 
 ## Funciones

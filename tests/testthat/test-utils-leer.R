@@ -138,3 +138,16 @@ test_that("dbf_borrados() tolera archivos vacios, cortos o con muchos registros"
   expect_identical(which(dbf_borrados(grande)), borrar)
   expect_identical(nrow(leer_dbf(grande)), filas - 4L)
 })
+
+test_that("leer_csv() lee sin avisos un CSV que no termina con salto de linea", {
+  archivo <- withr::local_tempfile(fileext = ".csv")
+  # Una tabla de una sola fila, como las del censo de derechos humanos federal
+  writeBin(charToRaw("re_snn1,re_snn2\r\n1,2"), archivo)
+  expect_warning(utils::read.csv(archivo), "readTableHeader")
+  expect_no_warning(datos <- leer_csv(archivo))
+  expect_identical(datos, data.frame(re_snn1 = "1", re_snn2 = "2"))
+  # Con mas filas tampoco se pierde la ultima
+  writeBin(charToRaw("a,b\n1,2\n3,4\n5,6"), archivo)
+  expect_no_warning(datos <- leer_csv(archivo))
+  expect_identical(datos, data.frame(a = c("1", "3", "5"), b = c("2", "4", "6")))
+})
