@@ -197,6 +197,11 @@ test_that("el diccionario se reconoce aunque sus encabezados lleven acentos", {
   expect_named(diccionario, c("tabla", "COLUMNA", "DESCRIPCION", "ORIGEN", "TIPO_DATO", "LONGITUD", "CODIGO_VALIDO"))
   expect_identical(diccionario$tabla, "m1s1p3")
   expect_identical(diccionario$TIPO_DATO, "Car\u00e1cter")
+  # Encabezado con los acentos mal codificados, como en algunos temas de 2025
+  writeLines(enc2utf8(c("COLUMNA,DESCRIPCI\u00c3\u201cN,ORIGEN,TIPO_DATO,LONGITUD,C\u00c3\u201cDIGO V\u00c3\u0081LIDO",
+                        "cvegeo,Clave,Presentaci\u00f3n,Texto,5,01001 al 32058")), archivo, useBytes = TRUE)
+  expect_named(gobierno_diccionario(archivo, "m1s1p3"),
+               c("tabla", "COLUMNA", "DESCRIPCION", "ORIGEN", "TIPO_DATO", "LONGITUD", "CODIGO_VALIDO"))
 })
 
 test_that("un DBF que declara mas registros de los que contiene se lee sin filas vacias", {

@@ -502,7 +502,12 @@ gobierno_diccionario <- function(archivos, tablas) {
     }
     # Los encabezados cambian entre temas (con o sin acentos, con "_" o con
     # espacios): se dejan en mayusculas, sin acentos ni espacios.
-    names(crudo) <- toupper(gsub(" ", "_", normalizar_texto(names(crudo)), fixed = TRUE))
+    # En algunos archivos de 2025 los acentos del encabezado llegan mal
+    # codificados; esas columnas se reconocen por el resto de su nombre.
+    nombres <- toupper(gsub(" ", "_", normalizar_texto(names(crudo)), fixed = TRUE))
+    nombres[grepl("^DESCRIP", nombres)] <- "DESCRIPCION"
+    nombres[grepl("^C.*DIGO.*V.*LIDO$", nombres)] <- "CODIGO_VALIDO"
+    names(crudo) <- nombres
     if (!all(c("COLUMNA", "DESCRIPCION") %in% names(crudo))) {
       return(NULL)
     }
