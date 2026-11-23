@@ -597,6 +597,19 @@ ruta_reintento <- function(url) {
   file.path(tempdir(), "importinegi", "descargas", relativa)
 }
 
+# Texto que se agrega al error de una descarga de varios archivos cuando ya hay
+# archivos guardados en la carpeta temporal de la sesion.
+aviso_reintento <- function(guardados) {
+  paste0(
+    if (guardados == 1) {
+      "El archivo que ya se descarg\u00f3 se conserva"
+    } else {
+      paste0("Los ", guardados, " archivos que ya se descargaron se conservan")
+    },
+    " durante esta sesi\u00f3n de R: si repites la llamada, solo se descargar\u00e1n los que faltan."
+  )
+}
+
 # Descarga y lee los archivos seleccionados. Si son varios y uno falla, los que
 # ya se descargaron se conservan en la carpeta temporal de la sesion, para que
 # al repetir la llamada solo se descarguen los que faltan; si todos se leen
@@ -617,15 +630,7 @@ poblacion_leer_entidades <- function(seleccion, patron, tabla) {
         if (guardados == 0) {
           stop(e)
         }
-        detener(
-          conditionMessage(e), " ",
-          if (guardados == 1) {
-            "El archivo que ya se descarg\u00f3 se conserva"
-          } else {
-            paste0("Los ", guardados, " archivos que ya se descargaron se conservan")
-          },
-          " durante esta sesi\u00f3n de R: si repites la llamada, solo se descargar\u00e1n los que faltan."
-        )
+        detener(conditionMessage(e), " ", aviso_reintento(guardados))
       }
     )
   }

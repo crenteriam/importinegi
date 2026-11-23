@@ -56,3 +56,10 @@ test_that("se conservan los argumentos de la serie 1.x y su orden", {
     expect_identical(actuales[seq_along(esperados)], esperados, info = nombre)
   }
 })
+
+test_that("enigh_tradicional() se exporta con sus dos argumentos", {
+  expect_true("enigh_tradicional" %in% getNamespaceExports("importinegi"))
+  argumentos <- formals(enigh_tradicional)
+  expect_identical(names(argumentos), c("year", "tabla"))
+  expect_identical(argumentos$tabla, "concentrado")
+})

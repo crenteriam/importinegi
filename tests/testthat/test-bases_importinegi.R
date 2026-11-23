@@ -122,19 +122,23 @@ test_that("bases_importinegi() coincide con lo que censo() puede descargar", {
 
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CENSO "), bases_importinegi("censo"))
-  expect_identical(unique(bases_importinegi()$proyecto), c("censo", "conteo", "intercensal", "cng_municipal"))
-  expect_identical(bases_importinegi(c("censo", "conteo", "intercensal", "cng_municipal")), bases_importinegi())
+  expect_identical(unique(bases_importinegi()$proyecto),
+                   c("censo", "conteo", "intercensal", "cng_municipal", "enigh_tradicional"))
+  expect_identical(bases_importinegi(c("censo", "conteo", "intercensal", "cng_municipal", "enigh_tradicional")),
+                   bases_importinegi())
   de_2020 <- bases_importinegi(year = 2020)
   expect_identical(unique(de_2020$year), 2020L)
   expect_identical(nrow(de_2020), 6L)
   expect_identical(bases_importinegi("censo", "2020"), de_2020)
   varios <- bases_importinegi(year = c(1990, 2000))
   expect_identical(unique(varios$year), c(1990L, 2000L))
-  expect_identical(nrow(varios), 4L)
+  # Cuatro bases de los censos y la ENIGH de 2000
+  expect_identical(nrow(varios), 5L)
 
   conteos <- bases_importinegi(year = c(1995, 2005))
-  expect_identical(unique(conteos$proyecto), "conteo")
-  expect_identical(nrow(conteos), 5L)
+  # Cinco bases de los conteos y la ENIGH de 2005
+  expect_identical(unique(conteos$proyecto), c("conteo", "enigh_tradicional"))
+  expect_identical(nrow(conteos), 6L)
 
   # En 2015 y 2025 hay Encuesta Intercensal y censo de gobiernos municipales
   de_2015_y_2025 <- bases_importinegi(year = c(2015, 2025))
@@ -145,7 +149,7 @@ test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(nrow(intercensales), 3L)
 
   # Un año sin bases
-  expect_message(vacia <- bases_importinegi(year = 2012), "no tiene bases de datos para esa consulta")
+  expect_message(vacia <- bases_importinegi(year = 2007), "no tiene bases de datos para esa consulta")
   expect_identical(nrow(vacia), 0L)
   expect_named(vacia, names(bases_importinegi()))
 })
@@ -164,7 +168,7 @@ test_that("bases_importinegi() solo muestra lo que esta en el registro", {
   withr::local_options(importinegi.registro = registro)
   bases <- bases_importinegi()
   expect_false(2020L %in% bases$year)
-  expect_identical(sum(bases$proyecto != "cng_municipal"), 17L)
+  expect_identical(sum(bases$proyecto %in% c("censo", "conteo", "intercensal")), 17L)
   expect_identical(attr(bases, "registro"), "2026-11-11")
   # Sin los archivos de un proyecto, no se listan sus temas
   sin_gobierno <- registro_archivos[registro_archivos$proyecto != "cngmd", ]
