@@ -1,0 +1,75 @@
+#' Encuesta Nacional de Ingresos y Gastos de los Hogares, serie tradicional
+#'
+#' Descarga las tablas de la Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH) en su serie tradicional, de 1984 a 2014, y las devuelve como data.frame.
+#'
+#' La ENIGH provee informacion estadistica sobre los ingresos y los gastos de los hogares en cuanto a su monto, procedencia y distribucion, y sobre las caracteristicas sociodemograficas y ocupacionales de sus integrantes. El INEGI la publica en tres series. La serie tradicional conserva la construccion original de las variables de ingreso y de gasto y tiene 15 ediciones: 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014. La Nueva construccion presenta los levantamientos de 2008 a 2014 con otra construccion de las variables y se descarga con \code{\link{enigh_nuevaconstruccion}}. Desde 2016 la encuesta se publica como Nueva serie, que esta funcion no descarga.
+#'
+#' Cada edicion se publica en varias tablas, que cambian con el tiempo. El argumento \code{tabla} elige cuales se descargan:
+#' \describe{
+#'   \item{\code{"concentrado"}}{Principales variables por hogar: una fila por hogar, con su factor de expansion y los agregados de ingreso y de gasto. Todas las ediciones.}
+#'   \item{\code{"hogares"}}{Caracteristicas de los hogares y, hasta 2010, de las viviendas que habitan. Todas las ediciones.}
+#'   \item{\code{"viviendas"}}{Caracteristicas de las viviendas. Ediciones de 2012 y 2014.}
+#'   \item{\code{"poblacion"}}{Caracteristicas sociodemograficas de los integrantes del hogar; hasta 2006 incluye tambien sus caracteristicas ocupacionales. Todas las ediciones.}
+#'   \item{\code{"trabajos"}}{Condicion de actividad y trabajos de los integrantes del hogar de 12 años o mas. Ediciones de 2008 a 2014.}
+#'   \item{\code{"ingresos"}}{Ingresos y percepciones de capital de cada integrante del hogar. Todas las ediciones.}
+#'   \item{\code{"gastos"}}{Gastos realizados por el hogar. Ediciones de 1984 a 2010.}
+#'   \item{\code{"gastohogar"} y \code{"gastopersona"}}{Gastos del hogar y gastos de cada uno de sus integrantes. Ediciones de 2012 y 2014.}
+#'   \item{\code{"gastodiario"} y \code{"gastoeducacion"}}{Gasto diario en alimentos, bebidas, tabaco y transporte publico, y gastos en educacion de cada integrante del hogar. Ediciones de 2008 y 2010.}
+#'   \item{\code{"gastorecibo"} y \code{"gastocosto"}}{Gasto del ultimo recibo pagado por los servicios de la vivienda y costo de los articulos comprados en abonos. Edicion de 2010.}
+#'   \item{\code{"gastotarjetas"}}{Gastos del hogar que se cubrieron con tarjeta de credito bancaria o comercial. Ediciones de 2008 a 2014.}
+#'   \item{\code{"erogaciones"}}{Erogaciones de capital del hogar. Ediciones de 1994 a 2014.}
+#'   \item{\code{"nomonetario"}}{Ingresos no monetarios. Ediciones de 1984 a 2010.}
+#'   \item{\code{"agro"} y \code{"noagro"}}{Negocios agropecuarios y negocios no agropecuarios de los hogares. Ediciones de 2008 a 2014.}
+#' }
+#'
+#' \code{\link{bases_importinegi}} lista las tablas de cada edicion sin descargar nada: \code{bases_importinegi("enigh_tradicional")}.
+#'
+#' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y lee las tablas en formato DBF, el unico en el que el INEGI publica las 15 ediciones. Todos los archivos son nacionales: el INEGI no publica esta serie por entidad federativa. Una edicion completa pesa entre 3 y 25 MB. El INEGI no publica un archivo por tabla: varias tablas vienen juntas en un mismo archivo (por ejemplo, las erogaciones con los gastos), que la funcion descarga una sola vez aunque se pidan varias de sus tablas. Requiere conexion a internet.
+#'
+#' @section Como unir las tablas:
+#' Las tablas de una edicion se unen con el identificador del hogar. De 1984 a 2006 es la variable \code{FOLIO}; desde 2008 son dos variables, \code{FOLIOVIV} (la vivienda) y \code{FOLIOHOG} (el hogar dentro de la vivienda). Las tablas con una fila por persona traen ademas el numero de renglon de la persona: \code{NUM_REN} hasta 2006 (\code{NUMREN} en 1992) y \code{NUMREN} desde 2008.
+#'
+#' El factor de expansion indica cuantos hogares representa cada hogar de la muestra, y las estimaciones deben usarlo. No esta en todas las tablas. Hasta 2006 se llama \code{FACTOR} en la tabla de hogares y \code{HOG} en el concentrado; en 2008 y 2010, \code{FACTOR} en las dos tablas; en 2012 y 2014, \code{FACTOR_HOG} en hogares y en el concentrado, y \code{FACTOR_VIV} en viviendas. Para ponderar las tablas de personas, de ingresos o de gastos hay que unirles el factor con el identificador del hogar. Las variables del diseño muestral (\code{EST_DIS} y \code{UPM}), que sirven para calcular la precision de las estimaciones, estan en el concentrado desde la edicion de 1992; las ediciones de 1984 y 1989 no las tienen.
+#'
+#' Los nombres de las variables y sus codigos cambian de una edicion a otra, asi que las tablas de dos ediciones no se pueden apilar sin revisarlas. El INEGI describe las tablas y las variables de cada edicion en su descriptor de archivos, cuya direccion queda en el atributo \code{"descriptor"} del resultado.
+#'
+#' @section Contenido de las tablas:
+#' Los nombres de las columnas son los del INEGI, en mayusculas. El INEGI los publica en mayusculas en unas tablas y en minusculas en otras, a veces dentro de la misma edicion; la funcion los deja todos en mayusculas para que las tablas se puedan unir.
+#'
+#' Las columnas conservan el tipo que les da el INEGI en cada edicion: las que el INEGI declara como texto se devuelven como texto, con sus ceros a la izquierda (los folios, las claves y la mayoria de los codigos), y las que declara como numero, como numero. La funcion no convierte los codigos a numero, porque algunas columnas guardan varios codigos seguidos en un solo texto. Una misma variable puede ser texto en una edicion y numero en otra.
+#'
+#' Los datos que el INEGI deja en blanco o llena con asteriscos se devuelven como \code{NA}. Los codigos no se sustituyen por sus descripciones. La funcion omite los registros que los archivos del INEGI marcan como borrados, que la documentacion del INEGI tampoco cuenta.
+#'
+#' @param year Año del levantamiento de la encuesta en formato numerico. Es obligatorio. Los años disponibles son 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014.
+#' @param tabla Tabla o tablas que se descargan, en formato alfanumerico. Por omision, \code{"concentrado"}. Las opciones son: \code{"concentrado"}, \code{"viviendas"}, \code{"hogares"}, \code{"poblacion"}, \code{"trabajos"}, \code{"ingresos"}, \code{"gastos"}, \code{"gastohogar"}, \code{"gastopersona"}, \code{"gastodiario"}, \code{"gastoeducacion"}, \code{"gastorecibo"}, \code{"gastocosto"}, \code{"gastotarjetas"}, \code{"erogaciones"}, \code{"nomonetario"}, \code{"agro"} y \code{"noagro"}. No todas las tablas existen en todas las ediciones (ver Detalles).
+#'
+#' @examples
+#'
+#' # Consulta las tablas de cada edicion, sin descargar nada
+#' ediciones <- bases_importinegi("enigh_tradicional")
+#'
+#' # Descarga el concentrado de la ENIGH 2006: una fila por hogar
+#' \dontrun{concentrado <- enigh_tradicional(year = 2006)}
+#'
+#' # Descarga dos tablas de la ENIGH 1994 y extrae una
+#' \dontrun{tablas <- enigh_tradicional(year = 1994, tabla = c("poblacion", "ingresos"))}
+#' \dontrun{ingresos <- tablas$ingresos}
+#'
+#' # Une el factor de expansion de cada hogar a las personas de la ENIGH 2006
+#' \dontrun{
+#' tablas <- enigh_tradicional(year = 2006, tabla = c("hogares", "poblacion"))
+#' personas <- merge(tablas$poblacion, tablas$hogares[, c("FOLIO", "FACTOR")], by = "FOLIO")
+#' }
+#'
+#' # Direccion del descriptor de archivos de la edicion
+#' \dontrun{attr(concentrado, "descriptor")}
+#'
+#' @return Si se indica una sola tabla, un data.frame. Si se indican varias, una lista con un data.frame por tabla, cada uno con el nombre de su tabla. El atributo \code{"fuente"} contiene la direccion de los archivos descargados y el atributo \code{"descriptor"}, la direccion del descriptor de archivos de la edicion.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, las tablas de cada edicion y cuanto pesan. \code{\link{enigh_nuevaconstruccion}} para la Nueva construccion de la ENIGH. \code{\link{catalogo_inegi}} para la documentacion de la encuesta en la Red Nacional de Metadatos.
+#' @export
+enigh_tradicional <- function(year, tabla = "concentrado") {
+  if (missing(year)) {
+    year <- NULL
+  }
+  enigh_obtener("enigh_tradicional", year, tabla)
+}

@@ -216,6 +216,33 @@ servidor_prueba <- function(entorno = parent.frame()) {
       res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
     }
   })
+  # Archivos de la serie tradicional de la ENIGH, en las rutas del registro del
+  # paquete. Responde con las muestras de fixtures/enigh (algunas tablas de las
+  # ediciones 1984, 1994, 2006, 2008, 2010 y 2014); para el resto, como el INEGI
+  # cuando un archivo no existe. La muestra se elige por la edicion y por el
+  # nombre corto del archivo: la de
+  # ".../2006/microdatos/Tra_Gastos_2006_concil_2010_dbf.zip" es
+  # "trad2006_gastos.zip".
+  app$locals$descargas_enigh <- 0
+  app$get(webfakes::new_regexp("^/contenidos/programas/enigh/tradicional/[0-9]{4}/microdatos/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_enigh <- locales$descargas_enigh + 1
+    year <- sub("^/contenidos/programas/enigh/tradicional/([0-9]{4})/.*$", "\\1", req$path)
+    nombre <- tolower(sub("_dbf[.]zip$", "", basename(req$path), ignore.case = TRUE))
+    nombre <- sub("_[0-9]{4}_concil_[0-9]{4}$", "", sub("^tra_", "", nombre))
+    archivo <- paste0("trad", year, "_", nombre, ".zip")
+    carpeta <- file.path(locales$carpeta, "enigh")
+    if (file.exists(file.path(carpeta, archivo))) {
+      res$send_file(archivo, root = carpeta)
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
+  app$get("/enigh/descargas", function(req, res) {
+    res$send(as.character(req$app$locals$descargas_enigh))
+  })
   app$get("/censo/descargas", function(req, res) {
     res$send(as.character(req$app$locals$descargas_censo))
   })
@@ -256,6 +283,11 @@ registro_reducido <- function(programa, year, base, claves) {
 # han pedido al servidor local.
 descargas_censo <- function(servidor) {
   as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/censo/descargas")))))
+}
+
+# Numero de archivos de la ENIGH que se han pedido al servidor local.
+descargas_enigh <- function(servidor) {
+  as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/enigh/descargas")))))
 }
 
 # Las pruebas en vivo consultan el sitio real del INEGI. Solo corren cuando la

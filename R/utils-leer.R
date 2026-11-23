@@ -33,8 +33,17 @@ leer_tabla <- function(archivo, faltantes = NULL, convertir = FALSE, texto = NUL
 # codigos del programa que los creo; si el texto no es UTF-8 valido se convierte
 # desde la pagina que declara el encabezado del archivo o, si no declara
 # ninguna, desde la de Windows para Europa occidental (CP1252).
+#
+# Omite los registros que el archivo marca como borrados: foreign::read.dbf()
+# no revisa esa marca y los devuelve como si fueran vigentes.
 leer_dbf <- function(archivo) {
   datos <- foreign::read.dbf(archivo, as.is = TRUE)
+  borrados <- dbf_borrados(archivo)
+  if (any(borrados)) {
+    marcas <- c(borrados, rep(FALSE, max(0, nrow(datos) - length(borrados))))
+    datos <- datos[!marcas[seq_len(nrow(datos))], , drop = FALSE]
+    rownames(datos) <- NULL
+  }
   origen <- dbf_codificacion(archivo)
   for (columna in names(datos)) {
     valores <- datos[[columna]]
@@ -49,6 +58,49 @@ leer_dbf <- function(archivo) {
     datos[[columna]] <- convertidos
   }
   datos
+}
+
+# Registros de un DBF marcados como borrados: un valor logico por registro. El
+# primer byte de cada registro es un espacio si el registro esta vigente y un
+# asterisco si se borro. El INEGI publica algunos archivos con registros
+# borrados (por ejemplo, dos en las erogaciones de la ENIGH 2006) y no los
+# cuenta en su documentacion. El archivo se recorre por bloques para no cargarlo
+# completo en memoria.
+dbf_borrados <- function(archivo) {
+  conexion <- file(archivo, open = "rb")
+  on.exit(close(conexion))
+  encabezado <- readBin(conexion, what = "raw", n = 12)
+  if (length(encabezado) < 12) {
+    return(logical())
+  }
+  entero <- function(bytes) sum(as.numeric(bytes) * 256^(seq_along(bytes) - 1))
+  registros <- entero(encabezado[5:8])
+  largo_encabezado <- entero(encabezado[9:10])
+  largo_registro <- entero(encabezado[11:12])
+  if (registros == 0 || largo_registro == 0 || largo_encabezado < 12) {
+    return(logical())
+  }
+  # El resto del encabezado se lee para avanzar hasta el primer registro
+  readBin(conexion, what = "raw", n = largo_encabezado - 12)
+  por_bloque <- max(1, floor(8 * 1024^2 / largo_registro))
+  marcas <- vector("list", ceiling(registros / por_bloque))
+  leidos <- 0
+  bloque <- 0
+  while (leidos < registros) {
+    pedidos <- min(por_bloque, registros - leidos)
+    bytes <- readBin(conexion, what = "raw", n = pedidos * largo_registro)
+    completos <- length(bytes) %/% largo_registro
+    if (completos == 0) {
+      break
+    }
+    bloque <- bloque + 1
+    marcas[[bloque]] <- bytes[seq.int(1, by = largo_registro, length.out = completos)] == as.raw(0x2a)
+    leidos <- leidos + completos
+    if (completos < pedidos) {
+      break
+    }
+  }
+  if (bloque == 0) logical() else unlist(marcas[seq_len(bloque)], use.names = FALSE)
 }
 
 # Pagina de codigos que declara un DBF en el byte 29 de su encabezado, o NA.

@@ -81,3 +81,60 @@ test_that("leer_tabla() avisa cuando el formato no esta soportado", {
     "el formato \"html\" no est\u00e1 soportado"
   )
 })
+
+test_that("leer_dbf() omite los registros marcados como borrados", {
+  archivo <- withr::local_tempfile(fileext = ".dbf")
+  datos <- data.frame(CLAVE = c("A001", "A002", "A003", "A004"), GASTO = c(10.5, 20, 30.25, 40),
+                      stringsAsFactors = FALSE)
+  foreign::write.dbf(datos, archivo)
+  expect_identical(dbf_borrados(archivo), c(FALSE, FALSE, FALSE, FALSE))
+  expect_identical(nrow(leer_dbf(archivo)), 4L)
+
+  # El primer byte de cada registro es un espacio; un asterisco lo marca como borrado
+  bytes <- readBin(archivo, "raw", n = file.size(archivo))
+  entero <- function(x) sum(as.numeric(x) * 256^(seq_along(x) - 1))
+  inicio <- entero(bytes[9:10])
+  largo <- entero(bytes[11:12])
+  expect_identical(bytes[inicio + 1 + (0:3) * largo], rep(as.raw(0x20), 4))
+  bytes[inicio + 1 + c(1, 3) * largo] <- as.raw(0x2a)
+  writeBin(bytes, archivo)
+
+  expect_identical(dbf_borrados(archivo), c(FALSE, TRUE, FALSE, TRUE))
+  # foreign::read.dbf() no revisa la marca
+  expect_identical(nrow(foreign::read.dbf(archivo, as.is = TRUE)), 4L)
+  leidos <- leer_dbf(archivo)
+  expect_identical(leidos$CLAVE, c("A001", "A003"))
+  expect_identical(leidos$GASTO, c(10.5, 30.25))
+  expect_identical(rownames(leidos), c("1", "2"))
+})
+
+test_that("dbf_borrados() tolera archivos vacios, cortos o con muchos registros", {
+  vacio <- withr::local_tempfile(fileext = ".dbf")
+  file.create(vacio)
+  expect_identical(dbf_borrados(vacio), logical())
+
+  # Un archivo mas corto de lo que declara su encabezado
+  archivo <- withr::local_tempfile(fileext = ".dbf")
+  foreign::write.dbf(data.frame(CLAVE = sprintf("A%03d", 1:6), stringsAsFactors = FALSE), archivo)
+  bytes <- readBin(archivo, "raw", n = file.size(archivo))
+  entero <- function(x) sum(as.numeric(x) * 256^(seq_along(x) - 1))
+  inicio <- entero(bytes[9:10])
+  largo <- entero(bytes[11:12])
+  corto <- withr::local_tempfile(fileext = ".dbf")
+  writeBin(bytes[seq_len(inicio + 4 * largo)], corto)
+  expect_identical(dbf_borrados(corto), rep(FALSE, 4))
+
+  # Mas registros de los que caben en un bloque de lectura
+  grande <- withr::local_tempfile(fileext = ".dbf")
+  filas <- 60000L
+  foreign::write.dbf(data.frame(TEXTO = rep(strrep("x", 200), filas), stringsAsFactors = FALSE), grande)
+  bytes <- readBin(grande, "raw", n = file.size(grande))
+  inicio <- entero(bytes[9:10])
+  largo <- entero(bytes[11:12])
+  expect_gt(filas * largo, 8 * 1024^2)
+  borrar <- c(1L, 41235L, 41236L, filas)
+  bytes[inicio + 1 + (borrar - 1) * largo] <- as.raw(0x2a)
+  writeBin(bytes, grande)
+  expect_identical(which(dbf_borrados(grande)), borrar)
+  expect_identical(nrow(leer_dbf(grande)), filas - 4L)
+})

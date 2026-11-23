@@ -24,6 +24,8 @@ Data.frame con una fila por proyecto, año y base de datos (en \code{"cng_munici
 \item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"} o \code{"xlsx"}).}
 \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
 }
+
+En \code{"enigh_tradicional"} hay una fila por edicion: \code{base} vale \code{"microdatos"}, \code{tablas} lista las tablas que se pueden pedir con el argumento \code{tabla} de la funcion (la primera es la que se descarga por omision) y \code{tamano_mb} es el peso de todos los archivos de la edicion.
 }
 \description{
 Devuelve una tabla con las bases de datos del INEGI que se pueden descargar con las funciones de este paquete, por proyecto estadistico y año. No descarga ningun archivo ni requiere conexion a internet.
@@ -32,6 +34,8 @@ Devuelve una tabla con las bases de datos del INEGI que se pueden descargar con 
 La tabla sale del registro de archivos del INEGI que se distribuye con el paquete, el mismo que usan las funciones de descarga para validar sus argumentos y encontrar la direccion de cada archivo. Por eso, lo que muestra esta funcion es lo que esas funciones pueden descargar. El atributo \code{"registro"} de la tabla indica la fecha en que se genero el registro: los archivos que el INEGI publique despues de esa fecha apareceran al actualizar el paquete.
 
 Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}), la Encuesta Intercensal (\code{\link{intercensal}}) y el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cng_municipal}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
+
+Tambien incluye la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}}), con una fila por edicion.
 
 A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 }
@@ -51,7 +55,13 @@ bases$year[bases$base == "ageb"]
 temas <- bases_importinegi(proyecto = "cng_municipal", year = 2025)
 table(temas$modulo)
 
+# Tablas de cada edicion de la serie tradicional de la ENIGH.
+ediciones <- bases_importinegi(proyecto = "enigh_tradicional")
+ediciones$tablas[ediciones$year == 2010]
+
 }
 \seealso{
+\code{\link{enigh_tradicional}} para descargar la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
+
 \code{\link{censo}}, \code{\link{conteo}}, \code{\link{intercensal}} y \code{\link{cng_municipal}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 }
