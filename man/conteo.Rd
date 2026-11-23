@@ -31,7 +31,7 @@ Los Conteos de Poblacion y Vivienda se levantaron a la mitad del periodo entre d
 \item{\code{"viviendas"}}{Viviendas habitadas y deshabitadas por localidad. Conteo de 2005. Tiene archivo nacional.}
 }
 
-Los Censos de Poblacion y Vivienda se descargan con \code{\link{censo}}.
+Los Censos de Poblacion y Vivienda se descargan con \code{\link{censo}} y las Encuestas Intercensales, con \code{\link{intercensal}}.
 
 La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee en formato DBF. Requiere conexion a internet.
 }
@@ -74,5 +74,5 @@ Las columnas conservan los nombres que les da el INEGI. Las claves geograficas (
 
 }
 \seealso{
-\code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada conteo y cuanto pesan. \code{\link{censo}} para los Censos de Poblacion y Vivienda. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion y como se levantaron los conteos.
+\code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada conteo y cuanto pesan. \code{\link{censo}} e \code{\link{intercensal}} para los Censos de Poblacion y Vivienda y las Encuestas Intercensales. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion y como se levantaron los conteos.
 }

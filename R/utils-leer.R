@@ -1,6 +1,6 @@
 # Utilidades internas: lectura de tablas ---------------------------------------
 
-# Lee una tabla del INEGI segun la extension del archivo (dbf o csv).
+# Lee una tabla del INEGI segun la extension del archivo (dbf, csv o xlsx).
 #
 # faltantes  Codigos que el INEGI usa para datos no disponibles o reservados
 #            (por ejemplo "*" y "N/D"); se convierten en NA.
@@ -14,9 +14,10 @@ leer_tabla <- function(archivo, faltantes = NULL, convertir = FALSE, texto = NUL
     extension,
     dbf = leer_dbf(archivo),
     csv = leer_csv(archivo),
+    xlsx = leer_xlsx(archivo),
     detener(
       "No se puede leer ", basename(archivo), ": el formato \"", extension,
-      "\" no est\u00e1 soportado. Formatos disponibles: \"dbf\", \"csv\"."
+      "\" no est\u00e1 soportado. Formatos disponibles: \"dbf\", \"csv\", \"xlsx\"."
     )
   )
   if (!is.null(faltantes)) {
@@ -95,9 +96,56 @@ leer_csv <- function(archivo) {
   datos
 }
 
-# Convierte en NA los codigos de dato faltante de las columnas de texto.
-limpiar_faltantes <- function(datos, codigos = c("*", "N/D")) {
-  for (columna in names(datos)) {
+# Lee un archivo XLSX del INEGI con el paquete readxl (opcional). Los XLSX
+# pueden traer filas de titulo antes del encabezado y notas al pie: en cada
+# hoja se busca la fila de encabezado (la primera que contiene la clave de la
+# entidad, como CVE_ENT, o la clave integrada CVEGEO) y se conservan solo las
+# filas con una clave de entidad numerica. Todo se lee como texto, como los CSV
+# y los DBF; despues se convierten las columnas numericas. Si varias hojas
+# tienen datos, se combinan.
+leer_xlsx <- function(archivo) {
+  requiere_paquete("readxl")
+  claves <- c(claves_geograficas()$ent$nombres, "CVEGEO")
+  tablas <- list()
+  for (hoja in readxl::excel_sheets(archivo)) {
+    vista <- readxl::read_excel(
+      archivo, sheet = hoja, col_names = FALSE, col_types = "text", n_max = 30, .name_repair = "minimal"
+    )
+    if (nrow(vista) == 0) {
+      next
+    }
+    encabezado <- which(apply(as.matrix(vista), 1, function(fila) any(toupper(trimws(fila)) %in% claves)))
+    if (length(encabezado) == 0) {
+      next
+    }
+    datos <- readxl::read_excel(
+      archivo, sheet = hoja, skip = encabezado[1] - 1, col_types = "text", .name_repair = "minimal"
+    )
+    datos <- as.data.frame(datos, stringsAsFactors = FALSE)
+    names(datos) <- trimws(names(datos))
+    vacias <- (is.na(names(datos)) | !nzchar(names(datos))) & vapply(datos, function(x) all(is.na(x)), logical(1))
+    datos <- datos[, !vacias, drop = FALSE]
+    entidad <- columna_clave(datos, "ent")
+    if (!is.na(entidad)) {
+      datos <- datos[!is.na(datos[[entidad]]) & grepl("^[0-9]+$", trimws(datos[[entidad]])), , drop = FALSE]
+    }
+    rownames(datos) <- NULL
+    tablas[[length(tablas) + 1]] <- datos
+  }
+  if (length(tablas) == 0) {
+    detener(
+      "No se encontr\u00f3 una tabla de datos en ", basename(archivo), ": ninguna hoja tiene una columna ",
+      "con la clave de la entidad. Es posible que el INEGI haya cambiado el archivo; puedes reportarlo en ",
+      "https://github.com/crenteriam/importinegi/issues"
+    )
+  }
+  combinar_tablas(tablas)
+}
+
+# Convierte en NA los codigos de dato faltante de las columnas de texto, salvo
+# en las columnas indicadas en `excepto`.
+limpiar_faltantes <- function(datos, codigos = c("*", "N/D"), excepto = NULL) {
+  for (columna in setdiff(names(datos), excepto)) {
     valores <- datos[[columna]]
     if (is.character(valores)) {
       valores[trimws(valores) %in% codigos] <- NA_character_

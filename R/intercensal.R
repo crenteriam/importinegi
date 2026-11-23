@@ -1,0 +1,68 @@
+#' Encuesta Intercensal
+#'
+#' Descarga las bases de datos de las Encuestas Intercensales del INEGI (2015 y 2025) y las devuelve como data.frame.
+#'
+#' La Encuesta Intercensal se levanta a la mitad del periodo entre dos censos. A diferencia de los censos y de los conteos, no entrevista a toda la poblacion, sino a los residentes de una muestra de viviendas. Una sola funcion da acceso a sus bases de datos. El argumento \code{base} elige cual:
+#' \describe{
+#'   \item{\code{"muestra"}}{Microdatos de la encuesta: personas, viviendas y, en 2025, migrantes internacionales. Encuestas de 2015 y 2025. Se publica por entidad; en 2025 tambien hay archivo nacional.}
+#'   \item{\code{"resultados"}}{Principales resultados por localidad de 50 000 y mas habitantes: estimaciones de 341 indicadores, con su precision, para el pais, las entidades, los municipios y las localidades de 50 000 y mas habitantes. Encuesta de 2025. Solo tiene archivo nacional.}
+#' }
+#'
+#' Los Censos de Poblacion y Vivienda se descargan con \code{\link{censo}} y los Conteos de Poblacion y Vivienda, con \code{\link{conteo}}.
+#'
+#' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee: la muestra en formato CSV y los resultados en formato XLSX, que requiere el paquete \code{readxl}. Requiere conexion a internet.
+#'
+#' @section Como se levantaron las encuestas:
+#' Como la encuesta se levanta en una muestra, sus resultados son estimaciones. Cada registro de la muestra trae su factor de expansion (\code{FACTOR}), que indica cuantas personas o viviendas representa; las estimaciones deben usarlo. Las variables del diseño muestral (\code{ESTRATO} y \code{UPM}) sirven para calcular la precision de las estimaciones. En algunos municipios, sobre todo en los pequeños, el INEGI visito todas las viviendas; en 2015, la variable \code{COBERTURA} indica si el municipio se censo o se muestreo.
+#'
+#' La Encuesta Intercensal 2015 se levanto del 2 al 27 de marzo de 2015 y sus cifras se refieren al 15 de marzo. Se diseño para una muestra de alrededor de 6.1 millones de viviendas; se visitaron 7.9 millones, de las cuales 5.9 millones estaban habitadas. En 814 de los 2,457 municipios se visitaron todas las viviendas.
+#'
+#' La Encuesta Intercensal 2025 se levanto del 6 de octubre al 14 de noviembre de 2025 y sus cifras se refieren al 15 de octubre. Su muestra efectiva fue de 7.3 millones de viviendas, y se planeo visitar todas las viviendas de 753 municipios: los que tenian menos de 1,300 viviendas habitadas, los de rezago social muy alto con 10 mil viviendas o menos, y aquellos donde al menos 30 por ciento de la poblacion habla una lengua indigena y no habla español o se reconoce afrodescendiente. Ademas de las personas y las viviendas, capto a los migrantes internacionales (tabla \code{"migrantes"}).
+#'
+#' Las dos encuestas producen estimaciones para el pais, las entidades, los municipios y las localidades de 50 000 y mas habitantes; los microdatos solo identifican estas localidades (\code{LOC50K}). Las dos captan solamente las viviendas particulares habitadas y a sus residentes: la poblacion en viviendas colectivas, la del Servicio Exterior Mexicano y la que no tiene vivienda no esta en los microdatos.
+#'
+#' El INEGI publica la muestra de 2015 solo por entidad y la de 2025 tambien en un archivo nacional. Si no se indica \code{estado}, la funcion descarga la muestra de Aguascalientes y avisa cuanto pesaria la de todo el pais. Con \code{estado = "nacional"}, descarga las 32 entidades de 2015 (814 MB) y las combina, o el archivo nacional de 2025 (727 MB). Cada muestra nacional tiene mas de 20 millones de registros de personas, asi que leerla completa puede requerir mas memoria de la que tiene la mayoria de las computadoras. Para trabajar con todo el pais, conviene descargar y procesar una entidad a la vez.
+#'
+#' @section Niveles de agregacion:
+#' La base \code{"resultados"} mezcla filas de localidades con filas de totales. El INEGI identifica los totales con claves en ceros: entidad \code{"00"} para el total nacional, municipio \code{"000"} para el total de la entidad y localidad \code{"0000"} para el total del municipio. El argumento \code{nivel} elige que filas se conservan; por omision, solo las localidades. Con \code{nivel = "municipio"} se obtienen los resultados de todos los municipios del pais.
+#'
+#' Cada entidad tiene, ademas, una fila con el conjunto de sus localidades de menos de 50 000 habitantes (municipio \code{"997"} y localidad \code{"9997"}). No es una localidad, asi que solo se incluye con \code{nivel = "todos"}.
+#'
+#' @section Contenido de la tabla:
+#' Las columnas conservan los nombres que les da el INEGI. Las claves geograficas son texto y conservan los ceros a la izquierda (\code{"09"}, \code{"001"}). En la muestra de 2015 las claves se llaman \code{ENT} y \code{MUN} y vienen con sus nombres; en la de 2025 se llaman \code{CVE_ENT} y \code{CVE_MUN}, sin nombres. \code{LOC50K} vale \code{"0000"} en las localidades de menos de 50 000 habitantes. En la muestra, las columnas que solo contienen numeros se convierten a numero, incluso las que tienen ceros a la izquierda (la edad \code{"008"} pasa a ser \code{8}), salvo los identificadores de la vivienda y de la persona, la clave de la localidad (\code{LOC50K}) y las variables del diseño muestral (\code{ESTRATO} y \code{UPM}), que se conservan como texto.
+#'
+#' En la base \code{"resultados"}, el pais, cada entidad, cada municipio y cada localidad ocupan cinco filas, una por cada tipo de estimacion, que indica la columna \code{ESTIMADOR}: el valor puntual, el error estandar, los limites inferior y superior del intervalo de confianza al 90 por ciento y el coeficiente de variacion. La etiqueta del valor puntual es \code{"Valor"}. La clave integrada \code{CVEGEO} es texto de 9 digitos. Los datos que el INEGI marca como no disponibles por muestra insuficiente (\code{"MI"}) o como no aplicables (\code{"NA"}) se convierten en \code{NA}. En \code{NOM_MUN}, un asterisco al final del nombre indica que en el municipio se visitaron todas las viviendas y dos asteriscos, que su muestra fue insuficiente; en estos ultimos (siete municipios), la mayoria de los indicadores no esta disponible.
+#'
+#' @param year Año de la encuesta, en formato numerico. Es obligatorio: 2015 o 2025.
+#' @param base Base de datos que se descarga: \code{"muestra"} (por omision) o \code{"resultados"} (solo 2025).
+#' @param estado Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos. Acepta varias entidades a la vez, que se combinan en una sola tabla. \code{"nacional"} devuelve la base de todo el pais: en la muestra de 2015, que el INEGI publica solo por entidad, descarga las 32 entidades y las combina; en la muestra de 2025 y en \code{"resultados"}, descarga el archivo nacional. Si en \code{"resultados"} se indican entidades, la funcion descarga el archivo nacional y conserva sus filas. Por omision, \code{"Aguascalientes"} en la muestra, con un aviso de cuanto pesaria la descarga de todo el pais, y \code{"nacional"} en \code{"resultados"}.
+#' @param tabla Solo para \code{base = "muestra"}. En 2015: \code{"personas"} (por omision) o \code{"viviendas"}. En 2025: \code{"personas"} (por omision), \code{"viviendas"} o \code{"migrantes"}.
+#' @param nivel Solo para \code{base = "resultados"}: \code{"nacional"}, \code{"entidad"}, \code{"municipio"} y \code{"localidad"}. Acepta varios niveles, o \code{"todos"} para conservar todas las filas. Por omision, el nivel de mayor detalle (\code{"localidad"}).
+#'
+#' @examples
+#'
+#' # Personas de la muestra de 2015 en Aguascalientes (entidad por omision).
+#' \dontrun{personas <- intercensal(2015)}
+#'
+#' # Viviendas de la muestra de 2025 en Oaxaca.
+#' \dontrun{viviendas <- intercensal(2025, estado = "Oaxaca", tabla = "viviendas")}
+#'
+#' # Migrantes internacionales de la muestra de 2025 en Michoacan.
+#' \dontrun{migrantes <- intercensal(2025, estado = "Michoacan", tabla = "migrantes")}
+#'
+#' # Resultados de todos los municipios del pais en 2025.
+#' \dontrun{municipios <- intercensal(2025, base = "resultados", nivel = "municipio")}
+#'
+#' # Resultados de las localidades de 50 000 y mas habitantes de Jalisco.
+#' \dontrun{jalisco <- intercensal(2025, base = "resultados", estado = "Jalisco")}
+#'
+#' @return Data.frame con la base de datos solicitada. El atributo \code{"fuente"} contiene la direccion de los archivos descargados.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada encuesta y cuanto pesan. \code{\link{censo}} y \code{\link{conteo}} para los Censos y los Conteos de Poblacion y Vivienda. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion y como se levantaron las encuestas.
+#' @export
+
+intercensal <- function(year, base = "muestra", estado = NULL, tabla = NULL, nivel = NULL) {
+  if (missing(year)) {
+    year <- NULL
+  }
+  poblacion_obtener("intercensal", year, base, estado, tabla, nivel)
+}

@@ -23,11 +23,12 @@ El paquete de R `importinegi` fue creado para facilitar la descarga y uso de las
 La version `2.0.0` permite descargar y gestionar las bases de datos de los siguientes proyectos estadisticos del INEGI:
 
 * Censo y Conteo de Poblacion y Vivienda
+* Encuesta Intercensal
 * Censo Nacional de Gobiernos Municipales y Delegacionales
 * Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH)
 * Encuesta Nacional de Ocupación y Empleo (ENOE)
 
-La versión `2.0.0` requiere R 4.1 o posterior. Las funciones de información georreferenciada `sig_marcogeo()` y `sig_caminos_extrae()` necesitan, además, el paquete `sf`, que no se instala junto con `importinegi`. Para instalarlo, se utiliza `install.packages("sf")`.
+La versión `2.0.0` requiere R 4.1 o posterior. Las funciones de información georreferenciada `sig_marcogeo()` y `sig_caminos_extrae()` necesitan, además, el paquete `sf`, que no se instala junto con `importinegi`. Para instalarlo, se utiliza `install.packages("sf")`. De la misma forma, la base `resultados` de `intercensal()` necesita el paquete `readxl`, que se instala con `install.packages("readxl")`.
 
 # Sintaxis
 
@@ -101,13 +102,13 @@ bases.censo = bases_importinegi(proyecto = "censo")
 bases.censo2020 = bases_importinegi(proyecto = "censo", year = 2020)
 ```
 
-La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
+La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda, y de la Encuesta Intercensal. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
 
 ## Censo Nacional de Poblacion y Vivienda
 
 La función `censo()` descarga todas las bases de datos de los Censos de Población y Vivienda de 1990, 2000, 2010 y 2020. La sintaxis de la función tiene cinco parámetros, de los cuales solo el primero es indispensable.
 
-El primer parámetro es el año del censo (`year`) en formato numérico. Los años disponibles son 1990, 2000, 2010 y 2020. Los Conteos de Población y Vivienda (1995 y 2005) se descargan con la función `conteo()`, que se explica en la siguiente sección. Las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta función.
+El primer parámetro es el año del censo (`year`) en formato numérico. Los años disponibles son 1990, 2000, 2010 y 2020. Los Conteos de Población y Vivienda (1995 y 2005) se descargan con la función `conteo()` y las Encuestas Intercensales (2015 y 2025), con la función `intercensal()`; ambas se explican más adelante.
 
 El segundo parámetro es la base de datos (`base`) en formato alfanumérico. La selección por default es `iter`. No todas las bases de datos están disponibles para todos los años censales, como se muestra en la siguiente tabla. Esta información se puede consultar también con `bases_importinegi(proyecto = "censo")`.
 
@@ -204,6 +205,36 @@ hogares05 = conteo(2005, base = "muestra", estado = "Yucatán", tabla = "hogares
 
 # Muestra del Conteo 2005 de todo el país: descarga y combina las 32 entidades
 personas05 = conteo(2005, base = "muestra", estado = "nacional")
+```
+
+## Encuesta Intercensal
+
+La Encuesta Intercensal se levanta a la mitad del periodo entre dos censos, como los Conteos, pero no entrevista a toda la población: el INEGI visita una muestra de viviendas particulares habitadas. Por eso, sus resultados son estimaciones, y cada registro de la muestra trae un factor de expansión (`FACTOR`), que indica cuántas personas o viviendas representa. `intercensal()` descarga las encuestas de 2015 y 2025 con los mismos argumentos que `censo()` y `conteo()`. El parámetro `base` elige entre `"muestra"` (por omisión), con los microdatos de la encuesta, y `"resultados"`, con los principales resultados por localidad de 50 000 y más habitantes de 2025.
+
+- **2015.** La encuesta se levantó del 2 al 27 de marzo de 2015, con cifras referidas al 15 de marzo. Se visitaron 7.9 millones de viviendas, de las cuales 5.9 millones estaban habitadas, y en 814 de los 2,457 municipios se visitaron todas las viviendas. La muestra tiene dos tablas: `personas` (por omisión) y `viviendas`.
+- **2025.** La encuesta se levantó del 6 de octubre al 14 de noviembre de 2025, con cifras referidas al 15 de octubre. La muestra efectiva fue de 7.3 millones de viviendas, y se planeó visitar todas las viviendas de 753 municipios. La muestra tiene tres tablas: `personas` (por omisión), `viviendas` y `migrantes`, con los migrantes internacionales de cada vivienda.
+
+Las dos encuestas producen estimaciones para el país, las entidades, los municipios y las localidades de 50 000 y más habitantes. Solo captan las viviendas particulares habitadas y a sus residentes: la población en viviendas colectivas, la del Servicio Exterior Mexicano y la que no tiene vivienda no está en los microdatos.
+
+El INEGI publica la muestra de 2015 solamente por entidad y la de 2025 también en un archivo nacional. Si no se indica `estado`, `intercensal()` descarga la muestra de Aguascalientes y avisa cuánto pesaría la de todo el país. Con `estado = "nacional"`, descarga las 32 entidades de 2015 (814 MB) y las combina, o el archivo nacional de 2025 (727 MB). Cada muestra nacional tiene más de 20 millones de registros de personas, así que leerla completa puede requerir más memoria de la que tiene la mayoría de las computadoras. Para trabajar con todo el país, conviene descargar y procesar una entidad a la vez, como en el último ejemplo del siguiente bloque de código.
+
+La base `resultados` contiene las estimaciones de 341 indicadores para el país, cada entidad, cada municipio y cada localidad de 50 000 y más habitantes, con su error estándar, su intervalo de confianza al 90 % y su coeficiente de variación. Cada dominio ocupa cinco filas, una por tipo de estimación, que se identifica en la columna `ESTIMADOR`. Como en el ITER, el parámetro `nivel` elige las filas: por omisión, las localidades; con `nivel = "municipio"`, los 2,478 municipios. Esta base se publica en formato XLSX y requiere el paquete `readxl`.
+
+```{r, eval = FALSE}
+# Personas de la muestra de 2015 en Aguascalientes (entidad por omisión)
+personas15 = intercensal(2015)
+
+# Viviendas de la muestra de 2025 en Oaxaca
+viviendas25 = intercensal(2025, estado = "Oaxaca", tabla = "viviendas")
+
+# Migrantes internacionales de la muestra de 2025 en Michoacán
+migrantes25 = intercensal(2025, estado = "Michoacán", tabla = "migrantes")
+
+# Resultados de todos los municipios del país en 2025
+municipios25 = intercensal(2025, base = "resultados", nivel = "municipio")
+
+# Población estimada de cada entidad en 2015, descargando una entidad a la vez
+poblacion15 = sapply(1:32, function(entidad) sum(intercensal(2015, estado = entidad)$FACTOR))
 ```
 
 ## Censo de Gobiernos Municipales y Delegacionales

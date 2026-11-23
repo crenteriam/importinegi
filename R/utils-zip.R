@@ -5,14 +5,15 @@
 # de trabajo del usuario. Devuelve la ruta de esa carpeta.
 #
 # Con anidados = TRUE tambien descomprime los zip que vengan dentro del zip,
-# cada uno en una carpeta con su mismo nombre.
-inegi_descomprimir <- function(zip, anidados = TRUE) {
+# cada uno en una carpeta con su mismo nombre. Con `archivos` (rutas dentro del
+# zip, como las da utils::unzip(list = TRUE)) solo extrae esos archivos.
+inegi_descomprimir <- function(zip, anidados = TRUE, archivos = NULL) {
   if (!es_zip(zip)) {
     detener("El archivo ", basename(zip), " no es un zip v\u00e1lido.")
   }
   carpeta <- tempfile("importinegi_")
   dir.create(carpeta)
-  extraer_zip(zip, carpeta)
+  extraer_zip(zip, carpeta, archivos)
 
   if (anidados) {
     procesados <- character()
@@ -34,9 +35,9 @@ inegi_descomprimir <- function(zip, anidados = TRUE) {
   carpeta
 }
 
-extraer_zip <- function(zip, carpeta) {
+extraer_zip <- function(zip, carpeta, archivos = NULL) {
   resultado <- tryCatch(
-    utils::unzip(zip, exdir = carpeta),
+    utils::unzip(zip, files = archivos, exdir = carpeta),
     warning = function(w) w,
     error = function(e) e
   )

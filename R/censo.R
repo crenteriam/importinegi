@@ -12,7 +12,7 @@
 #'   \item{\code{"asistencia"}}{Resultados sobre las caracteristicas de los alojamientos de asistencia social (por ejemplo, casas hogar para menores de edad o para personas adultas mayores y albergues), su poblacion usuaria residente y su poblacion trabajadora, en tres tablas (ver el argumento \code{tabla}). Censo de 2020. Tiene archivo nacional.}
 #' }
 #'
-#' Los Conteos de Poblacion y Vivienda (1995 y 2005) se descargan con \code{\link{conteo}}. Las Encuestas Intercensales (2015 y 2025) no son censos y no se descargan con esta funcion.
+#' Los Conteos de Poblacion y Vivienda (1995 y 2005) se descargan con \code{\link{conteo}} y las Encuestas Intercensales (2015 y 2025), con \code{\link{intercensal}}.
 #'
 #' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee. Hasta 2010 lee los archivos en formato DBF; en 2020, en formato CSV. Requiere conexion a internet.
 #'
@@ -65,7 +65,7 @@
 #' \dontrun{attr(iter, "fuente")}
 #'
 #' @return Data.frame con la base de datos solicitada. El atributo \code{"fuente"} contiene la direccion de los archivos descargados.
-#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada censo y cuanto pesan. \code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos (por ejemplo, \code{catalogo_inegi(buscar = "censo de poblacion")}). La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion con mas ejemplos.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada censo y cuanto pesan. \code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos (por ejemplo, \code{catalogo_inegi(buscar = "censo de poblacion")}). La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion con mas ejemplos. \code{\link{conteo}} e \code{\link{intercensal}} para los Conteos de Poblacion y Vivienda y las Encuestas Intercensales.
 #' @export
 
 censo <- function(year, base = "iter", estado = NULL, tabla = NULL, nivel = NULL) {

@@ -1,7 +1,7 @@
 # Censos, conteos y encuestas de poblacion: motor compartido --------------------
 #
-# censo() usa las funciones de este archivo; conteo() e intercensal() usaran las
-# mismas. El trabajo se reparte en tres piezas:
+# censo(), conteo() e intercensal() usan las funciones de este archivo. El
+# trabajo se reparte en tres piezas:
 #
 #   1. El registro de archivos del INEGI (registro_inegi()) dice que archivos
 #      existen, en que formato, cuanto pesan y cual es su direccion.
@@ -34,14 +34,17 @@ poblacion_programas <- function() {
       nombre = "Encuesta Intercensal",
       con_articulo = "a la Encuesta Intercensal",
       years = c(2015L, 2025L),
-      funcion = NA_character_
+      funcion = "intercensal"
     )
   )
 }
 
 # Bases de datos de cada programa y año. `reconoce` es una expresion regular
-# que se compara con la descripcion de cada archivo en el registro, ya
-# normalizada (minusculas y sin acentos).
+# que se compara con la descripcion de cada archivo en el registro y con el
+# primer segmento de su titulo, ya normalizados (minusculas y sin acentos).
+# `ruta`, si no es NA, es una expresion regular que se compara con la ruta del
+# archivo: sirve para la Encuesta Intercensal 2015, cuyos titulos solo tienen
+# el nombre de la entidad.
 poblacion_bases <- function() {
   reglas <- c(
     iter = "\\biter\\b",
@@ -50,12 +53,13 @@ poblacion_bases <- function() {
     localidades = "localidades con menos|de las localidades",
     entorno = "entorno urbano",
     asistencia = "asistencia social",
-    viviendas = "viviendas habitadas y deshabitadas"
+    viviendas = "viviendas habitadas y deshabitadas",
+    resultados = "principales resultados por localidad de 50"
   )
-  fila <- function(programa, year, bases) {
+  fila <- function(programa, year, bases, reconoce = unname(reglas[bases]), ruta = NA_character_) {
     data.frame(
       programa = programa, year = year, base = bases,
-      reconoce = unname(reglas[bases]), stringsAsFactors = FALSE
+      reconoce = reconoce, ruta = ruta, stringsAsFactors = FALSE
     )
   }
   rbind(
@@ -64,7 +68,10 @@ poblacion_bases <- function() {
     fila("censo", 2010L, c("iter", "ageb", "muestra", "localidades", "entorno")),
     fila("censo", 2020L, c("iter", "ageb", "muestra", "localidades", "entorno", "asistencia")),
     fila("conteo", 1995L, c("iter", "muestra")),
-    fila("conteo", 2005L, c("iter", "muestra", "viviendas"))
+    fila("conteo", 2005L, c("iter", "muestra", "viviendas")),
+    fila("intercensal", 2015L, "muestra", reconoce = NA_character_, ruta = "/microdatos/eic2015_[0-9]{2}$"),
+    fila("intercensal", 2025L, c("muestra", "resultados"),
+         reconoce = c("\\bencuesta intercensal\\b", reglas[["resultados"]]))
   )
 }
 
@@ -77,7 +84,8 @@ poblacion_nombre_base <- function(base) {
     localidades = "los resultados sobre localidades",
     entorno = "los resultados sobre el entorno urbano",
     asistencia = "los resultados sobre alojamientos de asistencia social",
-    viviendas = "las viviendas habitadas y deshabitadas por localidad"
+    viviendas = "las viviendas habitadas y deshabitadas por localidad",
+    resultados = "los principales resultados por localidad de 50 000 y m\u00e1s habitantes"
   )
   unname(nombres[base])
 }
@@ -85,7 +93,8 @@ poblacion_nombre_base <- function(base) {
 # Titulo de cada base, como lo muestra bases_importinegi(). El de la muestra
 # depende del levantamiento: en el Censo de 1990 y en el Conteo de 2005 es un
 # extracto del 10 % de las viviendas del archivo completo; en los censos desde
-# 2000, el cuestionario ampliado; en el Conteo de 1995, la encuesta del Conteo.
+# 2000, el cuestionario ampliado; en el Conteo de 1995, la encuesta del Conteo;
+# en la Encuesta Intercensal, los microdatos de la encuesta.
 poblacion_titulo_base <- function(programa, year, base) {
   if (base == "muestra") {
     extracto <- "Muestra (extracto del 10 % de las viviendas)"
@@ -95,6 +104,9 @@ poblacion_titulo_base <- function(programa, year, base) {
     if (programa == "conteo") {
       return(if (year == 1995L) "Muestra (encuesta del Conteo, cuestionario ampliado)" else extracto)
     }
+    if (programa == "intercensal") {
+      return("Muestra (microdatos de la encuesta)")
+    }
     return("Muestra")
   }
   titulos <- c(
@@ -103,7 +115,8 @@ poblacion_titulo_base <- function(programa, year, base) {
     localidades = "Caracter\u00edsticas de las localidades",
     entorno = "Caracter\u00edsticas del entorno urbano",
     asistencia = "Alojamientos de asistencia social",
-    viviendas = "Viviendas habitadas y deshabitadas por localidad"
+    viviendas = "Viviendas habitadas y deshabitadas por localidad",
+    resultados = "Principales resultados por localidad de 50 000 y m\u00e1s habitantes"
   )
   unname(titulos[base])
 }
@@ -120,6 +133,12 @@ poblacion_tablas <- function(programa, year, base) {
     }
     # trpmueNN, trvmueNN y trhmueNN, dentro de la carpeta cpv2005_NN_dbf
     return(c(personas = "^trpmue", viviendas = "^trvmue", hogares = "^trhmue"))
+  }
+  if (base == "muestra" && programa == "intercensal") {
+    # TR_PERSONA y TR_VIVIENDA en 2015; personas, viviendas y migrantes en
+    # 2025. Los patrones reconocen los nombres con o sin el prefijo TR_.
+    tablas <- c(personas = "persona", viviendas = "vivienda")
+    return(if (year >= 2025L) c(tablas, migrantes = "migrante") else tablas)
   }
   if (base == "muestra" && !(programa == "censo" && year == 1990L)) {
     return(c(personas = "^per", viviendas = "^viv|^vho", migrantes = "^mig|^min"))
@@ -162,16 +181,44 @@ poblacion_niveles <- function(base) {
   switch(
     base,
     iter = ,
-    viviendas = c("nacional", "entidad", "municipio", "localidad"),
+    viviendas = ,
+    resultados = c("nacional", "entidad", "municipio", "localidad"),
     ageb = c("entidad", "municipio", "localidad", "ageb", "manzana"),
     NULL
   )
 }
 
-# Bases en las que el INEGI reserva datos con asterisco o los marca como no
-# disponibles ("N/D").
+# Marcas que el INEGI escribe en lugar de un dato; se convierten en NA. En los
+# resultados de los censos y de los conteos, "*" (dato reservado) y "N/D" (no
+# disponible). En los principales resultados por localidad de la Encuesta
+# Intercensal 2025, "MI" (no disponible por muestra insuficiente) y "NA" (no
+# aplica), segun el descriptor de esa base de datos.
 poblacion_faltantes <- function(base) {
-  if (base %in% c("iter", "ageb", "localidades", "viviendas")) c("*", "N/D") else NULL
+  switch(
+    base,
+    iter = ,
+    ageb = ,
+    localidades = ,
+    viviendas = c("*", "N/D"),
+    resultados = c("MI", "NA"),
+    NULL
+  )
+}
+
+# Columnas de identificacion de los resultados (claves, nombres y tipo de
+# estimacion): en ellas no se buscan las marcas de dato faltante, que solo
+# aparecen en los indicadores.
+poblacion_identificacion <- function(datos, base) {
+  if (base != "resultados") {
+    return(NULL)
+  }
+  grep("^CVE|^NOM_|^ESTIMADOR$", names(datos), value = TRUE, ignore.case = TRUE)
+}
+
+# Formatos de archivo que se leen en cada base. Los principales resultados por
+# localidad de la Encuesta Intercensal 2025 solo se publican en XLSX.
+poblacion_formatos <- function(base) {
+  if (base == "resultados") "xlsx" else c("csv", "dbf")
 }
 
 # Claves geograficas: nombres con los que aparecen en las tablas y su ancho.
@@ -320,22 +367,36 @@ poblacion_archivos <- function(programa, year, base) {
   registro <- registro_inegi()
   filas <- registro[
     registro$proyecto == proyecto & !is.na(registro$edicion) & registro$edicion == year &
-      registro$formato %in% c("csv", "dbf"),
+      registro$formato %in% poblacion_formatos(base),
   ]
 
-  # El registro describe los archivos de dos formas:
-  #   hasta 2010: titulo "Bases de datos|<entidad>" y la base en la descripcion;
-  #   desde 2020: titulo "<base>|...|Bases de datos|<entidad>".
+  # El registro describe los archivos de cuatro formas:
+  #   censos y conteos hasta 2010: titulo "Bases de datos|<entidad>" y la base
+  #     en la descripcion;
+  #   Censo 2020 y Encuesta Intercensal 2025: titulo
+  #     "<base>|...|Bases de datos|<entidad>";
+  #   Encuesta Intercensal 2015: titulo con solo el nombre de la entidad (a
+  #     veces con espacios de no separacion); la base se reconoce por la ruta;
+  #   bases con un solo archivo, nacional: titulo "<base>|Base de datos".
   # La base se reconoce en la descripcion o en el primer segmento del titulo.
-  # Solo se conservan los archivos cuyo penultimo segmento es "Bases de datos":
-  # asi se descartan la documentacion y las bases de ejemplo, que no contienen
-  # datos reales.
-  partes <- lapply(strsplit(filas$titulo, "|", fixed = TRUE), trimws)
+  # Solo se conservan los archivos cuyo penultimo segmento es "Bases de datos",
+  # o cuyo ultimo segmento lo es (archivo nacional): asi se descartan la
+  # documentacion y las bases de ejemplo, que no contienen datos reales.
+  partes <- lapply(strsplit(filas$titulo, "|", fixed = TRUE), trimws, whitespace = "[\\h\\v]")
   primero <- vapply(partes, function(p) p[1], character(1))
+  ultimo <- vapply(partes, function(p) p[length(p)], character(1))
   grupo <- normalizar_texto(vapply(partes, function(p) if (length(p) >= 2) p[length(p) - 1] else "", character(1)))
-  entidad <- vapply(partes, function(p) p[length(p)], character(1))
-  es_base <- grepl(regla$reconoce, normalizar_texto(paste(filas$descripcion, primero)))
-  es_datos <- es_base & grepl("^bases? de datos$|^microdatos$|^datos abiertos$", grupo)
+  de_datos <- "^bases? de datos$|^microdatos$|^datos abiertos$"
+  sin_entidad <- grepl(de_datos, normalizar_texto(ultimo))
+  entidad <- ifelse(sin_entidad, "nacional", ultimo)
+  por_texto <- if (is.na(regla$reconoce)) {
+    rep(FALSE, nrow(filas))
+  } else {
+    grepl(regla$reconoce, normalizar_texto(paste(filas$descripcion, primero))) &
+      (grepl(de_datos, grupo) | sin_entidad)
+  }
+  por_ruta <- if (is.na(regla$ruta)) rep(FALSE, nrow(filas)) else grepl(regla$ruta, filas$ruta)
+  es_datos <- por_texto | por_ruta
   filas <- filas[es_datos, ]
   entidad <- entidad[es_datos]
 
@@ -362,7 +423,9 @@ poblacion_archivos <- function(programa, year, base) {
 # Claves de las entidades pedidas en `estado`, ya verificadas contra los
 # archivos que existen para la base. "nacional" es todo el pais: el archivo
 # nacional o, si el INEGI publica la base solo por entidad, todas las
-# entidades, que despues se combinan en una sola tabla.
+# entidades, que despues se combinan en una sola tabla. Si la base solo tiene
+# archivo nacional, se aceptan las entidades: poblacion_obtener() descarga ese
+# archivo y conserva sus filas.
 poblacion_claves <- function(estado, archivos, descripcion) {
   if (is.null(estado) || length(estado) == 0 || anyNA(estado)) {
     detener("Falta indicar `estado`: una o varias entidades, o \"nacional\".")
@@ -379,7 +442,7 @@ poblacion_claves <- function(estado, archivos, descripcion) {
     }
   }
   faltan <- setdiff(claves, archivos$clave)
-  if (length(faltan) > 0) {
+  if (length(faltan) > 0 && !identical(archivos$clave, "00")) {
     tabla <- inegi_estados()
     detener(
       "El registro del paquete no tiene el archivo de ", descripcion, " para: ",
@@ -462,23 +525,69 @@ poblacion_elegir_tabla <- function(carpeta, formato, patron = NULL, tabla = NA_c
 }
 
 # Descarga un archivo del registro y devuelve su tabla, sin limpiar. Con
-# `destino`, el zip se guarda en esa ruta y se reutiliza si ya existe (ver
-# poblacion_leer_entidades()).
+# `destino`, el archivo se guarda en esa ruta y se reutiliza si ya existe (ver
+# poblacion_leer_entidades()). Los zip se descomprimen y se busca la tabla
+# dentro; los XLSX se leen directamente.
 poblacion_leer <- function(url, formato, tamano = NULL, patron = NULL, tabla = NA_character_,
                            destino = NA_character_) {
   if (is.na(destino)) {
-    zip <- inegi_descargar(url, tamano = tamano)
+    archivo <- inegi_descargar(url, tamano = tamano)
     conservar <- isTRUE(getOption("importinegi.cache", FALSE))
   } else {
-    zip <- inegi_descargar(url, destino = destino, tamano = tamano, cache = TRUE)
+    archivo <- inegi_descargar(url, destino = destino, tamano = tamano, cache = TRUE)
     conservar <- TRUE
   }
-  carpeta <- inegi_descomprimir(zip)
-  on.exit({
-    unlink(carpeta, recursive = TRUE)
-    if (!conservar) unlink(zip)
-  }, add = TRUE)
+  if (!conservar) {
+    on.exit(unlink(archivo), add = TRUE)
+  }
+  if (identical(formato, "xlsx")) {
+    return(leer_tabla(archivo))
+  }
+  carpeta <- poblacion_descomprimir(archivo, formato, patron)
+  on.exit(unlink(carpeta, recursive = TRUE), add = TRUE)
   leer_tabla(poblacion_elegir_tabla(carpeta, formato, patron, tabla, archivo = basename(url)))
+}
+
+# Descomprime solo el archivo de la tabla pedida, cuando la lista del contenido
+# del zip basta para saber cual es: algunos zip traen varias tablas grandes (el
+# nacional de la muestra de la Encuesta Intercensal 2025 trae tres) y
+# descomprimirlas todas ocuparia varios GB de disco. La eleccion sigue las mismas
+# reglas que poblacion_elegir_tabla(). Si el zip trae otros zip o si hay mas de
+# un candidato, descomprime todo y poblacion_elegir_tabla() decide.
+poblacion_descomprimir <- function(zip, formato, patron = NULL) {
+  contenido <- tryCatch(utils::unzip(zip, list = TRUE)$Name, error = function(e) character())
+  elegido <- poblacion_tabla_en_lista(contenido, formato, patron)
+  if (is.na(elegido)) {
+    return(inegi_descomprimir(zip))
+  }
+  inegi_descomprimir(zip, anidados = FALSE, archivos = elegido)
+}
+
+# Ruta, dentro de la lista del contenido de un zip, del unico archivo que puede
+# tener la tabla, o NA si no se puede decidir sin descomprimir.
+poblacion_tabla_en_lista <- function(contenido, formato, patron = NULL) {
+  if (length(contenido) == 0 || any(grepl("\\.zip$", contenido, ignore.case = TRUE))) {
+    return(NA_character_)
+  }
+  candidatos <- contenido[tolower(tools::file_ext(contenido)) %in% tolower(formato)]
+  relativa <- tolower(candidatos)
+  en_conjunto <- grepl("conjunto_de_datos", relativa, fixed = TRUE)
+  if (any(en_conjunto)) {
+    candidatos <- candidatos[en_conjunto]
+  } else {
+    de_apoyo <- grepl("diccionario|catalogo|metadato", relativa)
+    if (!all(de_apoyo)) {
+      candidatos <- candidatos[!de_apoyo]
+    }
+  }
+  if (!is.null(patron)) {
+    candidatos <- candidatos[grepl(patron, basename(candidatos), ignore.case = TRUE)]
+  }
+  if (length(candidatos) > 1) {
+    profundidad <- lengths(strsplit(candidatos, "/", fixed = TRUE))
+    candidatos <- candidatos[profundidad == min(profundidad)]
+  }
+  if (length(candidatos) == 1) candidatos else NA_character_
 }
 
 # Ruta en la carpeta temporal de la sesion donde se guarda cada archivo de una
@@ -600,8 +709,10 @@ rellenar_clave <- function(valores, ancho) {
   valores
 }
 
-# Deja las claves geograficas como texto del ancho que usa el INEGI.
-poblacion_normalizar_claves <- function(datos) {
+# Deja las claves geograficas como texto del ancho que usa el INEGI. En los
+# principales resultados por localidad de la Encuesta Intercensal, la clave
+# integrada CVEGEO tiene siempre 9 digitos (entidad, municipio y localidad).
+poblacion_normalizar_claves <- function(datos, base = NULL) {
   claves <- claves_geograficas()
   for (tipo in names(claves)) {
     columna <- columna_clave(datos, tipo)
@@ -609,14 +720,21 @@ poblacion_normalizar_claves <- function(datos) {
       datos[[columna]] <- rellenar_clave(datos[[columna]], claves[[tipo]]$ancho)
     }
   }
+  integrada <- match("CVEGEO", toupper(names(datos)))
+  if (identical(base, "resultados") && !is.na(integrada)) {
+    datos[[integrada]] <- rellenar_clave(datos[[integrada]], 9L)
+  }
   datos
 }
 
 # Nivel de agregacion de cada fila. El INEGI identifica los totales con claves
 # en ceros: municipio "000" para el total de la entidad, localidad "0000" para
 # el del municipio, AGEB "0000" para el de la localidad y manzana "000" para el
-# del AGEB. En el ITER, las localidades "9998" y "9999" son los agregados de
-# las localidades de una y de dos viviendas, que se marcan como "agregado".
+# del AGEB. Se marcan como "agregado" las filas que reunen varias localidades:
+# en el ITER, las localidades "9998" y "9999" (localidades de una y de dos
+# viviendas); en los principales resultados por localidad de la Encuesta
+# Intercensal, el municipio "997" con la localidad "9997" (localidades de
+# menos de 50 000 habitantes de cada entidad).
 #
 # Devuelve NULL si la tabla no tiene las columnas de claves esperadas.
 poblacion_clasificar_nivel <- function(datos, base) {
@@ -641,6 +759,7 @@ poblacion_clasificar_nivel <- function(datos, base) {
     nivel[cero("loc") & cero("mun")] <- "entidad"
     nivel[cero("loc") & cero("mun") & cero("ent")] <- "nacional"
     nivel[datos[[columnas[["loc"]]]] %in% c("9998", "9999")] <- "agregado"
+    nivel[datos[[columnas[["mun"]]]] %in% "997" & datos[[columnas[["loc"]]]] %in% "9997"] <- "agregado"
   }
   nivel
 }
@@ -667,6 +786,19 @@ poblacion_filtrar_nivel <- function(datos, base, nivel, explicito) {
   datos[clasificacion %in% nivel, , drop = FALSE]
 }
 
+# Conserva las filas de las entidades indicadas (claves de dos digitos). Se usa
+# en las bases que solo tienen archivo nacional.
+poblacion_filtrar_entidades <- function(datos, entidades) {
+  columna <- columna_clave(datos, "ent")
+  if (is.na(columna)) {
+    detener(
+      "No se pueden conservar las filas de las entidades pedidas: la tabla no tiene la clave ",
+      "de la entidad. Columnas: ", enumerar(names(datos), maximo = 12), ". Usa estado = \"nacional\"."
+    )
+  }
+  datos[datos[[columna]] %in% entidades, , drop = FALSE]
+}
+
 # Tipos de las columnas -----------------------------------------------------------
 
 # Columnas que se conservan como texto aunque solo contengan numeros: las claves
@@ -675,7 +807,7 @@ poblacion_filtrar_nivel <- function(datos, base, nivel, explicito) {
 # minutos y segundos sin separadores ("1023456").
 columnas_texto <- function(datos) {
   geograficas <- unlist(lapply(claves_geograficas(), function(clave) clave$nombres), use.names = FALSE)
-  otras <- "^ID_|^FOLIO|^NUMVIV$|^LOC50K$|^UPM$|^ESTRATO$|^LONGITUD$|^LATITUD$"
+  otras <- "^ID_|^FOLIO|^NUMVIV$|^LOC50K$|^UPM$|^ESTRATO$|^LONGITUD$|^LATITUD$|^CVEGEO$"
   nombres <- names(datos)
   nombres[toupper(nombres) %in% geograficas | grepl(otras, nombres, ignore.case = TRUE)]
 }
@@ -714,9 +846,10 @@ poblacion_preparar <- function(leer, base) {
   tablas <- armonizar_tablas(leer())
   faltantes <- poblacion_faltantes(base)
   for (i in seq_along(tablas)) {
-    tablas[[i]] <- poblacion_normalizar_claves(tablas[[i]])
+    tablas[[i]] <- poblacion_normalizar_claves(tablas[[i]], base)
     if (!is.null(faltantes)) {
-      tablas[[i]] <- limpiar_faltantes(tablas[[i]], faltantes)
+      identificacion <- poblacion_identificacion(tablas[[i]], base)
+      tablas[[i]] <- limpiar_faltantes(tablas[[i]], faltantes, excepto = identificacion)
     }
   }
   conversion <- poblacion_decidir_conversion(tablas, base)
@@ -755,16 +888,42 @@ poblacion_obtener <- function(programa, year, base, estado, tabla, nivel) {
   if ("nacional" %in% nivel && !identical(claves, "00")) {
     detener("`nivel = \"nacional\"` solo est\u00e1 en el archivo nacional: usa estado = \"nacional\".")
   }
+  # Si la base solo tiene archivo nacional, se descarga ese archivo y despues
+  # se conservan las filas de las entidades pedidas.
+  entidades <- NULL
+  if (identical(archivos$clave, "00") && !identical(claves, "00")) {
+    entidades <- claves
+    claves <- "00"
+  }
   seleccion <- archivos[match(claves, archivos$clave), ]
+  if ("xlsx" %in% seleccion$formato) {
+    requiere_paquete("readxl")
+  }
+  if (!is.null(entidades)) {
+    nombres <- inegi_estados()$nombre[match(entidades, inegi_estados()$clave)]
+    message(
+      "El INEGI publica ", descripcion, " en un solo archivo nacional: se descarga ese archivo (",
+      tamano_texto(seleccion$bytes), ") y se conservan las filas de ", paste(nombres, collapse = ", "), "."
+    )
+  }
   if (nrow(seleccion) > 1) {
     message(
       "Se descargar\u00e1n ", nrow(seleccion), " archivos del INEGI (",
       tamano_texto(seleccion$bytes), " en total)."
     )
   }
+  if (base == "muestra" && sumar_bytes(seleccion$bytes) > 500 * 1024^2) {
+    message(
+      "Leer esta muestra (", tamano_texto(seleccion$bytes), " comprimidos) puede requerir m\u00e1s memoria ",
+      "de la que tienen muchas computadoras. Si solo necesitas algunas entidades, ind\u00edcalas en `estado`."
+    )
+  }
 
   patron <- if (is.na(tabla)) NULL else poblacion_tablas(programa, year, base)[[tabla]]
   datos <- poblacion_preparar(function() poblacion_leer_entidades(seleccion, patron, tabla), base)
+  if (!is.null(entidades)) {
+    datos <- poblacion_filtrar_entidades(datos, entidades)
+  }
   if (!is.null(nivel)) {
     datos <- poblacion_filtrar_nivel(datos, base, nivel, nivel_explicito)
   }

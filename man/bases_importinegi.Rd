@@ -19,8 +19,8 @@ Data.frame con una fila por proyecto, año y base de datos, y las siguientes col
 \item{\code{base}}{Nombre de la base de datos, como se escribe en el argumento \code{base} de la funcion.}
 \item{\code{descripcion}}{Descripcion de la base de datos.}
 \item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga.}
-\item{\code{cobertura}}{\code{"nacional y por entidad"} si el INEGI publica un archivo nacional ademas de los archivos por entidad federativa, o \code{"por entidad"} si solo publica archivos por entidad.}
-\item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"} o \code{"csv"}).}
+\item{\code{cobertura}}{\code{"nacional y por entidad"} si el INEGI publica un archivo nacional ademas de los archivos por entidad federativa, \code{"por entidad"} si solo publica archivos por entidad, o \code{"nacional"} si solo publica el archivo nacional.}
+\item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"} o \code{"xlsx"}).}
 \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
 }
 }
@@ -30,7 +30,7 @@ Devuelve una tabla con las bases de datos del INEGI que se pueden descargar con 
 \details{
 La tabla sale del registro de archivos del INEGI que se distribuye con el paquete, el mismo que usan las funciones de descarga para validar sus argumentos y encontrar la direccion de cada archivo. Por eso, lo que muestra esta funcion es lo que esas funciones pueden descargar. El atributo \code{"registro"} de la tabla indica la fecha en que se genero el registro: los archivos que el INEGI publique despues de esa fecha apareceran al actualizar el paquete.
 
-Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}) y el Conteo de Poblacion y Vivienda (\code{\link{conteo}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
+Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}) y la Encuesta Intercensal (\code{\link{intercensal}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 
 A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 }
@@ -48,5 +48,5 @@ bases$year[bases$base == "ageb"]
 
 }
 \seealso{
-\code{\link{censo}} y \code{\link{conteo}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
+\code{\link{censo}}, \code{\link{conteo}} e \code{\link{intercensal}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 }

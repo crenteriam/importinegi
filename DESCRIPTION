@@ -16,6 +16,7 @@ Imports:
 Suggests:
     knitr,
     markdown,
+    readxl,
     sf,
     testthat (>= 3.0.0),
     webfakes,

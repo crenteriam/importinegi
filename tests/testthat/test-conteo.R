@@ -3,16 +3,7 @@
 # INEGI; ver data-raw/muestras_conteo.R), que el servidor local entrega para
 # Aguascalientes (01), Colima (06) y el archivo nacional.
 
-# Registro del paquete sin las entidades de una base que no esten en `claves`:
-# sirve para probar estado = "nacional" con las entidades del servidor local.
-registro_reducido <- function(programa, year, base, claves) {
-  registro <- registro_archivos
-  archivos <- poblacion_archivos(programa, year, base)
-  quitar <- archivos$url[!archivos$clave %in% claves]
-  registro <- registro[!registro_url(registro) %in% quitar, ]
-  attr(registro, "generado") <- registro_generado()
-  registro
-}
+# registro_reducido() esta en helper-muestras.R.
 
 # ITER ---------------------------------------------------------------------------
 
