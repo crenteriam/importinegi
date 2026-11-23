@@ -24,7 +24,8 @@
 # - Resultados 2025: un XLSX nacional (eic2025_micro_105.xlsx) con una sola hoja
 #   (eic2025_micro_105), el encabezado en la primera fila y las claves como
 #   texto. En lugar de un dato puede haber "MI" (no disponible por muestra
-#   insuficiente) o "NA" (no aplica).
+#   insuficiente) o "NA" (no aplica). En NOM_MUN, un asterisco marca los
+#   municipios censados y dos, los de muestra insuficiente.
 # - con_titulo.xlsx y sin_claves.xlsx no imitan ningun archivo real: prueban
 #   que la lectura de XLSX encuentra la tabla si el INEGI le agrega titulo y
 #   notas, y que avisa si no la encuentra.
@@ -148,7 +149,8 @@ muestra_2025("muestra2025_00.zip", "00", rbind(aguascalientes_2025, colima_2025)
 # agregado de sus localidades menores (997/9997); Colima con dos municipios,
 # cada uno con una localidad, y su agregado. Las poblaciones del valor estimado
 # suman: localidades + agregado = entidad; entidades = pais. Los nombres de los
-# totales son inventados, salvo "Total nacional".
+# totales son los del archivo real. Jesus Maria figura como municipio de
+# muestra insuficiente (**) y Villa de Alvarez, como municipio censado (*).
 
 total_ent <- "Total de la entidad"
 total_mun <- "Total del municipio"
@@ -157,8 +159,8 @@ dominios <- tabla(
   CVE_ENT = c("00", rep("01", 5), rep("06", 6)),
   NOM_ENT = c("Estados Unidos Mexicanos", rep("Aguascalientes", 5), rep("Colima", 6)),
   CVE_MUN = c("000", "000", "001", "001", "005", "997", "000", "002", "002", "010", "010", "997"),
-  NOM_MUN = c("Total nacional", total_ent, "Aguascalientes", "Aguascalientes", "Jesús María", menores,
-              total_ent, "Colima", "Colima", "Villa de Álvarez", "Villa de Álvarez", menores),
+  NOM_MUN = c("Total nacional", total_ent, "Aguascalientes", "Aguascalientes", "Jesús María**", menores,
+              total_ent, "Colima", "Colima", "Villa de Álvarez*", "Villa de Álvarez*", menores),
   CVE_LOC = c("0000", "0000", "0000", "0001", "0000", "9997", "0000", "0000", "0001", "0000", "0001", "9997"),
   NOM_LOC = c("Total nacional", total_ent, total_mun, "Aguascalientes", total_mun, menores,
               total_ent, total_mun, "Colima", total_mun, "Ciudad de Villa de Álvarez", menores),
@@ -178,11 +180,13 @@ filas <- lapply(seq_len(nrow(dominios)), function(i) {
   )
 })
 resultados <- do.call(rbind, filas)
-# Un dato sin muestra suficiente y uno que no aplica, como texto en una columna
-# de numeros
+# Marcas en lugar de numeros, como en el archivo real: en el municipio de
+# muestra insuficiente la mayoria de los indicadores (no la poblacion) es "MI";
+# algunos indicadores no aplican ("NA") en ciertos municipios y localidades
+resultados$PROM_HNV <- as.character(resultados$PROM_HNV)
 resultados$PCN_POB_AFRO <- as.character(resultados$PCN_POB_AFRO)
-resultados$PCN_POB_AFRO[resultados$CVEGEO == "060020001"] <- "MI"
-resultados$PCN_POB_AFRO[resultados$CVEGEO == "019979997"] <- "NA"
+resultados[resultados$CVEGEO == "010050000", c("PROM_HNV", "PCN_POB_AFRO")] <- "MI"
+resultados$PCN_POB_AFRO[resultados$CVEGEO == "060100001"] <- "NA"
 
 # Escribe una tabla en una hoja. Las columnas de texto que mezclan numeros con
 # marcas ("MI") se escriben celda por celda, cada una con su tipo.

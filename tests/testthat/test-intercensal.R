@@ -176,10 +176,13 @@ test_that("intercensal() lee los resultados de 2025 y devuelve las localidades p
   expect_equal(puntual$POBTOT, c(900000, 250000, 150000))
   expect_equal(puntual$PROM_HNV, c(1.89, 1.94, 1.96))
   expect_identical(puntual$NOM_LOC[3], "Ciudad de Villa de Álvarez")
-  # El dato sin muestra suficiente ("MI") es NA; la columna es numerica
+  # El dato que no aplica ("NA") es NA; la columna es numerica
   expect_type(localidades$PCN_POB_AFRO, "double")
-  expect_identical(is.na(puntual$PCN_POB_AFRO), c(FALSE, TRUE, FALSE))
-  expect_equal(puntual$PCN_POB_AFRO[c(1, 3)], c(2.4, 2.4))
+  expect_identical(is.na(puntual$PCN_POB_AFRO), c(FALSE, FALSE, TRUE))
+  expect_equal(puntual$PCN_POB_AFRO[1:2], c(2.4, 2.4))
+  # Los nombres llegan como los publica el INEGI: un asterisco en el municipio
+  # indica que se censo
+  expect_identical(puntual$NOM_MUN, c("Aguascalientes", "Colima", "Villa de Álvarez*"))
 })
 
 test_that("intercensal() filtra los niveles de los resultados", {
@@ -188,16 +191,22 @@ test_that("intercensal() filtra los niveles de los resultados", {
   municipios <- suppressMessages(intercensal(2025, "resultados", nivel = "municipio"))
   expect_identical(unique(paste(municipios$CVE_ENT, municipios$CVE_MUN)), c("01 001", "01 005", "06 002", "06 010"))
   expect_equal(municipios$POBTOT[municipios$ESTIMADOR == "Valor"], c(1000000, 500000, 300000, 200000))
+  # En el municipio de muestra insuficiente (**), los indicadores marcados con
+  # "MI" son NA, pero la poblacion si se publica
+  expect_identical(unique(municipios$NOM_MUN), c("Aguascalientes", "Jesús María**", "Colima", "Villa de Álvarez*"))
+  insuficiente <- municipios$CVE_MUN == "005"
+  expect_type(municipios$PROM_HNV, "double")
+  expect_true(all(is.na(municipios$PROM_HNV[insuficiente])) && all(is.na(municipios$PCN_POB_AFRO[insuficiente])))
+  expect_false(anyNA(municipios$PROM_HNV[!insuficiente]))
 
   todos <- suppressMessages(intercensal(2025, "resultados", nivel = "todos"))
   expect_identical(nrow(todos), 60L)
   expect_identical(todos$CVEGEO[1], "000000000")
   # El agregado de las localidades menores de cada entidad (997/9997) solo
-  # aparece con nivel = "todos"; el dato que no aplica ("NA") es NA
+  # aparece con nivel = "todos"
   agregados <- todos[todos$CVE_MUN == "997", ]
   expect_identical(unique(agregados$CVE_LOC), "9997")
   expect_identical(unique(agregados$CVEGEO), c("019979997", "069979997"))
-  expect_true(all(is.na(agregados$PCN_POB_AFRO[agregados$CVE_ENT == "01"])))
   puntual <- todos[todos$ESTIMADOR == "Valor", ]
   # Las localidades mas el agregado suman la entidad
   entidades <- puntual[puntual$CVE_MUN == "000" & puntual$CVE_ENT != "00", ]
