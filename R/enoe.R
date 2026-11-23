@@ -38,6 +38,8 @@ enoe = function(year = NA, trimestre = NA, integrar = FALSE){
   # Read all files in the folder
   output = lapply(list_dataraw, foreign::read.dbf, as.is = TRUE)
   names(output) = list_names
+  # El texto "NULL" se convierte en NA, como en todas las funciones del paquete
+  output = lapply(output, nulos_a_na)
 
   # INTEGRAR - TRUE  FALSE
   if (integrar == TRUE) {

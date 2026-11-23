@@ -72,11 +72,10 @@ test_that("EN VIVO: cndhf() lee el tema mas pequeno de cada modulo y edicion", {
     }
     contenido <- gobierno_contenido(ruta_cache(tema$url), tema$formato, "cndhf")
     siglas <- unlist(lapply(tablas, con_siglas_cndhf))
-    nulos <- unlist(lapply(tablas, con_siglas_cndhf, siglas = "NULL"))
     cat("[en vivo] ", etiqueta, " (", tema$tamano, "): ", length(tablas), " tablas (",
         paste(utils::head(names(tablas), 4), collapse = ", "), if (length(tablas) > 4) ", ...", "); filas de ",
         min(vapply(tablas, nrow, integer(1))), " a ", max(vapply(tablas, nrow, integer(1))),
-        "; columnas con NSS, ND o NP: ", length(siglas), "; con NULL: ", length(nulos),
+        "; columnas con NSS, ND o NP: ", length(siglas),
         "; archivos: ", paste(names(table(contenido$tipo)), table(contenido$tipo), sep = "=", collapse = ", "),
         if (any(grepl("\\", contenido$original, fixed = TRUE, useBytes = TRUE))) "; rutas con \\", "\n", sep = "")
     # Encabezados reales de la primera tabla: no se pudieron ver sin descargar
@@ -127,6 +126,43 @@ test_that("EN VIVO: cndhf() lee el tema mas pequeno de cada modulo y edicion", {
                    "no es una tabla", info = etiqueta)
     }
   }
+})
+
+test_that("EN VIVO: cndhf() lee los 20 temas de 2017, tambien los zip con nombres que no son UTF-8", {
+  en_vivo()
+  # Tres zip de 2017 guardan nombres en la pagina de codigos de DOS. Al revisar
+  # el censo no se anoto cuales ni en que archivos: aqui se leen todos y el
+  # registro de la ejecucion dice donde estan
+  temas <- gobierno_temas("cndhf", 2017)
+  expect_identical(nrow(temas), 20L)
+  con_nombres_dos <- 0L
+  for (i in seq_len(nrow(temas))) {
+    etiqueta <- paste(2017, temas$modulo[i], temas$base[i])
+    tablas <- tryCatch(suppressMessages(cndhf(2017, temas$modulo[i], temas$base[i])), error = function(e) e)
+    expect_false(inherits(tablas, "error"), info = paste(etiqueta, if (inherits(tablas, "error")) conditionMessage(tablas)))
+    if (inherits(tablas, "error")) {
+      cat("[en vivo] ", etiqueta, ": ERROR ", conditionMessage(tablas), "\n", sep = "")
+      next
+    }
+    expect_gt(length(tablas), 0L)
+    expect_false(any(grepl("[^ -~]", names(tablas))), info = etiqueta)
+    contenido <- gobierno_contenido(ruta_cache(temas$url[i]), temas$formato[i], "cndhf")
+    ajenos <- !validUTF8(contenido$original)
+    if (any(ajenos)) {
+      con_nombres_dos <- con_nombres_dos + 1L
+      cat("[en vivo] ", etiqueta, ": ", sum(ajenos), " de ", nrow(contenido), " nombres no son UTF-8; por tipo: ",
+          paste(names(table(contenido$tipo[ajenos])), table(contenido$tipo[ajenos]), sep = "=", collapse = ", "),
+          "; ejemplo: ", contenido$ruta[ajenos][1], "; tablas: ", paste(utils::head(names(tablas), 6), collapse = ", "),
+          "\n", sep = "")
+      # Los catalogos del tema tambien se leen
+      catalogos <- tryCatch(suppressMessages(cndhf(2017, temas$modulo[i], temas$base[i], tabla = "catalogos")),
+                            error = function(e) e)
+      if (any(contenido$tipo == "catalogo")) {
+        expect_false(inherits(catalogos, "error"), info = paste(etiqueta, "catalogos"))
+      }
+    }
+  }
+  cat("[en vivo] 2017: temas con nombres que no son UTF-8 = ", con_nombres_dos, " de ", nrow(temas), "\n", sep = "")
 })
 
 test_that("EN VIVO: los temas de los ejemplos tienen la forma documentada", {

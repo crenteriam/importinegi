@@ -25,6 +25,14 @@
 #   cndhf2017_participacion  Edicion 2017: tabla con nombre corto y sin sufijo,
 #                            diccionario con forma de reporte y una entrada
 #                            "metadatos\" (con barra invertida) en el zip.
+#   cndhf2017_capacitacion   Edicion 2017: nombres que no son UTF-8 valido
+#                            (estan en la pagina de codigos de DOS, sin la
+#                            marca de UTF-8) en la carpeta superior, en una
+#                            tabla, en el diccionario y en un archivo que la
+#                            funcion no usa; una tabla guardada con "\" como
+#                            separador. Tres zip de 2017 tienen nombres asi;
+#                            los de esta muestra son inventados, porque no se
+#                            anoto en cuales archivos estan.
 #
 # La entrada con "\" se guarda asi solo si el script corre en Linux o macOS: en
 # Windows, "\" separa carpetas.
@@ -253,5 +261,37 @@ escribir_zip(
     "metadatos/metadatos_cndhf_2017.txt" = "Muestra inventada"
   )
 )
+
+# Edicion 2017: nombres que no son UTF-8 valido y una tabla guardada con "\" ---------
+# El zip se escribe byte por byte (escribir_zip_crudo), porque utils::zip() no
+# puede guardar estos nombres.
+tema_dos <- "Capacitaci\u00f3n y difusi\u00f3n"
+escribir_zip_crudo("cndhf2017_capacitacion.zip", list(
+  list(
+    nombre = bytes_dos(paste0(tema_dos, "/conjunto_de_datos/capacdif.csv")),
+    contenido = c("re_snn1,totalca1,nombre1", "1,5,Capacitaci\u00f3n", "2,NULL,Difusi\u00f3n")
+  ),
+  list(
+    nombre = bytes_dos(paste0(tema_dos, "\\conjunto_de_datos\\difusi\u00f3n.csv")),
+    contenido = c("re_snn1,totalca1", "1,NSS", "2,7")
+  ),
+  list(
+    nombre = bytes_dos(paste0(tema_dos, "/catalogos/re_snn1.csv")),
+    contenido = c("re_snn1,descrip", "1,S\u00ed", "2,No", "9,No se sabe")
+  ),
+  list(
+    nombre = bytes_dos(paste0(tema_dos, "/diccionario_de_datos/diccionario_de_datos_Capacitaci\u00f3n_y_difusi\u00f3n.csv")),
+    contenido = c(
+      "\"Censo Nacional de Derechos Humanos Federal 2017\",,,,,,,,",
+      "\"Archivo: CAPACDIF.dbf (Muestra inventada)\",,,,,,,,",
+      "1,RE_SNN1,SECC XI. 1,Muestra inventada,Num\u00e9rico,1,1,S\u00ed,"
+    )
+  ),
+  list(
+    nombre = bytes_dos(paste0(tema_dos, "/modelo_entidad_relacion/modelo_er_Capacitaci\u00f3n.png")),
+    contenido = charToRaw("Muestra inventada")
+  ),
+  list(nombre = charToRaw("metadatos\\"), contenido = raw())
+))
 
 message("Muestras escritas en ", destino, ": ", paste(list.files(destino), collapse = ", "))

@@ -146,6 +146,93 @@ test_that("las bitacoras de cambios tampoco se leen como tablas en el censo muni
   expect_identical(contenido$tabla[contenido$tipo == "datos"], "m1s1p1")
 })
 
+test_that("gobierno_ruta() deja en ASCII los nombres que no son UTF-8 valido", {
+  # 0xa2 y 0xa0 son la o y la a con acento en la pagina de codigos de DOS
+  nombres <- c(
+    "catalogos/sexo_i.csv", "conjunto_de_datos\\m1s2p1.csv", "Difusi\xa2n\\cat\xa0logos\\re_snn1.csv",
+    "cat\u00e1logos/sexo.csv"
+  )
+  rutas <- gobierno_ruta(nombres)
+  expect_identical(rutas[1:3], c("catalogos/sexo_i.csv", "conjunto_de_datos/m1s2p1.csv", "Difusi_n/cat_logos/re_snn1.csv"))
+  # Los nombres en UTF-8 valido no cambian
+  expect_identical(rutas[4], nombres[4])
+  expect_true(all(validUTF8(rutas)))
+  expect_identical(gobierno_ruta(character()), character())
+  expect_identical(nombre_seguro(c("m1s1p3_cngmd2025.csv", "difusi\xa2n (2).csv", "a b/c.dbf")),
+                   c("m1s1p3_cngmd2025.csv", "difusi_n__2_.csv", "a_b_c.dbf"))
+})
+
+test_that("se clasifica un zip con nombres que no son UTF-8 y con barra invertida", {
+  zip <- muestra("cndhf/cndhf2017_capacitacion.zip")
+  # La muestra tiene lo que se quiere probar
+  nombres <- utils::unzip(zip, list = TRUE)$Name
+  expect_identical(sum(!validUTF8(nombres)), 5L)
+  expect_true(any(grepl("\\", nombres, fixed = TRUE, useBytes = TRUE)))
+  contenido <- gobierno_contenido(zip, "csv", "cndhf")
+  expect_identical(contenido$original, nombres)
+  expect_identical(contenido$tipo, c("datos", "datos", "catalogo", "diccionario", "otro", "carpeta"))
+  expect_identical(contenido$tabla[1:3], c("capacdif", "difusi_n", "re_snn1"))
+  expect_false(any(grepl("[^ -~]", contenido$ruta)))
+})
+
+test_that("la clasificacion no depende de la configuracion regional de R", {
+  zip <- muestra("cndhf/cndhf2017_capacitacion.zip")
+  esperado <- gobierno_contenido(zip, "csv", "cndhf")
+  # Sin UTF-8, R no puede convertir a la codificacion del equipo un nombre con
+  # acentos: la clasificacion fallaba al listar el zip
+  cambiada <- tryCatch(
+    {
+      withr::local_locale(c(LC_CTYPE = "C"))
+      TRUE
+    },
+    warning = function(w) FALSE,
+    error = function(e) FALSE
+  )
+  skip_if_not(cambiada, "No se pudo cambiar la configuracion regional")
+  expect_identical(gobierno_contenido(zip, "csv", "cndhf"), esperado)
+  extraido <- gobierno_extraer(zip, esperado[esperado$tipo == "datos", ])
+  withr::defer(unlink(extraido$carpeta, recursive = TRUE))
+  expect_true(all(file.exists(extraido$archivos)))
+})
+
+test_that("los archivos se extraen con nombres propios, no con los del zip", {
+  for (nombre in c("cndhf/cndhf2017_capacitacion.zip", "gobierno/cngmd2021_alcaldias.zip", "cndhf/cndhf2025_consejo.zip")) {
+    zip <- muestra(nombre)
+    lista <- utils::unzip(zip, list = TRUE)
+    contenido <- gobierno_contenido(zip, "csv", if (grepl("cngmd", nombre)) "cngmd" else "cndhf")
+    filas <- contenido[contenido$tipo %in% c("datos", "indice", "catalogo", "diccionario"), ]
+    expect_gt(nrow(filas), 0)
+    extraido <- gobierno_extraer(zip, filas)
+    expect_identical(length(extraido$archivos), nrow(filas))
+    expect_true(all(file.exists(extraido$archivos)), info = nombre)
+    # Cada archivo llega completo
+    expect_identical(as.numeric(file.size(extraido$archivos)), as.numeric(lista$Length[match(filas$original, lista$Name)]),
+                     info = nombre)
+    # Dentro de la carpeta temporal, las rutas solo tienen letras, numeros, punto y guiones
+    relativas <- substring(extraido$archivos, nchar(extraido$carpeta) + 2)
+    expect_true(all(grepl("^[0-9]{4}/[A-Za-z0-9._-]+$", relativas)), info = paste(nombre, paste(relativas, collapse = " ")))
+    # No queda en disco ningun otro archivo ni carpeta
+    en_disco <- list.files(extraido$carpeta, recursive = TRUE, all.files = TRUE, no.. = TRUE)
+    expect_setequal(en_disco, relativas)
+    # El nombre del archivo se conserva cuando ya es seguro
+    seguros <- grepl("^[A-Za-z0-9._-]+$", basename(filas$ruta))
+    expect_identical(basename(extraido$archivos)[seguros], basename(filas$ruta)[seguros])
+    unlink(extraido$carpeta, recursive = TRUE)
+  }
+})
+
+test_that("la extraccion avisa si un archivo no esta en el zip", {
+  zip <- muestra("cndhf/cndhf2025_consejo.zip")
+  filas <- gobierno_contenido(zip, "csv", "cndhf")
+  filas <- filas[filas$tipo == "datos", ][1, ]
+  filas$original <- "conjunto_de_datos/no_existe.csv"
+  filas$ruta <- filas$original
+  antes <- list.files(tempdir(), pattern = "^importinegi_")
+  expect_error(gobierno_extraer(zip, filas), "No se pudo extraer de cndhf2025_consejo.zip: no_existe.csv")
+  # No deja carpetas temporales
+  expect_setequal(list.files(tempdir(), pattern = "^importinegi_"), antes)
+})
+
 # Claves geograficas y siglas ------------------------------------------------------------
 
 test_that("las claves geograficas se completan segun la forma en que se publican", {
@@ -197,15 +284,23 @@ test_that("las claves de cada censo no se aplican al otro", {
   expect_identical(federal$cve_ent, c(1L, 14L))
 })
 
-test_that("solo la sigla NA pasa a ser NA; NSS, ND, NP y NULL se conservan", {
-  lista <- gobierno_preparar(data.frame(
-    limpia = c("5", "NA", "12"), con_sigla = c("5", "NSS", "NA"), con_null = c("NULL", "3", "NA"),
-    texto = c("ND", "NP", "a"), stringsAsFactors = FALSE
-  ), "cndhf")
+test_that("la sigla NA y el texto NULL pasan a ser NA; NSS, ND y NP se conservan", {
+  archivo <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c(
+    "limpia,con_sigla,con_null,texto,enticve1",
+    "5,5,NULL,ND,1",
+    "NA,NSS,3,NP,null",
+    "12,NA,Null,a,14"
+  ), archivo)
+  lista <- gobierno_leer_tabla(archivo, "csv", "cndhf")
   expect_identical(lista$limpia, c(5L, NA, 12L))
   expect_identical(lista$con_sigla, c("5", "NSS", NA))
-  expect_identical(lista$con_null, c("NULL", "3", NA))
+  # Sin el texto "NULL", la columna queda con numeros y se convierte
+  # No distingue mayusculas de minusculas
+  expect_identical(lista$con_null, c(NA, 3L, NA))
   expect_identical(lista$texto, c("ND", "NP", "a"))
+  # En una clave geografica tambien pasa a ser NA; las demas se rellenan
+  expect_identical(lista$enticve1, c("01", NA, "14"))
 })
 
 # Descarga y lectura ---------------------------------------------------------------------
@@ -351,6 +446,29 @@ test_that("un tema que el servidor no tiene se reporta como archivo no publicado
     suppressMessages(cndhf(2025, "estructura", "recursos humanos")),
     "El INEGI no tiene publicado el archivo"
   )
+})
+
+test_that("se lee un tema cuyo zip tiene nombres que no son UTF-8 y barra invertida", {
+  censo_local()
+  tablas <- suppressMessages(cndhf(2017, "estructura", "capacitacion"))
+  # La tabla con acento en su nombre queda con "_" en su lugar
+  expect_named(tablas, c("capacdif", "difusi_n"))
+  expect_identical(tablas$capacdif$re_snn1, 1:2)
+  # El texto "NULL" llega como NA y la columna queda como numero
+  expect_identical(tablas$capacdif$totalca1, c(5L, NA))
+  expect_identical(tablas$capacdif$nombre1, c("Capacitaci\u00f3n", "Difusi\u00f3n"))
+  expect_identical(tablas$difusi_n$totalca1, c("NSS", "7"))
+  expect_match(attr(tablas, "fuente"), "/2017/datosabiertos/m1/Capacitac_difusion_DH_cndhf2017_csv\\.zip$")
+  una <- suppressMessages(cndhf(2017, "estructura", "capacitacion", tabla = "difusi_n"))
+  expect_identical(una$totalca1, c("NSS", "7"))
+  catalogos <- suppressMessages(cndhf(2017, "estructura", "capacitacion", tabla = "catalogos"))
+  expect_named(catalogos, "re_snn1")
+  expect_identical(catalogos$re_snn1$descrip, c("S\u00ed", "No", "No se sabe"))
+  indice <- suppressMessages(cndhf(2017, "estructura", "capacitacion", tabla = "indice"))
+  expect_identical(indice$tabla, c("capacdif", "difusi_n"))
+  # En 2017 el diccionario es un documento, tambien cuando su nombre no es UTF-8
+  expect_error(suppressMessages(cndhf(2017, "estructura", "capacitacion", tabla = "diccionario")),
+               "no es una tabla")
 })
 
 # bases_importinegi() ---------------------------------------------------------------------

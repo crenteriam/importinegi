@@ -56,7 +56,7 @@ Las columnas conservan los nombres que les da el INEGI. La clave del municipio c
 
 La mayoria de las variables estan codificadas. La funcion devuelve los codigos y no los sustituye por su descripcion. Cada archivo incluye un catalogo por cada variable codificada, con el mismo nombre que la columna; \code{tabla = "catalogos"} los devuelve. Los nombres de los municipios no estan en las tablas, sino en uno de los catalogos.
 
-En las ediciones de 2021 en adelante, el INEGI escribe siglas en lugar de un dato: \code{"NA"} (no aplica), \code{"NSS"} (el informante no cuenta con elementos para responder), \code{"ND"} (informacion no disponible) y \code{"NP"} (no publicable por confidencialidad o por reserva de informacion). La funcion convierte \code{"NA"} en \code{NA} y conserva las otras tres siglas. Por eso, las columnas de cantidades que contienen \code{"NSS"}, \code{"ND"} o \code{"NP"} se devuelven como texto; las columnas que solo contienen numeros se devuelven como numero.
+En las ediciones de 2021 en adelante, el INEGI escribe siglas en lugar de un dato: \code{"NA"} (no aplica), \code{"NSS"} (el informante no cuenta con elementos para responder), \code{"ND"} (informacion no disponible) y \code{"NP"} (no publicable por confidencialidad o por reserva de informacion). La funcion convierte \code{"NA"} en \code{NA} y conserva las otras tres siglas. Tambien convierte en \code{NA} el texto \code{"NULL"}, escrito con mayusculas o con minusculas, que los diccionarios de datos del INEGI listan entre los valores validos sin definirlo. Por eso, las columnas de cantidades que contienen \code{"NSS"}, \code{"ND"} o \code{"NP"} se devuelven como texto; las columnas que solo contienen numeros se devuelven como numero.
 }
 
 \examples{

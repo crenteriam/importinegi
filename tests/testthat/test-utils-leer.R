@@ -151,3 +151,84 @@ test_that("leer_csv() lee sin avisos un CSV que no termina con salto de linea", 
   expect_no_warning(datos <- leer_csv(archivo))
   expect_identical(datos, data.frame(a = c("1", "3", "5"), b = c("2", "4", "6")))
 })
+
+test_that("nulos_a_na() convierte el texto NULL en NA y no toca lo demas", {
+  datos <- data.frame(
+    cantidad = c("1", "NULL", " NULL ", "3"),
+    variantes = c("null", "Null", " nuLL", "4"),
+    texto = c("NULLIDAD", "nulo", "valor NULL", "null y vacio"),
+    numero = c(1, 2, 3, 4),
+    categoria = factor(c("a", "NULL", "b", "null")),
+    stringsAsFactors = FALSE
+  )
+  datos$lista <- I(list(1, "NULL", 3, 4))
+  limpio <- nulos_a_na(datos)
+  expect_identical(limpio$cantidad, c("1", NA, NA, "3"))
+  # No distingue mayusculas de minusculas
+  expect_identical(limpio$variantes, c(NA, NA, NA, "4"))
+  # Solo cuenta la celda completa: un texto que contiene la palabra no cambia
+  expect_identical(limpio$texto, datos$texto)
+  expect_identical(limpio$numero, datos$numero)
+  expect_identical(as.character(limpio$categoria), c("a", NA, "b", NA))
+  expect_identical(levels(limpio$categoria), c("a", "b"))
+  expect_identical(limpio$lista, datos$lista)
+  expect_identical(names(limpio), names(datos))
+  # Sin nada que cambiar devuelve la misma tabla, tambien si no tiene filas
+  sin_nulos <- data.frame(a = c("x", NA), b = 1:2, stringsAsFactors = FALSE)
+  expect_identical(nulos_a_na(sin_nulos), sin_nulos)
+  expect_identical(nulos_a_na(sin_nulos[0, ]), sin_nulos[0, ])
+})
+
+test_that("nulos_a_na() acepta texto que no es UTF-8 valido", {
+  datos <- data.frame(a = c("NULL", "ni\xf1o", "x"), stringsAsFactors = FALSE)
+  expect_identical(nulos_a_na(datos)$a[c(1, 3)], c(NA, "x"))
+})
+
+test_that("leer_csv() y leer_dbf() devuelven como NA el texto NULL", {
+  csv <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c("clave,total,nota", "01,5,NULL", "02,NULL,\"Null\"", "03, null ,valor NULL"), csv)
+  datos <- leer_csv(csv)
+  expect_identical(datos$clave, c("01", "02", "03"))
+  expect_identical(datos$total, c("5", NA, NA))
+  expect_identical(datos$nota, c(NA, NA, "valor NULL"))
+  # Sin el texto "NULL", la columna se puede convertir a numero
+  expect_identical(leer_tabla(csv, convertir = TRUE)$total, c(5L, NA, NA))
+
+  dbf <- withr::local_tempfile(fileext = ".dbf")
+  foreign::write.dbf(
+    data.frame(clave = c("01", "02", "03"), total = c("NULL", "7", "8"), stringsAsFactors = FALSE), dbf
+  )
+  expect_identical(leer_dbf(dbf)$total, c(NA, "7", "8"))
+  expect_identical(foreign::read.dbf(dbf, as.is = TRUE)$total, c("NULL", "7", "8"))
+})
+
+test_that("leer_xlsx() devuelve como NA el texto NULL", {
+  testthat::skip_if_not_installed("readxl")
+  datos <- leer_tabla(muestra("intercensal/con_nulos.xlsx"))
+  expect_identical(datos$CVE_ENT, c("01", "06", "14"))
+  expect_identical(datos$NOM_ENT, c("Aguascalientes", NA, "Jalisco"))
+  expect_identical(datos$POBTOT, c("900000", "250000", NA))
+  expect_identical(datos$NOTA, c("NULL en otro texto", "nulo", NA))
+})
+
+test_that("las funciones que leen por su cuenta aplican nulos_a_na() a su resultado", {
+  # enoe(), enigh_nuevaconstruccion(), sig_marcogeo() y sig_caminos_extrae()
+  # todavia no usan las utilidades de lectura
+  for (funcion in list(enoe, enigh_nuevaconstruccion, sig_marcogeo, sig_caminos_extrae)) {
+    expect_true(any(grepl("nulos_a_na", deparse(body(funcion)), fixed = TRUE)))
+  }
+})
+
+test_that("nulos_a_na() conserva los objetos espaciales de sf", {
+  testthat::skip_if_not_installed("sf")
+  mapa <- sf::st_sf(
+    nombre = c("Centro", "NULL"), clave = c("NULL", "02"),
+    geometry = sf::st_sfc(sf::st_point(c(0, 0)), sf::st_point(c(1, 1))),
+    stringsAsFactors = FALSE
+  )
+  limpio <- nulos_a_na(mapa)
+  expect_s3_class(limpio, "sf")
+  expect_identical(limpio$nombre, c("Centro", NA))
+  expect_identical(limpio$clave, c(NA, "02"))
+  expect_identical(sf::st_geometry(limpio), sf::st_geometry(mapa))
+})
