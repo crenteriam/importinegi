@@ -181,6 +181,29 @@ test_that("las claves se completan con ceros y solo la sigla NA pasa a ser NA", 
   expect_identical(gobierno_rellenar(c("Jalisco", "7", NA), 2), c("Jalisco", "07", NA))
   expect_identical(gobierno_entidad_fila(lista), c("01", "14", NA))
   expect_null(gobierno_entidad_fila(data.frame(tema = 1)))
+  # La clave del municipio tiene varios nombres segun la edicion y la tabla
+  nombres <- c("ubic_geo", "UBI_GEO", "ub_geo", "ubicageo_c", "ubicageo_f", "cvegeo", "UBIC_GEO", "geologia", "ubicacion")
+  cruda <- as.data.frame(stats::setNames(rep(list("1001"), length(nombres)), nombres), stringsAsFactors = FALSE)
+  expect_identical(gobierno_columnas_clave(cruda)$municipio, nombres[1:7])
+})
+
+test_that("un DBF que declara mas registros de los que contiene se lee sin filas vacias", {
+  carpeta <- withr::local_tempdir()
+  utils::unzip(muestra("gobierno/cngmd2011_agua.zip"), exdir = carpeta)
+  original <- list.files(carpeta, pattern = "AGUA_RED[.]DBF$", recursive = TRUE, full.names = TRUE)
+  expect_identical(gobierno_reparar_dbf(original), original)
+  # Como los DBF de agua potable de 2011: el encabezado dice 50,122 registros
+  inflado <- file.path(carpeta, "inflado.dbf")
+  file.copy(original, inflado)
+  conexion <- file(inflado, open = "r+b")
+  seek(conexion, where = 4, rw = "write")
+  writeBin(50122L, conexion, size = 4, endian = "little")
+  close(conexion)
+  reparado <- gobierno_reparar_dbf(inflado)
+  expect_false(identical(reparado, inflado))
+  tabla <- gobierno_leer_tabla(inflado, "dbf")
+  expect_identical(tabla, gobierno_leer_tabla(original, "dbf"))
+  expect_identical(tabla$UBIC_GEO, c("01001", "06002", "14039"))
 })
 
 # Descargas contra el servidor local ---------------------------------------------------

@@ -69,7 +69,8 @@ test_that("EN VIVO: cng_municipal() lee el tema mas peque\u00f1o de cada modulo 
       }
       diccionario <- tryCatch(suppressMessages(cng_municipal(tema$year, tema$modulo, tema$base, tabla = "diccionario")),
                               error = function(e) e)
-      expect_false(inherits(diccionario, "error"), info = paste(etiqueta, "diccionario"))
+      expect_false(inherits(diccionario, "error"),
+                   info = paste(etiqueta, "diccionario:", if (inherits(diccionario, "error")) substr(conditionMessage(diccionario), 1, 300)))
       if (!inherits(diccionario, "error")) {
         ajenas <- setdiff(unique(diccionario$tabla), names(tablas))
         expect_identical(ajenas, character(), info = paste(etiqueta, "diccionario sin tabla"))

@@ -340,11 +340,11 @@ gobierno_extraer <- function(zip, filas) {
 # Lectura y preparacion de las tablas -----------------------------------------------
 
 # Claves geograficas de los censos de gobierno, con el ancho que usa el INEGI.
-# El nombre de la clave del municipio cambia con la edicion: ubic_geo,
-# ubicageo_c, ubicageo_f o cvegeo.
+# El nombre de la clave del municipio cambia con la edicion y con la tabla:
+# ubic_geo, ubi_geo, ub_geo, ubicageo_c, ubicageo_f o cvegeo.
 gobierno_claves <- function() {
   list(
-    municipio = list(patron = "^(ubic?a?_?geo[a-z_]*|cvegeo)$", ancho = 5),
+    municipio = list(patron = "^(ub(ic?a?)?_?geo[a-z_]*|cvegeo)$", ancho = 5),
     entidad = list(patron = "^(cve_ent|cve_entidad|entidad)$", ancho = 2),
     mun = list(patron = "^cve_mun$", ancho = 3)
   )
@@ -387,8 +387,50 @@ gobierno_preparar <- function(datos) {
   convertir_numericas(datos, texto = unlist(columnas, use.names = FALSE))
 }
 
-gobierno_leer_tabla <- function(archivo) {
-  gobierno_preparar(leer_tabla(archivo))
+# Lee una tabla y la prepara. El formato se indica en lugar de deducirlo del
+# nombre del archivo: algunos zip guardan sus carpetas con nombres que no son
+# texto valido en UTF-8.
+gobierno_leer_tabla <- function(archivo, formato) {
+  datos <- if (identical(formato, "dbf")) {
+    reparado <- gobierno_reparar_dbf(archivo)
+    if (!identical(reparado, archivo)) {
+      on.exit(unlink(reparado), add = TRUE)
+    }
+    leer_dbf(reparado)
+  } else {
+    leer_csv(archivo)
+  }
+  gobierno_preparar(datos)
+}
+
+# Algunos DBF del censo municipal de 2011 declaran en su encabezado mas
+# registros de los que contienen (50,122 en lugar de unos 2,450); al leerlos
+# tal cual, las filas que faltan llegan vacias. Si el archivo es mas corto de lo
+# que declara, devuelve la ruta de una copia con el numero real de registros;
+# si no, la misma ruta.
+gobierno_reparar_dbf <- function(archivo) {
+  encabezado <- readBin(archivo, "raw", n = 12)
+  if (length(encabezado) < 12) {
+    return(archivo)
+  }
+  entero <- function(bytes) sum(as.numeric(bytes) * 256^(seq_along(bytes) - 1))
+  declarados <- entero(encabezado[5:8])
+  largo_encabezado <- entero(encabezado[9:10])
+  largo_registro <- entero(encabezado[11:12])
+  if (largo_registro == 0) {
+    return(archivo)
+  }
+  reales <- floor((file.size(archivo) - largo_encabezado) / largo_registro)
+  if (reales < 0 || reales >= declarados) {
+    return(archivo)
+  }
+  copia <- tempfile("importinegi_", fileext = ".dbf")
+  file.copy(archivo, copia)
+  conexion <- file(copia, open = "r+b")
+  on.exit(close(conexion))
+  seek(conexion, where = 4, rw = "write")
+  writeBin(as.integer(reales), conexion, size = 4, endian = "little")
+  copia
 }
 
 # Clave de la entidad de cada fila: los dos primeros digitos de la clave del
@@ -526,7 +568,7 @@ gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado) {
     if (nrow(filas) == 0) {
       detener("El archivo del tema ", etiqueta, " no incluye cat\u00e1logos.")
     }
-    catalogos <- lapply(extraer(filas), gobierno_leer_tabla)
+    catalogos <- lapply(extraer(filas), gobierno_leer_tabla, formato = elegido$formato)
     names(catalogos) <- filas$tabla
     return(con_fuente(catalogos))
   }
@@ -557,7 +599,7 @@ gobierno_obtener <- function(programa, year, modulo, tema, tabla, estado) {
   archivos <- extraer(datos)
   sin_clave <- character()
   tablas <- lapply(seq_len(nrow(datos)), function(i) {
-    leida <- gobierno_leer_tabla(archivos[i])
+    leida <- gobierno_leer_tabla(archivos[i], elegido$formato)
     if (!is.null(entidades)) {
       filtrada <- gobierno_filtrar_entidades(leida, entidades)
       if (is.null(filtrada)) {
