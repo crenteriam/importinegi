@@ -49,4 +49,9 @@ jobs:
           extra-packages: any::pkgload, any::testthat, any::withr, any::webfakes, any::readxl
 
       - name: Pruebas en vivo contra el INEGI
-        run: Rscript -e 'testthat::test_local(filter = "en-vivo", stop_on_failure = TRUE)'
+        # Las lineas se recortan: una linea enorme en la salida de una prueba deja
+        # el registro de la ejecucion sin el resto de la salida.
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript -e 'testthat::test_local(filter = "en-vivo", stop_on_failure = TRUE)' 2>&1 | cut -c1-3000

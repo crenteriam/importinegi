@@ -9,7 +9,8 @@
 #
 # El servicio no esta documentado por el INEGI y puede cambiar sin aviso.
 
-# Direccion del listado de archivos de un proyecto (tipo 4 = microdatos).
+# Direccion del listado de archivos de un proyecto. El servicio separa los
+# archivos por tipo de documento: 4 = microdatos y 12 = datos abiertos.
 api_url_archivos <- function(id, tipo = 4) {
   paste0(
     inegi_base(),
@@ -37,9 +38,10 @@ inegi_api_id <- function(pagina) {
   as.integer(sub(".*idm=\"([0-9]+)\"$", "\\1", etiqueta))
 }
 
-# Listado de archivos de microdatos de un proyecto, una fila por archivo y formato.
-inegi_api_archivos <- function(id) {
-  json <- inegi_texto(api_url_archivos(id))
+# Listado de archivos de un proyecto (microdatos, o el tipo de documento que se
+# indique), una fila por archivo y formato.
+inegi_api_archivos <- function(id, tipo = 4) {
+  json <- inegi_texto(api_url_archivos(id, tipo))
   registros <- tryCatch(
     jsonlite::fromJSON(json, simplifyVector = FALSE),
     error = function(e) NULL
@@ -128,8 +130,24 @@ api_a_tabla <- function(registros) {
   tabla
 }
 
+# Tipos de documento de un proyecto, como numeros: "4|12" pasa a ser c(4, 12).
+registro_tipos <- function(tipos) {
+  tipos <- as.character(tipos)
+  if (length(tipos) != 1 || is.na(tipos) || !nzchar(trimws(tipos))) {
+    return(4L)
+  }
+  numeros <- suppressWarnings(as.integer(strsplit(tipos, "|", fixed = TRUE)[[1]]))
+  if (length(numeros) == 0 || anyNA(numeros)) {
+    detener("`tipos` debe contener tipos de documento separados por \"|\" (por ejemplo, \"4|12\").")
+  }
+  unique(numeros)
+}
+
 # Construye el registro para una lista de proyectos. `proyectos` es una tabla
-# con las columnas proyecto, edicion y pagina (ver data-raw/proyectos.csv).
+# con las columnas proyecto, edicion y pagina (ver data-raw/proyectos.csv). La
+# columna opcional `tipos` indica los tipos de documento que se consultan,
+# separados por "|" (por ejemplo "4|12"); si falta o esta vacia, solo los
+# microdatos (tipo 4).
 # Si un proyecto falla, continua con los demas y lo reporta en el atributo
 # "fallas" del resultado.
 registro_construir <- function(proyectos, silencioso = FALSE) {
@@ -145,11 +163,15 @@ registro_construir <- function(proyectos, silencioso = FALSE) {
     proyecto <- as.character(proyectos$proyecto[i])
     edicion <- suppressWarnings(as.integer(as.character(proyectos$edicion[i])))
     pagina <- as.character(proyectos$pagina[i])
+    tipos <- registro_tipos(if ("tipos" %in% names(proyectos)) proyectos$tipos[i] else NA)
     etiqueta <- if (is.na(edicion)) proyecto else paste(proyecto, edicion)
 
     resultado <- tryCatch({
       id <- inegi_api_id(pagina)
-      tabla <- inegi_api_archivos(id)
+      tabla <- do.call(rbind, lapply(tipos, function(tipo) inegi_api_archivos(id, tipo)))
+      # Un archivo que aparece en dos listados se registra una vez. El mismo
+      # archivo con dos titulos (el INEGI lo lista asi en el Censo 2020) se conserva.
+      tabla <- tabla[!duplicated(tabla), , drop = FALSE]
       if (nrow(tabla) == 0) {
         detener("el INEGI no lista archivos de microdatos para este proyecto")
       }

@@ -1,12 +1,12 @@
 # Compatibilidad de la interfaz publica.
 # La version 2.0.0 conserva los nombres de las funciones y de sus argumentos
 # de la serie 1.x. Se pueden agregar funciones y argumentos nuevos (al final),
-# pero no quitar ni reordenar los existentes. La unica excepcion son las cinco
-# funciones censo_poblacion_*(), que se eliminaron porque censo() las sustituye.
+# pero no quitar ni reordenar los existentes. Las excepciones son las cinco
+# funciones censo_poblacion_*(), que se eliminaron porque censo() las sustituye,
+# y censo_municipal(), que se elimino porque cng_municipal() la sustituye.
 
 interfaz_1x <- list(
   catalogo_inegi          = c("id"),
-  censo_municipal         = c("year", "fuente", "datos"),
   enigh_nuevaconstruccion = c("year", "datos"),
   enoe                    = c("year", "trimestre", "integrar"),
   sig_caminos_descarga    = c("year"),
@@ -24,6 +24,16 @@ test_that("las funciones censo_poblacion_*() ya no se exportan", {
                   "censo_poblacion_rural", "censo_poblacion_urbano")
   expect_identical(intersect(eliminadas, getNamespaceExports("importinegi")), character())
   expect_true("censo" %in% getNamespaceExports("importinegi"))
+})
+
+test_that("censo_municipal() ya no se exporta y cng_municipal() la sustituye", {
+  expect_false("censo_municipal" %in% getNamespaceExports("importinegi"))
+  expect_true("cng_municipal" %in% getNamespaceExports("importinegi"))
+  argumentos <- formals(cng_municipal)
+  expect_identical(names(argumentos), c("year", "modulo", "tema", "tabla", "estado"))
+  expect_null(argumentos$tema)
+  expect_null(argumentos$tabla)
+  expect_null(argumentos$estado)
 })
 
 test_that("censo(), conteo() e intercensal() tienen los mismos argumentos", {

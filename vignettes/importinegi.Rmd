@@ -24,7 +24,7 @@ La version `2.0.0` permite descargar y gestionar las bases de datos de los sigui
 
 * Censo y Conteo de Poblacion y Vivienda
 * Encuesta Intercensal
-* Censo Nacional de Gobiernos Municipales y Delegacionales
+* Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México (CNGMD)
 * Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH)
 * Encuesta Nacional de Ocupación y Empleo (ENOE)
 
@@ -32,7 +32,7 @@ La versión `2.0.0` requiere R 4.1 o posterior. Las funciones de información ge
 
 # Sintaxis
 
-El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `censo_municipal()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, la función `enigh_nuevaconstruccion()` descarga la ENIGH de la serie Nueva Construcción. En otros casos, una sola función da acceso a todas las bases de datos del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de varios tipos de bases de datos, siendo ITER una de ellas. Todas se descargan con la función `censo()`, que tiene un parámetro para elegir la base de datos.
+El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `cng_municipal()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, la función `enigh_nuevaconstruccion()` descarga la ENIGH de la serie Nueva Construcción. En otros casos, una sola función da acceso a todas las bases de datos del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de varios tipos de bases de datos, siendo ITER una de ellas. Todas se descargan con la función `censo()`, que tiene un parámetro para elegir la base de datos.
 
 En el caso de la información georreferenciada, el nombre de la funcion comienza con las siglas Sistema de Información Georreferenciada (SIG). Estas siglas son sucedidas por una palabra clave del proyecto geoestadístico. Por ejemplo, la función para acceder a lo datos de la Red Nacional de Caminos es `sig_caminos_descarga()`.
 
@@ -87,7 +87,7 @@ El catálogo se descarga una sola vez por sesión de R: las consultas posteriore
 
 La función `bases_importinegi()` muestra las bases de datos que se pueden descargar con las funciones de este paquete. A diferencia de `catalogo_inegi()`, que consulta en línea todos los proyectos estadísticos que documenta el INEGI, esta función muestra solamente lo que `importinegi` puede descargar. La función no descarga ningún archivo ni requiere conexión a internet.
 
-El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla.
+El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla. En el Censo Nacional de Gobiernos Municipales, cada fila es un tema del censo y la columna `modulo` indica el módulo al que pertenece.
 
 La función tiene dos parámetros, ambos opcionales. El parámetro `proyecto` limita la consulta a un proyecto estadístico y el parámetro `year` la limita a uno o varios años. El siguiente bloque de código presenta tres ejemplos de consulta.
 
@@ -102,7 +102,7 @@ bases.censo = bases_importinegi(proyecto = "censo")
 bases.censo2020 = bases_importinegi(proyecto = "censo", year = 2020)
 ```
 
-La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda, y de la Encuesta Intercensal. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
+La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda, de la Encuesta Intercensal y del Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
 
 ## Censo Nacional de Poblacion y Vivienda
 
@@ -237,32 +237,72 @@ municipios25 = intercensal(2025, base = "resultados", nivel = "municipio")
 poblacion15 = sapply(1:32, function(entidad) sum(intercensal(2015, estado = entidad)$FACTOR))
 ```
 
-## Censo de Gobiernos Municipales y Delegacionales
+## Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico
 
-La función `censo_municipal()` descarga las bases de datos de las cuatro temáticas y tiene tres parámetros indispensables. Primero, se debe establece en formato numérico el año del levantamiento del CNGMD, que puede ser 2011, 2013, 2015 ó 2017. En el parámetro `fuente`, se debe definir en formato alfanumérico la temática o fuente de la base de datos requerida. Finalmente, en el parámetro `datos`, se debe definir en formato alfanumérico el conjunto de bases de datos.
+La función `cng_municipal()` descarga las bases de datos del Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México (CNGMD), antes llamado Censo Nacional de Gobiernos Municipales y Delegacionales, y tiene tres parámetros indispensables. Primero, se debe establecer en formato numérico el año del levantamiento del CNGMD (`year`), que puede ser 2011, 2013, 2015, 2017, 2019, 2021, 2023 ó 2025. En el parámetro `modulo`, se debe definir en formato alfanumérico el módulo del censo. Finalmente, en el parámetro `tema`, se debe definir en formato alfanumérico el tema del módulo, que es el conjunto de bases de datos requerido.
 
-La relación entre los datos, conjunto de datos y fuentes puede ser complicada, especialmente a partir del CNGDM de 2015. Se recomienda consultar directamente en la documentación en linea del INEGI la disponibilidad de datos por cada fuente, conjunto de datos y año de levantamiento. Se puede acceder a dicha documentación directamente al teclear la función `censo_municipal()` (sin incluir nada entre los paréntesis), como se muestra en el siguiente bloque de código.
+El CNGMD tiene nueve módulos. No todos los módulos están disponibles para todos los años de levantamiento, como se muestra en la siguiente tabla.
+
+| `modulo` | Módulo | Años disponibles |
+|:---------|:-------|:-----------------|
+| `ayuntamiento` | Ayuntamientos y, desde 2021, alcaldías de la Ciudad de México | 2011 a 2025 |
+| `administracion` | Administración pública municipal | 2011 a 2025 |
+| `catastro` | Catastro municipal | 2015 a 2025 |
+| `territorio` | Planeación y gestión territorial | 2017 a 2025 |
+| `seguridad` | Seguridad pública | 2011 a 2025 |
+| `proteccion_civil` | Protección civil (de 2015 a 2021 es un tema del módulo `administracion`) | 2023 y 2025 |
+| `justicia` | Justicia municipal y, desde 2021, justicia cívica | 2011 a 2025 |
+| `agua` | Agua potable y saneamiento | 2011 a 2025 |
+| `residuos` | Residuos sólidos urbanos | 2011 a 2025 |
+
+El tema se indica con una parte del título que le da el INEGI o con una parte del nombre de su archivo, sin distinguir entre mayúsculas y minúsculas ni entre letras con y sin acento. Por ejemplo, el tema "Comisiones e iniciativas de los ayuntamientos" de 2011, cuyo archivo se llama `ayu_comisiones_cngmd2011`, se puede pedir con `tema = "comisiones"` o con `tema = "ayu_comisiones"`. Si el texto coincide con varios temas del módulo o con ninguno, la función se detiene y muestra los temas del módulo.
+
+La relación entre los módulos, los temas y las bases de datos puede ser complicada, especialmente a partir del CNGMD de 2015: el censo pasó de 17 temas en 2011 a 130 en 2025, y los nombres de los temas cambian de una edición a otra. Se recomienda consultar la disponibilidad de temas por cada módulo y año de levantamiento con la función `bases_importinegi()`, como se muestra en el siguiente bloque de código. En el resultado, la columna `modulo` indica el módulo; la columna `descripcion`, el título del tema, y la columna `base`, el nombre de su archivo.
 
 ```{r, eval = FALSE}
-# Acceder a la documentacion en linea del CNGDM
-censo_municipal()
+# Temas del CNGMD 2025, con su módulo y el tamaño de cada descarga
+temas.2025 = bases_importinegi(proyecto = "cng_municipal", year = 2025)
+
+# Temas del módulo de seguridad pública en todas las ediciones
+temas = bases_importinegi(proyecto = "cng_municipal")
+temas.seguridad = temas[temas$modulo == "seguridad", ]
 ```
 
-Al elegir una fuente y conjunto de datos específicos, la función descarga una lista de R con el conjunto de bases de datos correspondiente. En el siguiente bloque de código, se ilustra la descarga del conjunto de datos `comision`, de la fuente `ayuntamiento`. El resultado de la descarga es una lista de R con cinco bases de datos (ACT_AYUN, COM_AYUN, COM_TASU, IN_TEASU, INI_AYUN). 
+Al elegir un módulo y un tema específicos, la función descarga una lista de R con el conjunto de bases de datos correspondiente. En el siguiente bloque de código, se ilustra la descarga del tema `comision`, del módulo `ayuntamiento`. El resultado de la descarga es una lista de R con cinco bases de datos (act_ayun, com_ayun, com_tasu, in_teasu, ini_ayun).
 
 ```{r, eval = FALSE}
-# Descargar conjunto de datos "comision" del censo 2011
-datos.comision = censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "comision")
+# Descargar el tema "comision" del censo 2011
+datos.comision = cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "comision")
 ```
 
-Esta lista, sin embargo, no es útil para el análisis estadístico; cada base de datos debe extraerse de la lista y almacenarse en un objeto de R distinto. Esto se logra, primero, identificando la posición de la base de datos en la lista con la función `summary()`. Posteriormente, debe extraer la base de datos, utilizando su posición dentro de la lista, como se ilustra en el siguiente bloque de código.
+Esta lista, sin embargo, no es útil para el análisis estadístico; cada base de datos debe extraerse de la lista y almacenarse en un objeto de R distinto. Esto se logra, primero, identificando la posición y el nombre de la base de datos en la lista con la función `summary()`. Posteriormente, debe extraer la base de datos, utilizando su posición dentro de la lista o su nombre, como se ilustra en el siguiente bloque de código.
 
 ```{r, eval = FALSE}
 # Explorar la posición de cada base de datos en la lista
 summary(datos.comision)
 
-# Extraer la base de datos ACT_AYUN, en la posición 1
+# Extraer la base de datos act_ayun, en la posición 1
 datos.actas = datos.comision[[1]]
+
+# Extraer la misma base de datos con su nombre
+datos.actas = datos.comision$act_ayun
+```
+
+También se puede descargar una sola base de datos con el parámetro `tabla`; en ese caso, la función devuelve la base de datos y no una lista. Desde el CNGMD de 2021, el INEGI publica una base de datos por cada pregunta del cuestionario, y su nombre indica el módulo, la sección y la pregunta: `m1s1p3` es la pregunta 3 de la sección 1 del módulo 1. Desde esa edición, cada tema incluye también un índice que describe el contenido de cada base de datos, y que se obtiene con `tabla = "indice"`. Por su parte, el parámetro `estado` limita el resultado a una o varias entidades federativas; por default, la función devuelve los datos de todo el país.
+
+La mayoría de las variables del CNGMD están codificadas. La función devuelve los códigos y no los sustituye por su descripción. La descripción de cada código está en los catálogos del tema, que se obtienen con `tabla = "catalogos"`; uno de ellos contiene los nombres de los municipios. Las columnas conservan los nombres que les da el INEGI. La clave del municipio también conserva su nombre, que cambia con la edición (por ejemplo, `ubic_geo` en 2011 y `cvegeo` en 2025), y se devuelve siempre como texto de cinco dígitos.
+
+Desde el CNGMD de 2021, el INEGI escribe siglas en lugar de un dato: `NA` (no aplica), `NSS` (el informante no cuenta con elementos para responder), `ND` (información no disponible) y `NP` (no publicable por confidencialidad o por reserva de información). La función convierte `NA` en el valor perdido de R (`NA`) y conserva las otras tres siglas como las publica el INEGI. Por lo tanto, las columnas de cantidades que contienen `NSS`, `ND` o `NP` se devuelven como texto: para hacer cálculos con ellas, primero hay que decidir cómo tratar esas siglas y convertir la columna a número.
+
+```{r, eval = FALSE}
+# Índice de las bases de datos del tema "Ayuntamientos" del CNGMD 2025
+indice = cng_municipal(2025, modulo = "ayuntamiento", tema = "ayuntamientos", tabla = "indice")
+
+# Personas síndicas de los ayuntamientos de Jalisco en el CNGMD 2025
+sindicas = cng_municipal(2025, modulo = "ayuntamiento", tema = "ayuntamientos", tabla = "m1s1p3", estado = "Jalisco")
+
+# Catálogos del tema, para interpretar los códigos
+catalogos = cng_municipal(2025, modulo = "ayuntamiento", tema = "ayuntamientos", tabla = "catalogos")
 ```
 
 

@@ -14,11 +14,13 @@
 * Nuevas utilidades internas compartidas, todavia sin efecto en las funciones exportadas: descarga con `httr2` (reintentos, limites de tiempo, copia local opcional y verificacion de que el archivo recibido sea un zip valido), descompresion en una carpeta propia por llamada, lectura de DBF y CSV, catalogo unico de entidades federativas y validacion de argumentos.
 * Nuevas dependencias: `httr2` y `jsonlite`.
 * Registro de direcciones de descarga generado con el script `data-raw/registro.R` a partir del servicio de descargas del INEGI, y tarea de GitHub Actions que lo ejecuta una vez al ano y avisa cuando el INEGI publica o cambia archivos.
-* El paquete incluye ya el registro de direcciones de descarga (2,740 archivos de 17 proyectos, actualizado el 22 de noviembre de 2026 con las Encuestas Intercensales 2015 y 2025). Las funciones nuevas buscan ahi la direccion de cada archivo en lugar de armarla a mano.
+* El paquete incluye ya el registro de direcciones de descarga (3,302 archivos de 21 proyectos, actualizado el 22 de noviembre de 2026 con las Encuestas Intercensales 2015 y 2025 y con las ocho ediciones del Censo Nacional de Gobiernos Municipales). Las funciones nuevas buscan ahi la direccion de cada archivo en lugar de armarla a mano.
 * La lectura de archivos CSV reconoce la codificacion de cada valor (UTF-8 o Latin-1) en todo el archivo, no solo en sus primeras lineas.
 * En las descargas de varios archivos, si uno falla, los que ya se descargaron se conservan durante la sesion de R, para que al repetir la llamada solo se descarguen los que faltan.
 * Al combinar varias entidades, cada una se convierte a numero antes de unirlas, lo que reduce la memoria que se necesita.
 * Al descomprimir un archivo, se extrae solo la tabla que se pidio.
+* El registro puede incluir los archivos de datos abiertos del INEGI, ademas de los microdatos: `data-raw/proyectos.csv` indica, por proyecto, los tipos de documento del servicio de descargas que se consultan.
+* Nuevo motor compartido para los censos nacionales de gobierno, que reconoce las distintas formas de sus archivos: carpetas con otros nombres o dentro de otra carpeta, y zip que guardan sus rutas con `\` como separador (45 archivos del censo municipal), que en Linux y macOS se extraian sin carpetas.
 * La lectura de archivos DBF entrega el texto en UTF-8 (los DBF del INEGI usan paginas de codigos anteriores), para que los nombres con acentos se lean bien en cualquier sistema operativo.
 * Las descargas piden el contenido sin comprimir y no usan la decodificacion automatica de curl: el catalogo de la Red Nacional de Metadatos responde con una cabecera `Content-Encoding` que no es valida y curl rechazaba la respuesta.
 
@@ -46,7 +48,24 @@
     * Mensajes de error que indican que años, bases y tablas existen.
 * Nueva funcion `conteo()`, con las bases de datos de los Conteos de Poblacion y Vivienda de 1995 y 2005: ITER, muestra y, en 2005, viviendas habitadas y deshabitadas por localidad. Tiene los mismos argumentos que `censo()`; en la muestra, `tabla` elige entre personas y migrantes (1995) o entre personas, viviendas y hogares (2005).
 * Nueva funcion `intercensal()`, que descarga las Encuestas Intercensales de 2015 y 2025 con los mismos argumentos que `censo()` y `conteo()`: la muestra (personas, viviendas y, en 2025, migrantes) y, en 2025, los principales resultados por localidad de 50 000 y mas habitantes.
-* Nueva funcion `bases_importinegi()`, que muestra las bases de datos que se pueden descargar con el paquete, por proyecto y año: tablas, cobertura (nacional o por entidad), formato y tamaño de la descarga. No descarga nada ni requiere conexion a internet. Usa el mismo registro de archivos que las funciones de descarga, de modo que no puede anunciar bases o años que no existan. Por ahora incluye el Censo y el Conteo de Poblacion y Vivienda, y la Encuesta Intercensal; los demas proyectos se agregaran conforme se actualicen sus funciones.
+* Nueva funcion `bases_importinegi()`, que muestra las bases de datos que se pueden descargar con el paquete, por proyecto y año: tablas, cobertura (nacional o por entidad), formato y tamaño de la descarga. No descarga nada ni requiere conexion a internet. Usa el mismo registro de archivos que las funciones de descarga, de modo que no puede anunciar bases o años que no existan. Por ahora incluye el Censo y el Conteo de Poblacion y Vivienda, la Encuesta Intercensal y el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico; los demas proyectos se agregaran conforme se actualicen sus funciones.
+* Nueva funcion `cng_municipal()`, que descarga el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (CNGMD) de 2011 a 2025, por modulo y tema. Es la primera de las tres funciones de los censos nacionales de gobierno (municipal, estatal y federal).
+* **Cambio incompatible:** se elimino `censo_municipal()`. `cng_municipal()` la sustituye: el argumento `fuente` pasa a ser `modulo` y el argumento `datos` pasa a ser `tema`.
+    * `censo_municipal(2011, "ayuntamiento", "estructura")` pasa a ser `cng_municipal(2011, "ayuntamiento", "estructura")`.
+    * `censo_municipal(year = 2011, fuente = "ayuntamiento", datos = "comision")` pasa a ser `cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "comision")`.
+    * Los valores de `datos` siguen sirviendo como `tema` en las ediciones donde el tema existe, salvo `"recursos"` en el modulo `"administracion"` de 2017, que coincide con varios temas.
+    * `censo_municipal()` sin argumentos abria la pagina del censo en el navegador. Los temas de cada edicion se consultan ahora con `bases_importinegi("cng_municipal")`.
+* `cng_municipal()`:
+    * `cng_municipal(year, modulo, tema, tabla, estado)`: `year` es obligatorio; `modulo` elige entre `"ayuntamiento"`, `"administracion"`, `"catastro"`, `"territorio"`, `"seguridad"`, `"proteccion_civil"`, `"justicia"`, `"agua"` y `"residuos"`; `tema` acepta una parte del titulo que el INEGI le da al tema o del nombre de su archivo.
+    * Ediciones de 2011 a 2025. Las de 2019, 2021, 2023 y 2025 son nuevas en el paquete, igual que los modulos de catastro, planeacion y gestion territorial, proteccion civil, agua potable y saneamiento, y residuos solidos urbanos.
+    * Devuelve una lista con todas las tablas del tema, como antes, o una sola tabla si se indica `tabla`. `tabla` tambien da acceso al indice de las tablas (`"indice"`), a los catalogos de las variables codificadas (`"catalogos"`) y al diccionario de datos (`"diccionario"`).
+    * El argumento `estado` conserva las filas de una o varias entidades.
+    * Lee los archivos de datos abiertos del INEGI, en formato CSV (antes, los archivos DBF). Las tablas de la lista se llaman como su archivo, en minusculas (`act_ayun`), y ya no llevan el prefijo `dt.`; las columnas conservan los nombres de esos archivos.
+    * La clave del municipio conserva el nombre que le da el INEGI en cada edicion y se devuelve como texto de 5 digitos.
+    * La sigla `"NA"` (no aplica) se convierte en `NA`. Las siglas `"NSS"`, `"ND"` y `"NP"` se conservan como las publica el INEGI.
+    * Los DBF de agua potable y de residuos solidos de 2011 declaran mas registros de los que contienen; la funcion devuelve solo los registros reales, sin filas vacias.
+    * Las direcciones salen del registro de archivos del INEGI. Las que armaba `censo_municipal()` habian dejado de funcionar.
+    * Funciona en cualquier sistema operativo (sin argumentos, `censo_municipal()` solo funcionaba en Windows).
 * `catalogo_inegi()`:
     * Devuelve el catalogo completo de la Red Nacional de Metadatos. Antes solo devolvia los 500 proyectos mas recientes (de 825 en noviembre de 2026).
     * Nuevos argumentos `buscar` (texto en el nombre o la clave del proyecto, sin distinguir mayusculas ni acentos) y `year` (proyectos cuyo periodo incluye ese año).
@@ -63,6 +82,7 @@
 * Ayuda de `bases_importinegi()` y nueva seccion de la viñeta, "Bases de datos disponibles".
 * Ayuda de `conteo()` y nueva seccion de la viñeta, "Conteo de Poblacion y Vivienda", que explica como se levantaron los conteos de 1995 y 2005.
 * Ayuda de `intercensal()` y nueva seccion de la viñeta, "Encuesta Intercensal", que explica como se levantaron las encuestas de 2015 y 2025.
+* Ayuda de `cng_municipal()` y seccion de la viñeta sobre el Censo Nacional de Gobiernos Municipales, reescrita para `cng_municipal()`: modulos por edicion, temas, tablas, catalogos y siglas del INEGI. La documentacion ya no menciona `censo_municipal()`.
 * La pagina de ayuda del paquete (`?importinegi`) incluye el indice de funciones por proyecto estadistico.
 * La ayuda de `sig_marcogeo()` y `sig_caminos_extrae()` indica que requieren el paquete `sf`.
 * Viñeta: nueva seccion sobre el catalogo de proyectos estadisticos y requisitos de la version; se corrigieron referencias que ya no eran vigentes (el paquete `rgdal` y dos nombres de funciones).
