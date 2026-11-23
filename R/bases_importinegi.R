@@ -4,7 +4,7 @@
 #'
 #' La tabla sale del registro de archivos del INEGI que se distribuye con el paquete, el mismo que usan las funciones de descarga para validar sus argumentos y encontrar la direccion de cada archivo. Por eso, lo que muestra esta funcion es lo que esas funciones pueden descargar. El atributo \code{"registro"} de la tabla indica la fecha en que se genero el registro: los archivos que el INEGI publique despues de esa fecha apareceran al actualizar el paquete.
 #'
-#' Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}), la Encuesta Intercensal (\code{\link{intercensal}}) y el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cng_municipal}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
+#' Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}), la Encuesta Intercensal (\code{\link{intercensal}}) y el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cngmd}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 #'
 #' Tambien incluye la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}}), con una fila por edicion.
 #'
@@ -26,21 +26,21 @@
 #' bases$year[bases$base == "ageb"]
 #'
 #' # Temas de cada modulo del Censo Nacional de Gobiernos Municipales 2025.
-#' temas <- bases_importinegi(proyecto = "cng_municipal", year = 2025)
+#' temas <- bases_importinegi(proyecto = "cngmd", year = 2025)
 #' table(temas$modulo)
 #'
 #' # Tablas de cada edicion de la serie tradicional de la ENIGH.
 #' ediciones <- bases_importinegi(proyecto = "enigh_tradicional")
 #' ediciones$tablas[ediciones$year == 2010]
 #'
-#' @return Data.frame con una fila por proyecto, año y base de datos (en \code{"cng_municipal"}, una fila por edicion y tema), y las siguientes columnas:
+#' @return Data.frame con una fila por proyecto, año y base de datos (en \code{"cngmd"}, una fila por edicion y tema), y las siguientes columnas:
 #' \describe{
 #'   \item{\code{proyecto}}{Proyecto estadistico. Coincide con el nombre de la funcion que lo descarga (por ejemplo, \code{"censo"} se descarga con \code{censo()}).}
 #'   \item{\code{year}}{Año del levantamiento.}
-#'   \item{\code{modulo}}{Solo en \code{"cng_municipal"}: modulo al que pertenece el tema, como se escribe en el argumento \code{modulo} de la funcion. En los demas proyectos, \code{NA}.}
-#'   \item{\code{base}}{Nombre de la base de datos, como se escribe en el argumento \code{base} de la funcion. En \code{"cng_municipal"}, nombre del archivo del tema, que se puede escribir en el argumento \code{tema}.}
-#'   \item{\code{descripcion}}{Descripcion de la base de datos. En \code{"cng_municipal"}, titulo que el INEGI le da al tema, que tambien se puede escribir en el argumento \code{tema}.}
-#'   \item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga. En \code{"cng_municipal"}, \code{NA}: las tablas de un tema se conocen al descargarlo.}
+#'   \item{\code{modulo}}{Solo en \code{"cngmd"}: modulo al que pertenece el tema, como se escribe en el argumento \code{modulo} de la funcion. En los demas proyectos, \code{NA}.}
+#'   \item{\code{base}}{Nombre de la base de datos, como se escribe en el argumento \code{base} de la funcion. En \code{"cngmd"}, nombre del archivo del tema, que se puede escribir en el argumento \code{tema}.}
+#'   \item{\code{descripcion}}{Descripcion de la base de datos. En \code{"cngmd"}, titulo que el INEGI le da al tema, que tambien se puede escribir en el argumento \code{tema}.}
+#'   \item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga. En \code{"cngmd"}, \code{NA}: las tablas de un tema se conocen al descargarlo.}
 #'   \item{\code{cobertura}}{\code{"nacional y por entidad"} si el INEGI publica un archivo nacional ademas de los archivos por entidad federativa, \code{"por entidad"} si solo publica archivos por entidad, o \code{"nacional"} si solo publica el archivo nacional.}
 #'   \item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"} o \code{"xlsx"}).}
 #'   \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
@@ -48,7 +48,7 @@
 #'
 #' En \code{"enigh_tradicional"} hay una fila por edicion: \code{base} vale \code{"microdatos"}, \code{tablas} lista las tablas que se pueden pedir con el argumento \code{tabla} de la funcion (la primera es la que se descarga por omision) y \code{tamano_mb} es el peso de todos los archivos de la edicion.
 #' @seealso \code{\link{enigh_tradicional}} para descargar la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
-#' @seealso \code{\link{censo}}, \code{\link{conteo}}, \code{\link{intercensal}} y \code{\link{cng_municipal}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
+#' @seealso \code{\link{censo}}, \code{\link{conteo}}, \code{\link{intercensal}} y \code{\link{cngmd}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 #' @export
 
 bases_importinegi <- function(proyecto = NULL, year = NULL) {

@@ -20,7 +20,7 @@ En la versión `2.0.0`, las funciones que ya se actualizaron amplían los años 
 - Censo de Población y Vivienda (1990, 2000, 2010 y 2020), con la función `censo()`
 - Conteo de Población y Vivienda (1995 y 2005), con la función `conteo()`
 - Encuesta Intercensal (2015 y 2025), con la función `intercensal()`
-- Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México (2011-2025), con la función `cng_municipal()`
+- Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México (2011-2025), con la función `cngmd()`
 - Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH), serie tradicional (1984-2014), con la función `enigh_tradicional()`
 
 La función `bases_importinegi()` muestra los años, las bases de datos y las tablas que se pueden descargar con estas funciones. Las funciones de los demás proyectos estadísticos aún no se actualizan.

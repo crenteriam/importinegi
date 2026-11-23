@@ -1,21 +1,21 @@
-# Pruebas de cng_municipal() y del motor de los censos de gobierno (R/gobierno.R).
+# Pruebas de cngmd() y del motor de los censos de gobierno (R/gobierno.R).
 # Los archivos de muestra (fixtures/gobierno) son inventados y tienen la forma
 # de los zip del INEGI; los genera data-raw/muestras_gobierno.R. El servidor
 # local los entrega en las rutas reales del registro del paquete.
 
 ayuntamientos_2025 <- function(...) {
-  suppressMessages(cng_municipal(2025, "ayuntamiento", "ayuntamientos", ...))
+  suppressMessages(cngmd(2025, "ayuntamiento", "ayuntamientos", ...))
 }
 
 # Temas del registro ---------------------------------------------------------------
 
 test_that("el registro tiene los temas de las ocho ediciones del censo municipal", {
   withr::local_options(importinegi.registro = NULL)
-  temas <- gobierno_temas("cng_municipal")
+  temas <- gobierno_temas("cngmd")
   expect_identical(sort(unique(temas$year)), as.integer(seq(2011, 2025, by = 2)))
   expect_identical(as.integer(table(temas$year)), c(17L, 28L, 46L, 72L, 56L, 72L, 87L, 130L))
   expect_false(anyNA(temas))
-  expect_true(all(temas$modulo %in% gobierno_modulos("cng_municipal")$modulo))
+  expect_true(all(temas$modulo %in% gobierno_modulos("cngmd")$modulo))
   # Un tema se elige dentro de un modulo: ahi no se repiten titulos ni archivos
   expect_identical(anyDuplicated(temas[c("year", "modulo", "base")]), 0L)
   expect_identical(anyDuplicated(paste(temas$year, temas$modulo, normalizar_texto(temas$tema))), 0L)
@@ -27,17 +27,17 @@ test_that("el registro tiene los temas de las ocho ediciones del censo municipal
   registro <- registro_inegi()
   titulos <- registro$titulo[registro$proyecto == "cngmd"]
   claves <- sub("^[0-9]+ ", "", normalizar_texto(sub("[|].*$", "", titulos)))
-  patron <- paste(gobierno_modulos("cng_municipal")$patron, collapse = "|")
+  patron <- paste(gobierno_modulos("cngmd")$patron, collapse = "|")
   expect_identical(length(titulos), 725L)
   expect_true(all(grepl(patron, claves)))
 })
 
 test_that("los modulos de cada edicion son los documentados", {
   withr::local_options(importinegi.registro = NULL)
-  temas <- gobierno_temas("cng_municipal")
+  temas <- gobierno_temas("cngmd")
   primera <- tapply(temas$year, temas$modulo, min)
   expect_identical(
-    as.list(primera[gobierno_modulos("cng_municipal")$modulo]),
+    as.list(primera[gobierno_modulos("cngmd")$modulo]),
     list(ayuntamiento = 2011L, administracion = 2011L, catastro = 2015L, territorio = 2017L,
          seguridad = 2011L, proteccion_civil = 2023L, justicia = 2011L, agua = 2011L, residuos = 2011L)
   )
@@ -68,7 +68,7 @@ test_that("los nombres de los archivos y de las tablas se abrevian", {
 
 test_that("el tema se elige con el titulo o con el nombre del archivo", {
   withr::local_options(importinegi.registro = NULL)
-  elegir <- function(year, modulo, tema) gobierno_elegir_tema("cng_municipal", year, modulo, tema)$base
+  elegir <- function(year, modulo, tema) gobierno_elegir_tema("cngmd", year, modulo, tema)$base
   # Parte del titulo, sin distinguir mayusculas ni acentos
   expect_identical(elegir(2011, "ayuntamiento", "estructura"), "ayu_estructura")
   expect_identical(elegir(2011, "ayuntamiento", "comision"), "ayu_comisiones")
@@ -90,42 +90,42 @@ test_that("el tema se elige con el titulo o con el nombre del archivo", {
 test_that("un tema ambiguo o inexistente se explica con los temas del modulo", {
   withr::local_options(importinegi.registro = NULL)
   expect_error(
-    cng_municipal(2017, "administracion", "recursos"),
+    cngmd(2017, "administracion", "recursos"),
     "coincide con 5 temas del m\u00f3dulo \"administracion\" de 2017.*rec_materiales: Recursos materiales"
   )
   expect_error(
-    cng_municipal(2011, "justicia", "catastro"),
+    cngmd(2011, "justicia", "catastro"),
     "no coincide con ning\u00fan tema del m\u00f3dulo \"justicia\" de 2011.*jm_recursos: Recursos humanos"
   )
-  expect_error(cng_municipal(2011, "justicia"), "Falta indicar el tema en `tema`.*jm_ejercicio: Ejercicio")
-  expect_error(cng_municipal(2011, "justicia", c("a", "b")), "`tema` debe ser un texto")
-  expect_error(cng_municipal(2011, "justicia", ""), "`tema` debe ser un texto")
+  expect_error(cngmd(2011, "justicia"), "Falta indicar el tema en `tema`.*jm_ejercicio: Ejercicio")
+  expect_error(cngmd(2011, "justicia", c("a", "b")), "`tema` debe ser un texto")
+  expect_error(cngmd(2011, "justicia", ""), "`tema` debe ser un texto")
 })
 
 test_that("el a\u00f1o y el modulo se validan", {
   withr::local_options(importinegi.registro = NULL)
-  expect_error(cng_municipal(), "Falta indicar el a\u00f1o en `year`.*2011, 2013, 2015, 2017, 2019, 2021, 2023, 2025")
-  expect_error(cng_municipal(2012, "agua"), "`year = 2012` no est\u00e1 disponible")
-  expect_error(cng_municipal("dos mil", "agua"), "no es un a\u00f1o")
-  expect_error(cng_municipal(2025), "Falta indicar el m\u00f3dulo en `modulo`.*\"proteccion_civil\"")
-  expect_error(cng_municipal(2025, "salud", "x"), "`modulo = \"salud\"` no es una opci\u00f3n v\u00e1lida")
+  expect_error(cngmd(), "Falta indicar el a\u00f1o en `year`.*2011, 2013, 2015, 2017, 2019, 2021, 2023, 2025")
+  expect_error(cngmd(2012, "agua"), "`year = 2012` no est\u00e1 disponible")
+  expect_error(cngmd("dos mil", "agua"), "no es un a\u00f1o")
+  expect_error(cngmd(2025), "Falta indicar el m\u00f3dulo en `modulo`.*\"proteccion_civil\"")
+  expect_error(cngmd(2025, "salud", "x"), "`modulo = \"salud\"` no es una opci\u00f3n v\u00e1lida")
   expect_error(
-    cng_municipal(2015, "proteccion_civil", "x"),
+    cngmd(2015, "proteccion_civil", "x"),
     "El m\u00f3dulo \"proteccion_civil\" no existe en la edici\u00f3n 2015.*bases_importinegi"
   )
   # El modulo acepta mayusculas, acentos y espacios
-  expect_identical(gobierno_validar_modulo("cng_municipal", 2025, "Protecci\u00f3n Civil"), "proteccion_civil")
-  expect_identical(gobierno_validar_modulo("cng_municipal", 2011, " AGUA "), "agua")
+  expect_identical(gobierno_validar_modulo("cngmd", 2025, "Protecci\u00f3n Civil"), "proteccion_civil")
+  expect_identical(gobierno_validar_modulo("cngmd", 2011, " AGUA "), "agua")
 })
 
 test_that("`tabla` y `estado` se validan antes de descargar", {
   withr::local_options(importinegi.base = "http://127.0.0.1:9", importinegi.registro = NULL)
-  expect_error(cng_municipal(2025, "ayuntamiento", "ayuntamientos", tabla = 3), "`tabla` debe ser el nombre")
+  expect_error(cngmd(2025, "ayuntamiento", "ayuntamientos", tabla = 3), "`tabla` debe ser el nombre")
   expect_error(
-    cng_municipal(2025, "ayuntamiento", "ayuntamientos", tabla = c("indice", "m1s1p3")),
+    cngmd(2025, "ayuntamiento", "ayuntamientos", tabla = c("indice", "m1s1p3")),
     "`tabla = \"indice\"` se pide sola"
   )
-  expect_error(cng_municipal(2025, "ayuntamiento", "ayuntamientos", estado = "Atlantida"), "No se reconoce la entidad")
+  expect_error(cngmd(2025, "ayuntamiento", "ayuntamientos", estado = "Atlantida"), "No se reconoce la entidad")
   expect_identical(gobierno_validar_tabla(c("M1S1P3", "m1s1p3_cngmd2025")), "m1s1p3")
   expect_identical(gobierno_validar_tabla("Cat\u00e1logos"), "catalogos")
   expect_identical(gobierno_validar_tabla("\u00cdndice"), "indice")
@@ -225,7 +225,7 @@ test_that("un DBF que declara mas registros de los que contiene se lee sin filas
 
 # Descargas contra el servidor local ---------------------------------------------------
 
-test_that("sin `tabla`, cng_municipal() devuelve una lista con todas las tablas del tema", {
+test_that("sin `tabla`, cngmd() devuelve una lista con todas las tablas del tema", {
   censo_local()
   tablas <- ayuntamientos_2025()
   expect_type(tablas, "list")
@@ -307,80 +307,80 @@ test_that("`estado` conserva las filas de las entidades pedidas", {
 
 test_that("se leen los zip con \"\\\" como separador y la clave numerica de 2021", {
   censo_local()
-  alcaldias <- suppressMessages(cng_municipal(2021, "ayuntamiento", "alcaldias"))
+  alcaldias <- suppressMessages(cngmd(2021, "ayuntamiento", "alcaldias"))
   expect_named(alcaldias, c("m1s2p1", "m1s2p9"))
   expect_identical(alcaldias$m1s2p1$ubicageo_c, c("09002", "09003", "09017"))
   expect_identical(alcaldias$m1s2p1$total, c(1L, NA, 3L))
   expect_match(attr(alcaldias, "indice")$contenido[1], "^Personas titulares de las alcald\u00edas")
-  expect_named(suppressMessages(cng_municipal(2021, "ayuntamiento", "alcaldias", tabla = "catalogos")), "sexo_i")
+  expect_named(suppressMessages(cngmd(2021, "ayuntamiento", "alcaldias", tabla = "catalogos")), "sexo_i")
   # Sin diccionario en forma de tabla
   expect_error(
-    suppressMessages(cng_municipal(2021, "ayuntamiento", "alcaldias", tabla = "diccionario")),
+    suppressMessages(cngmd(2021, "ayuntamiento", "alcaldias", tabla = "diccionario")),
     "El diccionario de datos del tema .* no es una tabla"
   )
   # Una tabla sin clave geografica se devuelve completa, con un aviso
   expect_message(
-    cdmx <- cng_municipal(2021, "ayuntamiento", "alcaldias", estado = "cdmx"),
+    cdmx <- cngmd(2021, "ayuntamiento", "alcaldias", estado = "cdmx"),
     "Sin clave geogr\u00e1fica, se devuelve completa: \"m1s2p9\""
   )
   expect_identical(nrow(cdmx$m1s2p1), 3L)
   expect_identical(nrow(cdmx$m1s2p9), 2L)
-  jalisco <- suppressMessages(cng_municipal(2021, "ayuntamiento", "alcaldias", estado = "Jalisco"))
+  jalisco <- suppressMessages(cngmd(2021, "ayuntamiento", "alcaldias", estado = "Jalisco"))
   expect_identical(vapply(jalisco, nrow, integer(1)), c(m1s2p1 = 0L, m1s2p9 = 2L))
 })
 
 test_that("se leen las carpetas con otros nombres (2015 y 2019)", {
   censo_local()
-  actividad <- suppressMessages(cng_municipal(2019, "ayuntamiento", "actividades"))
+  actividad <- suppressMessages(cngmd(2019, "ayuntamiento", "actividades"))
   expect_named(actividad, c("cabildos", "iniciati"))
   expect_identical(actividad$cabildos$sesiones, c(24L, 18L))
   # Antes de 2021 no hay indice: el contenido queda vacio
   expect_identical(attr(actividad, "indice"), data.frame(tabla = c("cabildos", "iniciati"),
                                                          contenido = NA_character_))
   expect_error(
-    suppressMessages(cng_municipal(2019, "ayuntamiento", "actividades", tabla = "catalogos")),
+    suppressMessages(cngmd(2019, "ayuntamiento", "actividades", tabla = "catalogos")),
     "no incluye cat\u00e1logos"
   )
-  estructura <- suppressMessages(cng_municipal(2015, "ayuntamiento", "estructura"))
+  estructura <- suppressMessages(cngmd(2015, "ayuntamiento", "estructura"))
   expect_named(estructura, "ayuntami")
   expect_identical(estructura$ayuntami$ubic_geo, c("01001", "06002", "14039"))
   expect_identical(estructura$ayuntami$entidad, c("01", "06", "14"))
   expect_identical(estructura$ayuntami$regidor, c(14L, 11L, 19L))
   expect_identical(
-    suppressMessages(cng_municipal(2015, "ayuntamiento", "estructura", tabla = "catalogos"))$entidad$entidad,
+    suppressMessages(cngmd(2015, "ayuntamiento", "estructura", tabla = "catalogos"))$entidad$entidad,
     c("01", "06", "14")
   )
   expect_error(
-    suppressMessages(cng_municipal(2015, "ayuntamiento", "estructura", tabla = "diccionario")),
+    suppressMessages(cngmd(2015, "ayuntamiento", "estructura", tabla = "diccionario")),
     "no es una tabla: el INEGI lo publica como tabla desde la edici\u00f3n 2021"
   )
 })
 
 test_that("se leen los temas de 2011 en CSV y en DBF", {
   censo_local()
-  comision <- suppressMessages(cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "comision"))
+  comision <- suppressMessages(cngmd(year = 2011, modulo = "ayuntamiento", tema = "comision"))
   expect_named(comision, c("act_ayun", "com_ayun", "com_tasu", "in_teasu", "ini_ayun"))
   expect_identical(comision[[1]], comision$act_ayun)
   expect_identical(comision$act_ayun$ubic_geo, c("01001", "06002", "14039"))
   expect_identical(comision$act_ayun$ses_cab, c(3L, 5L, 8L))
-  catalogos <- suppressMessages(cng_municipal(2011, "ayuntamiento", "comision", tabla = "catalogos"))
+  catalogos <- suppressMessages(cngmd(2011, "ayuntamiento", "comision", tabla = "catalogos"))
   expect_identical(catalogos$ubi_geo$ubic_geo, c("01001", "06002", "14039"))
 
   # Agua potable de 2011 solo se publica en DBF; es el unico tema de su modulo
-  agua <- suppressMessages(cng_municipal(2011, "agua"))
+  agua <- suppressMessages(cngmd(2011, "agua"))
   expect_named(agua, c("agua_red", "plantas"))
   expect_match(attr(agua, "fuente"), "/cngmd/2011/microdatos/agua_cngmd2011_dbf[.]zip$")
   expect_identical(names(agua$agua_red), c("UBIC_GEO", "TOMAS", "PRESTADOR"))
   expect_identical(agua$agua_red$UBIC_GEO, c("01001", "06002", "14039"))
   expect_equal(agua$agua_red$TOMAS, c(250000, 48000, 510000))
-  expect_identical(suppressMessages(cng_municipal(2011, "agua", tabla = "PLANTAS", estado = 14))$UBIC_GEO, "14039")
-  expect_named(suppressMessages(cng_municipal(2011, "agua", tabla = "catalogos")), "cat_prest")
+  expect_identical(suppressMessages(cngmd(2011, "agua", tabla = "PLANTAS", estado = 14))$UBIC_GEO, "14039")
+  expect_named(suppressMessages(cngmd(2011, "agua", tabla = "catalogos")), "cat_prest")
 })
 
 test_that("un tema que el servidor no tiene se reporta como archivo no publicado", {
   censo_local()
   expect_error(
-    suppressMessages(cng_municipal(2025, "ayuntamiento", "alcaldias")),
+    suppressMessages(cngmd(2025, "ayuntamiento", "alcaldias")),
     "El INEGI no tiene publicado el archivo"
   )
 })
@@ -389,23 +389,23 @@ test_that("un tema que el servidor no tiene se reporta como archivo no publicado
 
 test_that("bases_importinegi() lista los temas del censo municipal", {
   withr::local_options(importinegi.base = "http://127.0.0.1:9", importinegi.registro = NULL)
-  temas <- bases_importinegi("cng_municipal")
+  temas <- bases_importinegi("cngmd")
   expect_identical(nrow(temas), 508L)
-  expect_identical(unique(temas$proyecto), "cng_municipal")
+  expect_identical(unique(temas$proyecto), "cngmd")
   expect_identical(unique(temas$cobertura), "nacional")
-  y2025 <- bases_importinegi(proyecto = "cng_municipal", year = 2025)
+  y2025 <- bases_importinegi(proyecto = "cngmd", year = 2025)
   expect_identical(nrow(y2025), 130L)
   fila <- y2025[y2025$modulo == "ayuntamiento" & y2025$base == "ayuntamientos", ]
   expect_identical(fila$descripcion, "Ayuntamientos")
   expect_identical(fila$formato, "csv")
   expect_equal(fila$tamano_mb, 4.8)
-  # `modulo`, `base` y `descripcion` son los valores que acepta cng_municipal()
+  # `modulo`, `base` y `descripcion` son los valores que acepta cngmd()
   expect_identical(
-    gobierno_elegir_tema("cng_municipal", 2025, fila$modulo, fila$base)$url,
-    gobierno_elegir_tema("cng_municipal", 2025, fila$modulo, fila$descripcion)$url
+    gobierno_elegir_tema("cngmd", 2025, fila$modulo, fila$base)$url,
+    gobierno_elegir_tema("cngmd", 2025, fila$modulo, fila$descripcion)$url
   )
   # Los demas proyectos no cambian y no tienen modulo
   expect_identical(nrow(bases_importinegi(year = 2020)), 6L)
-  expect_identical(unique(bases_importinegi()$proyecto), c("censo", "conteo", "intercensal", "cng_municipal", "enigh_tradicional"))
-  expect_error(bases_importinegi("censo_municipal"), "Proyectos disponibles: .*\"cng_municipal\"")
+  expect_identical(unique(bases_importinegi()$proyecto), c("censo", "conteo", "intercensal", "cngmd", "enigh_tradicional"))
+  expect_error(bases_importinegi("censo_municipal"), "Proyectos disponibles: .*\"cngmd\"")
 })

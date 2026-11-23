@@ -3,7 +3,7 @@
 # de la serie 1.x. Se pueden agregar funciones y argumentos nuevos (al final),
 # pero no quitar ni reordenar los existentes. Las excepciones son las cinco
 # funciones censo_poblacion_*(), que se eliminaron porque censo() las sustituye,
-# y censo_municipal(), que se elimino porque cng_municipal() la sustituye.
+# y censo_municipal(), que se elimino porque cngmd() la sustituye.
 
 interfaz_1x <- list(
   catalogo_inegi          = c("id"),
@@ -26,10 +26,10 @@ test_that("las funciones censo_poblacion_*() ya no se exportan", {
   expect_true("censo" %in% getNamespaceExports("importinegi"))
 })
 
-test_that("censo_municipal() ya no se exporta y cng_municipal() la sustituye", {
+test_that("censo_municipal() ya no se exporta y cngmd() la sustituye", {
   expect_false("censo_municipal" %in% getNamespaceExports("importinegi"))
-  expect_true("cng_municipal" %in% getNamespaceExports("importinegi"))
-  argumentos <- formals(cng_municipal)
+  expect_true("cngmd" %in% getNamespaceExports("importinegi"))
+  argumentos <- formals(cngmd)
   expect_identical(names(argumentos), c("year", "modulo", "tema", "tabla", "estado"))
   expect_null(argumentos$tema)
   expect_null(argumentos$tabla)

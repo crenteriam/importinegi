@@ -3,7 +3,7 @@
 # El INEGI publica cada censo nacional de gobierno por edicion, modulo y tema.
 # Cada tema es un zip con varias tablas, un catalogo por variable codificada y
 # un diccionario de datos. Este archivo reune lo que comparten las funciones de
-# esos censos; por ahora, cng_municipal().
+# esos censos; por ahora, cngmd().
 #
 # Los temas salen del registro de archivos del INEGI: el titulo de cada archivo
 # es "Modulo|Tema". Se leen los archivos de datos abiertos (CSV); los DBF solo
@@ -16,7 +16,7 @@
 # registro.
 gobierno_programas <- function() {
   data.frame(
-    programa = "cng_municipal",
+    programa = "cngmd",
     proyecto = "cngmd",
     stringsAsFactors = FALSE
   )
@@ -29,7 +29,7 @@ gobierno_programas <- function() {
 gobierno_modulos <- function(programa) {
   switch(
     programa,
-    cng_municipal = data.frame(
+    cngmd = data.frame(
       modulo = c("ayuntamiento", "administracion", "catastro", "territorio", "seguridad",
                  "proteccion_civil", "justicia", "agua", "residuos"),
       patron = c("^ayuntamiento", "^administracion publica", "^catastro",

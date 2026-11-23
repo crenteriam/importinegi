@@ -1,4 +1,4 @@
-# Genera los archivos de muestra con los que se prueba cng_municipal() sin
+# Genera los archivos de muestra con los que se prueba cngmd() sin
 # conexion (tests/testthat/fixtures/gobierno).
 #
 # Uso, desde la carpeta raiz del paquete, en Linux o macOS:
