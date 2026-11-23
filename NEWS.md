@@ -60,9 +60,10 @@
     * Ediciones de 2011 a 2025. Las de 2019, 2021, 2023 y 2025 son nuevas en el paquete, igual que los modulos de catastro, planeacion y gestion territorial, proteccion civil, agua potable y saneamiento, y residuos solidos urbanos.
     * Devuelve una lista con todas las tablas del tema, como antes, o una sola tabla si se indica `tabla`. `tabla` tambien da acceso al indice de las tablas (`"indice"`), a los catalogos de las variables codificadas (`"catalogos"`) y al diccionario de datos (`"diccionario"`).
     * El argumento `estado` conserva las filas de una o varias entidades.
-    * Lee los archivos de datos abiertos del INEGI, en formato CSV (antes, los archivos DBF). Los nombres de las tablas y de las columnas son los de esos archivos (por ejemplo, `act_ayun` y `ubic_geo`; en los DBF eran `ACT_AYUN` y `UBIC_GEO`), y las tablas de la lista ya no llevan el prefijo `dt.`.
+    * Lee los archivos de datos abiertos del INEGI, en formato CSV (antes, los archivos DBF). Las tablas de la lista se llaman como su archivo, en minusculas (`act_ayun`), y ya no llevan el prefijo `dt.`; las columnas conservan los nombres de esos archivos.
     * La clave del municipio conserva el nombre que le da el INEGI en cada edicion y se devuelve como texto de 5 digitos.
     * La sigla `"NA"` (no aplica) se convierte en `NA`. Las siglas `"NSS"`, `"ND"` y `"NP"` se conservan como las publica el INEGI.
+    * Los DBF de agua potable y de residuos solidos de 2011 declaran mas registros de los que contienen; la funcion devuelve solo los registros reales, sin filas vacias.
     * Las direcciones salen del registro de archivos del INEGI. Las que armaba `censo_municipal()` habian dejado de funcionar.
     * Funciona en cualquier sistema operativo (sin argumentos, `censo_municipal()` solo funcionaba en Windows).
 * `catalogo_inegi()`:

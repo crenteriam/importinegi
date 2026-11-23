@@ -497,7 +497,13 @@ gobierno_tabla_diccionario <- function(archivo, tablas) {
 gobierno_diccionario <- function(archivos, tablas) {
   partes <- lapply(archivos, function(archivo) {
     crudo <- tryCatch(leer_csv(archivo), error = function(e) NULL)
-    if (is.null(crudo) || nrow(crudo) == 0 || !all(c("columna", "descripcion") %in% tolower(names(crudo)))) {
+    if (is.null(crudo) || nrow(crudo) == 0) {
+      return(NULL)
+    }
+    # Los encabezados cambian entre temas (con o sin acentos, con "_" o con
+    # espacios): se dejan en mayusculas, sin acentos ni espacios.
+    names(crudo) <- toupper(gsub(" ", "_", normalizar_texto(names(crudo)), fixed = TRUE))
+    if (!all(c("COLUMNA", "DESCRIPCION") %in% names(crudo))) {
       return(NULL)
     }
     data.frame(tabla = gobierno_tabla_diccionario(basename(gobierno_ruta(archivo)), tablas), crudo,

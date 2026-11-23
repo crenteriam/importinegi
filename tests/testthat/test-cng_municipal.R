@@ -187,6 +187,18 @@ test_that("las claves se completan con ceros y solo la sigla NA pasa a ser NA", 
   expect_identical(gobierno_columnas_clave(cruda)$municipio, nombres[1:7])
 })
 
+test_that("el diccionario se reconoce aunque sus encabezados lleven acentos", {
+  carpeta <- withr::local_tempdir()
+  archivo <- file.path(carpeta, "diccionario_de_datos_m1s1p3_cngmd2025.csv")
+  writeLines(enc2utf8(c("COLUMNA,DESCRIPCI\u00d3N,ORIGEN,TIPO_DATO,LONGITUD,C\u00d3DIGO V\u00c1LIDO",
+                        "cvegeo,Clave geoestad\u00edstica concatenada,Presentaci\u00f3n,Car\u00e1cter,5,01001 al 32058")),
+             archivo, useBytes = TRUE)
+  diccionario <- gobierno_diccionario(archivo, c("m1s1p1", "m1s1p3"))
+  expect_named(diccionario, c("tabla", "COLUMNA", "DESCRIPCION", "ORIGEN", "TIPO_DATO", "LONGITUD", "CODIGO_VALIDO"))
+  expect_identical(diccionario$tabla, "m1s1p3")
+  expect_identical(diccionario$TIPO_DATO, "Car\u00e1cter")
+})
+
 test_that("un DBF que declara mas registros de los que contiene se lee sin filas vacias", {
   carpeta <- withr::local_tempdir()
   utils::unzip(muestra("gobierno/cngmd2011_agua.zip"), exdir = carpeta)
