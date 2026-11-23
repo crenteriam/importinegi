@@ -345,29 +345,71 @@ gobierno_orden_natural <- function(nombres) {
   order(clave, method = "radix")
 }
 
-# Nombre de un archivo dentro de un zip con "/" como separador y en UTF-8.
+# Nombre de un archivo dentro de un zip con "/" como separador. Si el nombre no
+# es UTF-8 valido (algunos zip guardan sus nombres en la pagina de codigos de
+# DOS), cada byte que no es ASCII pasa a ser "_": asi el nombre no depende de
+# la configuracion regional del equipo. Este nombre solo sirve para clasificar
+# el archivo y nombrar su tabla; para ubicarlo en el zip se usa el original.
 gobierno_ruta <- function(nombres) {
   malos <- !validUTF8(nombres)
-  nombres[malos] <- iconv(nombres[malos], from = "latin1", to = "UTF-8")
+  nombres[malos] <- vapply(nombres[malos], function(nombre) {
+    bytes <- charToRaw(nombre)
+    bytes[bytes > as.raw(0x7f)] <- charToRaw("_")
+    rawToChar(bytes)
+  }, character(1), USE.NAMES = FALSE)
   gsub("\\", "/", nombres, fixed = TRUE)
 }
 
-# Extrae del zip los archivos indicados (filas de gobierno_contenido()) y
-# devuelve la ruta de cada uno. En Linux y macOS, los archivos que el zip guarda
-# con "\" quedan con ese caracter en el nombre, sin carpeta; en Windows quedan
-# dentro de su carpeta. Por eso se buscan por su nombre con "/".
-gobierno_extraer <- function(zip, filas) {
-  carpeta <- inegi_descomprimir(zip, anidados = FALSE, archivos = filas$original)
-  extraidos <- list.files(carpeta, recursive = TRUE, all.files = TRUE, no.. = TRUE)
-  posicion <- match(filas$ruta, gobierno_ruta(extraidos))
-  if (anyNA(posicion)) {
-    unlink(carpeta, recursive = TRUE)
-    detener(
-      "No se pudo extraer de ", basename(zip), ": ",
-      enumerar(basename(filas$ruta[is.na(posicion)]), maximo = 10), "."
-    )
+# Nombre de archivo que cualquier sistema acepta: letras, numeros, punto, guion
+# y guion bajo.
+nombre_seguro <- function(nombres) {
+  gsub("[^A-Za-z0-9._-]", "_", nombres, useBytes = TRUE)
+}
+
+# Copia una entrada de un zip a `destino`, leyendola por una conexion. No se
+# crea ningun archivo con el nombre que trae el zip.
+copiar_entrada <- function(zip, entrada, destino) {
+  origen <- unz(zip, entrada, open = "rb")
+  on.exit(close(origen))
+  salida <- file(destino, open = "wb")
+  on.exit(close(salida), add = TRUE)
+  repeat {
+    bloque <- readBin(origen, what = "raw", n = 4 * 1024^2)
+    if (length(bloque) == 0) {
+      break
+    }
+    writeBin(bloque, salida)
   }
-  list(carpeta = carpeta, archivos = file.path(carpeta, extraidos[posicion]))
+  invisible(destino)
+}
+
+# Extrae del zip los archivos indicados (filas de gobierno_contenido()) y
+# devuelve la ruta de cada uno. El nombre que trae el zip solo se usa para
+# ubicar el archivo dentro del zip: en disco, cada archivo queda en una carpeta
+# numerada y con un nombre en ASCII. Asi no importa que el zip use "\" como
+# separador ni que sus nombres no sean UTF-8 valido, que macOS no acepta como
+# nombre de archivo.
+gobierno_extraer <- function(zip, filas) {
+  carpeta <- tempfile("importinegi_")
+  dir.create(carpeta)
+  subcarpetas <- file.path(carpeta, sprintf("%04d", seq_len(nrow(filas))))
+  archivos <- file.path(subcarpetas, nombre_seguro(basename(filas$ruta)))
+  for (i in seq_len(nrow(filas))) {
+    dir.create(subcarpetas[i])
+    copiado <- tryCatch(
+      {
+        copiar_entrada(enc2native(zip), filas$original[i], archivos[i])
+        TRUE
+      },
+      error = function(e) FALSE,
+      warning = function(w) FALSE
+    )
+    if (!copiado) {
+      unlink(carpeta, recursive = TRUE)
+      detener("No se pudo extraer de ", basename(zip), ": ", basename(filas$ruta[i]), ".")
+    }
+  }
+  list(carpeta = carpeta, archivos = archivos)
 }
 
 # Lectura y preparacion de las tablas -----------------------------------------------
