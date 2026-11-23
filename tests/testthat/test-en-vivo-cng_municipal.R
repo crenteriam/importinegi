@@ -71,6 +71,17 @@ test_that("EN VIVO: cng_municipal() lee el tema mas peque\u00f1o de cada modulo 
                               error = function(e) e)
       expect_false(inherits(diccionario, "error"),
                    info = paste(etiqueta, "diccionario:", if (inherits(diccionario, "error")) substr(conditionMessage(diccionario), 1, 300)))
+      if (inherits(diccionario, "error")) {
+        filas <- contenido[contenido$tipo == "diccionario" | grepl("diccionario", contenido$ruta, ignore.case = TRUE), ]
+        cat("[en vivo] ", etiqueta, " diccionario, archivos: ", paste(filas$ruta, collapse = " | "), "\n", sep = "")
+        csv <- filas[grepl("[.]csv$", filas$ruta, ignore.case = TRUE), ]
+        if (nrow(csv) > 0) {
+          extraido <- gobierno_extraer(ruta_cache(tema$url), csv[1, ])
+          cat("[en vivo] ", etiqueta, " diccionario, primeras lineas: ",
+              paste(substr(readLines(extraido$archivos, n = 3, warn = FALSE), 1, 200), collapse = " // "), "\n", sep = "")
+          unlink(extraido$carpeta, recursive = TRUE)
+        }
+      }
       if (!inherits(diccionario, "error")) {
         ajenas <- setdiff(unique(diccionario$tabla), names(tablas))
         expect_identical(ajenas, character(), info = paste(etiqueta, "diccionario sin tabla"))
