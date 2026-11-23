@@ -176,7 +176,39 @@ test_that("la lista de proyectos del paquete tiene el formato esperado", {
   archivo <- test_path("..", "..", "data-raw", "proyectos.csv")
   skip_if_not(file.exists(archivo), "data-raw no se incluye en el paquete construido")
   proyectos <- utils::read.csv(archivo, colClasses = "character")
-  expect_named(proyectos, c("proyecto", "edicion", "pagina"))
+  expect_named(proyectos, c("proyecto", "edicion", "pagina", "tipos"))
+  expect_true(all(grepl("^[0-9]+([|][0-9]+)*$", proyectos$tipos)))
+  # El censo de gobiernos municipales se lee de los datos abiertos (tipo 12)
+  # (tipo 12); desde 2021 el INEGI ya no publica sus microdatos en DBF (tipo 4)
+  gobierno <- proyectos[proyectos$proyecto == "cngmd", ]
+  expect_identical(gobierno$tipos, ifelse(as.integer(gobierno$edicion) <= 2019, "4|12", "12"))
+  expect_identical(proyectos$edicion[proyectos$proyecto == "cngmd"],
+                   as.character(seq(2011, 2025, by = 2)))
   expect_false(anyDuplicated(proyectos$pagina) > 0)
   expect_true(all(grepl("^[a-z0-9_/]+$", proyectos$pagina)))
+})
+
+test_that("registro_construir() consulta los tipos de documento de cada proyecto", {
+  expect_identical(registro_tipos(NA), 4L)
+  expect_identical(registro_tipos(""), 4L)
+  expect_identical(registro_tipos("4"), 4L)
+  expect_identical(registro_tipos("4|12"), c(4L, 12L))
+  expect_error(registro_tipos("4|doce"), "tipos de documento separados")
+  expect_match(api_url_archivos(794, 12), "&tipodocto=12&", fixed = TRUE)
+
+  consultados <- character()
+  local_mocked_bindings(inegi_texto = function(url) {
+    if (grepl("idBiinegi=", url, fixed = TRUE)) {
+      consultados <<- c(consultados, sub(".*&tipodocto=([0-9]+)&.*", "\\1", url))
+    }
+    texto_simulado(url)
+  })
+  withr::local_options(importinegi.pausa = 0)
+  proyectos <- data.frame(proyecto = "cngmd", edicion = "2025", pagina = "enigh/nc/2014",
+                          tipos = "4|12", stringsAsFactors = FALSE)
+  registro <- registro_construir(proyectos, silencioso = TRUE)
+  expect_identical(consultados, c("4", "12"))
+  # Un archivo que aparece en los dos listados se registra una sola vez
+  expect_identical(nrow(registro), 49L)
+  expect_identical(anyDuplicated(registro[c("ruta", "url", "formato")]), 0L)
 })

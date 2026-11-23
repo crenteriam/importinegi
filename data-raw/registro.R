@@ -13,8 +13,9 @@
 #   R/sysdata.rda                El registro que se distribuye con el paquete.
 #
 # Para agregar un proyecto o una edicion, anade una fila a proyectos.csv
-# (pagina es la ruta de https://www.inegi.org.mx/programas/<pagina>/) y vuelve
-# a ejecutar el script.
+# (pagina es la ruta de https://www.inegi.org.mx/programas/<pagina>/ y tipos,
+# los tipos de documento del servicio de descargas que se consultan, separados
+# por "|": 4 = microdatos, 12 = datos abiertos) y vuelve a ejecutar el script.
 
 if (!file.exists("DESCRIPTION") || !file.exists("data-raw/proyectos.csv")) {
   stop("Ejecuta este script desde la carpeta raiz del paquete importinegi.")
