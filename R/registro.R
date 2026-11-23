@@ -169,7 +169,9 @@ registro_construir <- function(proyectos, silencioso = FALSE) {
     resultado <- tryCatch({
       id <- inegi_api_id(pagina)
       tabla <- do.call(rbind, lapply(tipos, function(tipo) inegi_api_archivos(id, tipo)))
-      tabla <- tabla[!duplicated(tabla[c("ruta", "url", "formato")]), , drop = FALSE]
+      # Un archivo que aparece en dos listados se registra una vez. El mismo
+      # archivo con dos titulos (el INEGI lo lista asi en el Censo 2020) se conserva.
+      tabla <- tabla[!duplicated(tabla), , drop = FALSE]
       if (nrow(tabla) == 0) {
         detener("el INEGI no lista archivos de microdatos para este proyecto")
       }

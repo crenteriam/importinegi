@@ -210,5 +210,5 @@ test_that("registro_construir() consulta los tipos de documento de cada proyecto
   expect_identical(consultados, c("4", "12"))
   # Un archivo que aparece en los dos listados se registra una sola vez
   expect_identical(nrow(registro), 49L)
-  expect_identical(anyDuplicated(registro[c("ruta", "url", "formato")]), 0L)
+  expect_identical(anyDuplicated(registro), 0L)
 })
