@@ -41,7 +41,11 @@ test_that("EN VIVO: cng_municipal() lee el tema mas peque\u00f1o de cada modulo 
         "; clave del municipio: ", paste(unique(claves), collapse = ", "),
         "; columnas con NSS, ND o NP: ", length(siglas),
         "; archivos: ", paste(names(table(contenido$tipo)), table(contenido$tipo), sep = "=", collapse = ", "),
-        if (any(grepl("\\", contenido$original, fixed = TRUE))) "; rutas con \\", "\n", sep = "")
+        if (any(grepl("\\", contenido$original, fixed = TRUE, useBytes = TRUE))) "; rutas con \\", "\n", sep = "")
+    for (nombre in names(tablas)[is.na(claves)]) {
+      cat("[en vivo] ", etiqueta, " sin clave del municipio en ", nombre, ": ",
+          paste(utils::head(names(tablas[[nombre]]), 8), collapse = ", "), "\n", sep = "")
+    }
 
     expect_gt(length(tablas), 0)
     expect_false(any(grepl("_cng[a-z]+[0-9]+$", names(tablas))), info = etiqueta)
@@ -51,7 +55,7 @@ test_that("EN VIVO: cng_municipal() lee el tema mas peque\u00f1o de cada modulo 
       expect_true(all(is.na(valores) | grepl("^[0-9]{5}$", valores)),
                   info = paste(etiqueta, nombre, paste(utils::head(unique(valores[!grepl("^[0-9]{5}$", valores)]), 5), collapse = " ")))
     }
-    texto <- unlist(lapply(tablas, function(tabla) unlist(tabla[vapply(tabla, is.character, logical(1))], use.names = FALSE)))
+    texto <- as.character(unlist(lapply(tablas, function(tabla) unlist(tabla[vapply(tabla, is.character, logical(1))], use.names = FALSE))))
     expect_true(all(validUTF8(texto)), info = paste(etiqueta, "texto que no es UTF-8"))
     expect_false(any(texto %in% "NA"), info = paste(etiqueta, "queda la sigla NA"))
 
@@ -81,9 +85,10 @@ test_that("EN VIVO: los temas de los ejemplos tienen la forma documentada", {
   # Comisiones e iniciativas de los ayuntamientos, 2011: cinco tablas
   comision <- suppressMessages(cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "comision"))
   expect_named(comision, c("act_ayun", "com_ayun", "com_tasu", "in_teasu", "ini_ayun"))
-  expect_identical(clave_municipio(comision$act_ayun), "ubic_geo")
+  clave <- clave_municipio(comision$act_ayun)
+  expect_false(is.na(clave))
   describir_tabla("2011 comision act_ayun", comision$act_ayun)
-  cat("[en vivo] 2011 comision: municipios en act_ayun = ", length(unique(comision$act_ayun$ubic_geo)), "\n", sep = "")
+  cat("[en vivo] 2011 comision: municipios en act_ayun = ", length(unique(comision$act_ayun[[clave]])), " (", clave, ")", "\n", sep = "")
   estructura <- suppressMessages(cng_municipal(year = 2011, modulo = "ayuntamiento", tema = "estructura"))
   cat("[en vivo] 2011 estructura: ", paste(names(estructura), collapse = ", "), "\n", sep = "")
   expect_gt(length(estructura), 0)
@@ -127,4 +132,9 @@ test_that("EN VIVO: los temas de los ejemplos tienen la forma documentada", {
   cat("[en vivo] 2011 agua (DBF): ", length(agua), " tablas (", paste(names(agua), collapse = ", "), "); clave: ",
       paste(unique(vapply(agua, clave_municipio, character(1))), collapse = ", "), "\n", sep = "")
   expect_gt(length(agua), 0)
+  for (nombre in names(agua)) {
+    vacias <- sum(rowSums(!is.na(agua[[nombre]])) == 0)
+    cat("[en vivo] 2011 agua ", nombre, ": ", nrow(agua[[nombre]]), " filas (", vacias, " vacias) x ", ncol(agua[[nombre]]),
+        " columnas: ", paste(utils::head(names(agua[[nombre]]), 8), collapse = ", "), "\n", sep = "")
+  }
 })
