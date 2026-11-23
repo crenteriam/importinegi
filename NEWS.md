@@ -14,7 +14,7 @@
 * Nuevas utilidades internas compartidas, todavia sin efecto en las funciones exportadas: descarga con `httr2` (reintentos, limites de tiempo, copia local opcional y verificacion de que el archivo recibido sea un zip valido), descompresion en una carpeta propia por llamada, lectura de DBF y CSV, catalogo unico de entidades federativas y validacion de argumentos.
 * Nuevas dependencias: `httr2` y `jsonlite`.
 * Registro de direcciones de descarga generado con el script `data-raw/registro.R` a partir del servicio de descargas del INEGI, y tarea de GitHub Actions que lo ejecuta una vez al ano y avisa cuando el INEGI publica o cambia archivos.
-* El paquete incluye ya el registro de direcciones de descarga (3,550 archivos de 36 proyectos, actualizado el 22 de noviembre de 2026 con las Encuestas Intercensales 2015 y 2025, con las ocho ediciones del Censo Nacional de Gobiernos Municipales y con las 15 ediciones de la serie tradicional de la ENIGH). Las funciones nuevas buscan ahi la direccion de cada archivo en lugar de armarla a mano.
+* El paquete incluye ya el registro de direcciones de descarga (3,725 archivos de 45 proyectos, actualizado el 23 de noviembre de 2026 con las Encuestas Intercensales 2015 y 2025, con las ocho ediciones del Censo Nacional de Gobiernos Municipales, con las 15 ediciones de la serie tradicional de la ENIGH y con las nueve ediciones del Censo Nacional de Derechos Humanos Federal). Las funciones nuevas buscan ahi la direccion de cada archivo en lugar de armarla a mano.
 * La lectura de archivos CSV reconoce la codificacion de cada valor (UTF-8 o Latin-1) en todo el archivo, no solo en sus primeras lineas.
 * En las descargas de varios archivos, si uno falla, los que ya se descargaron se conservan durante la sesion de R, para que al repetir la llamada solo se descarguen los que faltan.
 * Al combinar varias entidades, cada una se convierte a numero antes de unirlas, lo que reduce la memoria que se necesita.
@@ -68,6 +68,13 @@
     * Los DBF de agua potable y de residuos solidos de 2011 declaran mas registros de los que contienen; la funcion devuelve solo los registros reales, sin filas vacias.
     * Las direcciones salen del registro de archivos del INEGI. Las que armaba `censo_municipal()` habian dejado de funcionar.
     * Funciona en cualquier sistema operativo (sin argumentos, `censo_municipal()` solo funcionaba en Windows).
+* Nueva funcion `cndhf()`, que descarga el Censo Nacional de Derechos Humanos Federal (CNDHF) de 2017 a 2025, por modulo y tema. Se usa igual que `cngmd()` y comparte su programacion.
+    * `cndhf(year, modulo, tema, tabla)`: `year` y `modulo` son obligatorios; `modulo` elige entre `"estructura"` (estructura organizacional y recursos de la Comision Nacional de los Derechos Humanos) y `"proteccion"` (capacitacion, difusion, defensa y proteccion de los derechos humanos); `tema` y `tabla` funcionan como en `cngmd()`.
+    * No tiene el argumento `estado`: el censo tiene un solo informante, la Comision Nacional de los Derechos Humanos.
+    * Lee los archivos de datos abiertos del INEGI, en formato CSV. La sigla `"NA"` (no aplica) se convierte en `NA`; las demas siglas se conservan.
+    * En las tablas que desglosan por municipio, la clave del municipio en una sola columna (`ubicageo_b`, `ubicageo_c`, `ubicageo_e`; ediciones de 2020 a 2022) se devuelve como texto de 5 digitos. Cuando la entidad y el municipio vienen en columnas separadas (`enticve1` y `municve1`; ediciones de 2022 a 2025), se devuelven como texto de 2 y de 3 digitos. No se crean columnas.
+    * El indice de las tablas y el diccionario de datos estan disponibles como tablas desde la edicion 2020.
+* Las bitacoras de cambios que algunos temas de los censos de gobierno traen junto a sus tablas (`..._bitacora_de_cambios.csv`) ya no se leen como tablas.
 * Nueva funcion `enigh_tradicional()`, que descarga la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH), de 1984 a 2014, por tabla. Es la primera de las tres funciones de la ENIGH (serie tradicional, Nueva construccion y Nueva serie).
 * `enigh_tradicional()`:
     * `enigh_tradicional(year, tabla)`: `year` es obligatorio; `tabla` elige una o varias tablas de la edicion y, por omision, descarga `"concentrado"`, la tabla con una fila por hogar, su factor de expansion y los agregados de ingreso y de gasto.

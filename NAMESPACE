@@ -3,6 +3,7 @@
 export(bases_importinegi)
 export(catalogo_inegi)
 export(censo)
+export(cndhf)
 export(cngmd)
 export(conteo)
 export(enigh_nuevaconstruccion)

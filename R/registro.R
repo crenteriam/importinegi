@@ -24,18 +24,19 @@ api_url_archivos <- function(id, tipo = 4) {
 }
 
 # Identificador de un proyecto en el servicio de descargas. Se lee de la pagina
-# del programa (por ejemplo "enoe/15ymas" o "ccpv/2010").
+# del programa (por ejemplo "enoe/15ymas" o "ccpv/2010"). En algunas paginas el
+# identificador viene sin comillas (<menu-gen idm=2937 ...>).
 inegi_api_id <- function(pagina) {
   pagina <- gsub("^/+|/+$", "", pagina)
   html <- inegi_texto(paste0("/programas/", pagina, "/"))
-  etiqueta <- regmatches(html, regexpr("<menu-gen[^>]*idm=\"[0-9]+\"", html))
+  etiqueta <- regmatches(html, regexpr("<menu-gen[^>]*[ \t\r\n]idm=[\"']?[0-9]+", html))
   if (length(etiqueta) == 0) {
     detener(
       "No se encontr\u00f3 el identificador del proyecto en la p\u00e1gina ",
       inegi_url(paste0("/programas/", pagina, "/")), "."
     )
   }
-  as.integer(sub(".*idm=\"([0-9]+)\"$", "\\1", etiqueta))
+  as.integer(sub(".*idm=[\"']?([0-9]+)$", "\\1", etiqueta))
 }
 
 # Listado de archivos de un proyecto (microdatos, o el tipo de documento que se

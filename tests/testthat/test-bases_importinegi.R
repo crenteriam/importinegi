@@ -11,7 +11,7 @@ test_that("bases_importinegi() lista las bases del paquete sin conexion", {
   expect_false(anyNA(bases[setdiff(names(bases), c("modulo", "tablas"))]))
   expect_identical(anyDuplicated(bases[, c("proyecto", "year", "modulo", "base")]), 0L)
   # Solo los censos de gobierno tienen modulo, y no listan sus tablas
-  gobierno <- bases$proyecto == "cngmd"
+  gobierno <- bases$proyecto %in% c("cngmd", "cndhf")
   expect_true(all(is.na(bases$modulo[!gobierno])) && !anyNA(bases$modulo[gobierno]))
   expect_true(all(is.na(bases$tablas[gobierno])) && !anyNA(bases$tablas[!gobierno]))
   expect_true(all(bases$tamano_mb > 0))
@@ -123,13 +123,16 @@ test_that("bases_importinegi() coincide con lo que censo() puede descargar", {
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CENSO "), bases_importinegi("censo"))
   expect_identical(unique(bases_importinegi()$proyecto),
-                   c("censo", "conteo", "intercensal", "cngmd", "enigh_tradicional"))
-  expect_identical(bases_importinegi(c("censo", "conteo", "intercensal", "cngmd", "enigh_tradicional")),
+                   c("censo", "conteo", "intercensal", "cngmd", "cndhf", "enigh_tradicional"))
+  expect_identical(bases_importinegi(c("censo", "conteo", "intercensal", "cngmd", "cndhf", "enigh_tradicional")),
                    bases_importinegi())
   de_2020 <- bases_importinegi(year = 2020)
   expect_identical(unique(de_2020$year), 2020L)
-  expect_identical(nrow(de_2020), 6L)
-  expect_identical(bases_importinegi("censo", "2020"), de_2020)
+  # Seis bases del censo y los 18 temas del censo de derechos humanos federal
+  expect_identical(unique(de_2020$proyecto), c("censo", "cndhf"))
+  expect_identical(nrow(de_2020), 24L)
+  expect_identical(bases_importinegi("censo", "2020"),
+                   structure(de_2020[de_2020$proyecto == "censo", ], registro = registro_generado()))
   varios <- bases_importinegi(year = c(1990, 2000))
   expect_identical(unique(varios$year), c(1990L, 2000L))
   # Cuatro bases de los censos y la ENIGH de 2000
@@ -140,9 +143,10 @@ test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(unique(conteos$proyecto), c("conteo", "enigh_tradicional"))
   expect_identical(nrow(conteos), 6L)
 
-  # En 2015 y 2025 hay Encuesta Intercensal y censo de gobiernos municipales
+  # En 2015 y 2025 hay Encuesta Intercensal y censo de gobiernos municipales; en
+  # 2025, tambien censo de derechos humanos federal
   de_2015_y_2025 <- bases_importinegi(year = c(2015, 2025))
-  expect_identical(unique(de_2015_y_2025$proyecto), c("intercensal", "cngmd"))
+  expect_identical(unique(de_2015_y_2025$proyecto), c("intercensal", "cngmd", "cndhf"))
   intercensales <- bases_importinegi("intercensal", year = c(2015, 2025))
   expect_identical(intercensales, structure(de_2015_y_2025[de_2015_y_2025$proyecto == "intercensal", ],
                                             registro = registro_generado()))
@@ -167,7 +171,7 @@ test_that("bases_importinegi() solo muestra lo que esta en el registro", {
   attr(registro, "generado") <- "2026-11-11"
   withr::local_options(importinegi.registro = registro)
   bases <- bases_importinegi()
-  expect_false(2020L %in% bases$year)
+  expect_false(2020L %in% bases$year[bases$proyecto == "censo"])
   expect_identical(sum(bases$proyecto %in% c("censo", "conteo", "intercensal")), 17L)
   expect_identical(attr(bases, "registro"), "2026-11-11")
   # Sin los archivos de un proyecto, no se listan sus temas

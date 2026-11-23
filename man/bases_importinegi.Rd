@@ -12,14 +12,14 @@ bases_importinegi(proyecto = NULL, year = NULL)
 \item{year}{Año o años que se quieren consultar, en formato numerico. Por omision, todos los años.}
 }
 \value{
-Data.frame con una fila por proyecto, año y base de datos (en \code{"cngmd"}, una fila por edicion y tema), y las siguientes columnas:
+Data.frame con una fila por proyecto, año y base de datos (en \code{"cngmd"} y \code{"cndhf"}, una fila por edicion y tema), y las siguientes columnas:
 \describe{
 \item{\code{proyecto}}{Proyecto estadistico. Coincide con el nombre de la funcion que lo descarga (por ejemplo, \code{"censo"} se descarga con \code{censo()}).}
 \item{\code{year}}{Año del levantamiento.}
-\item{\code{modulo}}{Solo en \code{"cngmd"}: modulo al que pertenece el tema, como se escribe en el argumento \code{modulo} de la funcion. En los demas proyectos, \code{NA}.}
-\item{\code{base}}{Nombre de la base de datos, como se escribe en el argumento \code{base} de la funcion. En \code{"cngmd"}, nombre del archivo del tema, que se puede escribir en el argumento \code{tema}.}
-\item{\code{descripcion}}{Descripcion de la base de datos. En \code{"cngmd"}, titulo que el INEGI le da al tema, que tambien se puede escribir en el argumento \code{tema}.}
-\item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga. En \code{"cngmd"}, \code{NA}: las tablas de un tema se conocen al descargarlo.}
+\item{\code{modulo}}{Solo en \code{"cngmd"} y \code{"cndhf"}: modulo al que pertenece el tema, como se escribe en el argumento \code{modulo} de la funcion. En los demas proyectos, \code{NA}.}
+\item{\code{base}}{Nombre de la base de datos, como se escribe en el argumento \code{base} de la funcion. En \code{"cngmd"} y \code{"cndhf"}, nombre del archivo del tema, que se puede escribir en el argumento \code{tema}.}
+\item{\code{descripcion}}{Descripcion de la base de datos. En \code{"cngmd"} y \code{"cndhf"}, titulo que el INEGI le da al tema, que tambien se puede escribir en el argumento \code{tema}.}
+\item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga. En \code{"cngmd"} y \code{"cndhf"}, \code{NA}: las tablas de un tema se conocen al descargarlo.}
 \item{\code{cobertura}}{\code{"nacional y por entidad"} si el INEGI publica un archivo nacional ademas de los archivos por entidad federativa, \code{"por entidad"} si solo publica archivos por entidad, o \code{"nacional"} si solo publica el archivo nacional.}
 \item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"} o \code{"xlsx"}).}
 \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
@@ -33,7 +33,7 @@ Devuelve una tabla con las bases de datos del INEGI que se pueden descargar con 
 \details{
 La tabla sale del registro de archivos del INEGI que se distribuye con el paquete, el mismo que usan las funciones de descarga para validar sus argumentos y encontrar la direccion de cada archivo. Por eso, lo que muestra esta funcion es lo que esas funciones pueden descargar. El atributo \code{"registro"} de la tabla indica la fecha en que se genero el registro: los archivos que el INEGI publique despues de esa fecha apareceran al actualizar el paquete.
 
-Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}), la Encuesta Intercensal (\code{\link{intercensal}}) y el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cngmd}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
+Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}), la Encuesta Intercensal (\code{\link{intercensal}}), el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cngmd}}) y el Censo Nacional de Derechos Humanos Federal (\code{\link{cndhf}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 
 Tambien incluye la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}}), con una fila por edicion.
 
@@ -63,5 +63,5 @@ ediciones$tablas[ediciones$year == 2010]
 \seealso{
 \code{\link{enigh_tradicional}} para descargar la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
 
-\code{\link{censo}}, \code{\link{conteo}}, \code{\link{intercensal}} y \code{\link{cngmd}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
+\code{\link{censo}}, \code{\link{conteo}}, \code{\link{intercensal}}, \code{\link{cngmd}} y \code{\link{cndhf}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 }
