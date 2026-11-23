@@ -379,10 +379,10 @@ gobierno_extraer <- function(zip, filas) {
 # El censo de derechos humanos federal no tiene clave del informante (es uno
 # solo, la CNDH), pero algunas de sus tablas desglosan por municipio. De 2020 a
 # 2022 traen la clave del municipio en una columna (ubicageo_b, ubicageo_c,
-# ubicageo_e), que se deja en 5 digitos; desde 2022, la entidad y el municipio
-# vienen en columnas separadas (enticve1 y municve1), que se dejan en 2 y en 3
-# digitos. Las columnas de entidad con catalogo (entidad_c, entfede_c) no son
-# claves: se conservan como numero, igual que en su catalogo.
+# ubicageo_e), que se deja en 5 digitos. La clave de la entidad viene aparte
+# desde 2022 (enticve1) y la del municipio, desde 2023 (municve1); se dejan en
+# 2 y en 3 digitos. Las columnas de entidad con catalogo (entidad_c, entfede_c)
+# no son claves: se conservan como numero, igual que en su catalogo.
 gobierno_claves <- function(programa = "cngmd") {
   switch(
     programa,
