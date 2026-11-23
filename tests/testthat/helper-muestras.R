@@ -192,6 +192,30 @@ servidor_prueba <- function(entorno = parent.frame()) {
       res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
     }
   })
+  # Archivos del Censo Nacional de Gobiernos Municipales, en las rutas del
+  # registro del paquete. Responde con las muestras de fixtures/gobierno (un tema
+  # de 2011 en CSV y otro en DBF, y uno de 2015, 2019, 2021 y 2025); para el
+  # resto, como el INEGI cuando un archivo no existe.
+  app$get(webfakes::new_regexp("^/contenidos/programas/cngmd/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_censo <- locales$descargas_censo + 1
+    reglas <- c(
+      cngmd2025_ayuntamientos = "/2025/datosabiertos/conjunto_de_datos_ayuntamientos_cngmd2025_csv[.]zip$",
+      cngmd2021_alcaldias = "/2021/datosabiertos/m1/alcaldias_cdmx_cngmd2021_csv[.]zip$",
+      cngmd2019_actividad = "/2019/datosabiertos/m1/actividad_ayuntami_cngmd2019_csv[.]zip$",
+      cngmd2015_estructura = "/2015/datosabiertos/m1/conjunto_de_datos_estruct_aytto_cngmd2015_csv[.]zip$",
+      cngmd2011_comisiones = "/2011/datosabiertos/ayu_comisiones_cngmd2011_csv[.]zip$",
+      cngmd2011_agua = "/2011/microdatos/agua_cngmd2011_dbf[.]zip$"
+    )
+    archivo <- names(reglas)[vapply(reglas, function(regla) grepl(regla, req$path), logical(1))]
+    if (length(archivo) == 1) {
+      res$send_file(paste0(archivo, ".zip"), root = file.path(locales$carpeta, "gobierno"))
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
   app$get("/censo/descargas", function(req, res) {
     res$send(as.character(req$app$locals$descargas_censo))
   })

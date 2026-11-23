@@ -4,7 +4,7 @@
 #'
 #' La tabla sale del registro de archivos del INEGI que se distribuye con el paquete, el mismo que usan las funciones de descarga para validar sus argumentos y encontrar la direccion de cada archivo. Por eso, lo que muestra esta funcion es lo que esas funciones pueden descargar. El atributo \code{"registro"} de la tabla indica la fecha en que se genero el registro: los archivos que el INEGI publique despues de esa fecha apareceran al actualizar el paquete.
 #'
-#' Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}) y la Encuesta Intercensal (\code{\link{intercensal}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
+#' Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{censo}}), el Conteo de Poblacion y Vivienda (\code{\link{conteo}}), la Encuesta Intercensal (\code{\link{intercensal}}) y el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cng_municipal}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 #'
 #' A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 #'
@@ -23,23 +23,29 @@
 #' bases <- bases_importinegi("censo")
 #' bases$year[bases$base == "ageb"]
 #'
-#' @return Data.frame con una fila por proyecto, año y base de datos, y las siguientes columnas:
+#' # Temas de cada modulo del Censo Nacional de Gobiernos Municipales 2025.
+#' temas <- bases_importinegi(proyecto = "cng_municipal", year = 2025)
+#' table(temas$modulo)
+#'
+#' @return Data.frame con una fila por proyecto, año y base de datos (en \code{"cng_municipal"}, una fila por edicion y tema), y las siguientes columnas:
 #' \describe{
 #'   \item{\code{proyecto}}{Proyecto estadistico. Coincide con el nombre de la funcion que lo descarga (por ejemplo, \code{"censo"} se descarga con \code{censo()}).}
 #'   \item{\code{year}}{Año del levantamiento.}
-#'   \item{\code{base}}{Nombre de la base de datos, como se escribe en el argumento \code{base} de la funcion.}
-#'   \item{\code{descripcion}}{Descripcion de la base de datos.}
-#'   \item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga.}
+#'   \item{\code{modulo}}{Solo en \code{"cng_municipal"}: modulo al que pertenece el tema, como se escribe en el argumento \code{modulo} de la funcion. En los demas proyectos, \code{NA}.}
+#'   \item{\code{base}}{Nombre de la base de datos, como se escribe en el argumento \code{base} de la funcion. En \code{"cng_municipal"}, nombre del archivo del tema, que se puede escribir en el argumento \code{tema}.}
+#'   \item{\code{descripcion}}{Descripcion de la base de datos. En \code{"cng_municipal"}, titulo que el INEGI le da al tema, que tambien se puede escribir en el argumento \code{tema}.}
+#'   \item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga. En \code{"cng_municipal"}, \code{NA}: las tablas de un tema se conocen al descargarlo.}
 #'   \item{\code{cobertura}}{\code{"nacional y por entidad"} si el INEGI publica un archivo nacional ademas de los archivos por entidad federativa, \code{"por entidad"} si solo publica archivos por entidad, o \code{"nacional"} si solo publica el archivo nacional.}
 #'   \item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"} o \code{"xlsx"}).}
 #'   \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
 #' }
-#' @seealso \code{\link{censo}}, \code{\link{conteo}} e \code{\link{intercensal}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
+#' @seealso \code{\link{censo}}, \code{\link{conteo}}, \code{\link{intercensal}} y \code{\link{cng_municipal}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 #' @export
 
 bases_importinegi <- function(proyecto = NULL, year = NULL) {
   bases <- poblacion_bases()
-  proyectos <- unique(bases$programa)
+  gobierno <- gobierno_bases()
+  proyectos <- c(unique(bases$programa), gobierno_programas()$programa)
 
   if (!is.null(proyecto)) {
     if (!is.character(proyecto) || length(proyecto) == 0 || anyNA(proyecto)) {
@@ -54,6 +60,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
       )
     }
     bases <- bases[bases$programa %in% proyecto, ]
+    gobierno <- gobierno[gobierno$proyecto %in% proyecto, ]
   }
   if (!is.null(year)) {
     numeros <- suppressWarnings(as.integer(as.character(year)))
@@ -61,6 +68,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
       detener("`year` debe ser uno o varios a\u00f1os en formato num\u00e9rico (por ejemplo, 2020).")
     }
     bases <- bases[bases$year %in% numeros, ]
+    gobierno <- gobierno[gobierno$year %in% numeros, ]
   }
 
   filas <- lapply(seq_len(nrow(bases)), function(i) {
@@ -74,6 +82,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
     data.frame(
       proyecto = bases$programa[i],
       year = bases$year[i],
+      modulo = NA_character_,
       base = bases$base[i],
       descripcion = poblacion_titulo_base(bases$programa[i], bases$year[i], bases$base[i]),
       tablas = paste(tablas, collapse = ", "),
@@ -83,10 +92,11 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
       stringsAsFactors = FALSE
     )
   })
-  tabla <- do.call(rbind, filas)
+  tabla <- do.call(rbind, c(filas, if (nrow(gobierno) > 0) list(gobierno)))
   if (is.null(tabla)) {
     tabla <- data.frame(
-      proyecto = character(), year = integer(), base = character(), descripcion = character(),
+      proyecto = character(), year = integer(), modulo = character(), base = character(),
+      descripcion = character(),
       tablas = character(), cobertura = character(), formato = character(), tamano_mb = numeric(),
       stringsAsFactors = FALSE
     )
