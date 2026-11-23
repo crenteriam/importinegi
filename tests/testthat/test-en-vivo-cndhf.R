@@ -174,20 +174,61 @@ test_that("EN VIVO: las claves geograficas tienen el formato documentado", {
   con_entidad <- names(seleccionados)[vapply(seleccionados, function(tabla) any(grepl("^entfede_", names(tabla))), logical(1))]
   cat("[en vivo] 2025 hechos violatorios, tablas con entfede_*: ", paste(con_entidad, collapse = ", "), "\n", sep = "")
 
-  # 2020 a 2022: clave del municipio en una columna (5 digitos)
+  # Ejemplo de la vineta: al unir las dos columnas se obtiene la clave de 5
+  # digitos del municipio en todas las filas de la tabla
+  una <- suppressMessages(cndhf(2025, modulo = "proteccion", tema = "hechos violatorios", tabla = "m2s9p2cp4"))
+  expect_identical(dim(una), dim(municipal))
+  cvegeo <- paste0(una$enticve1, una$municve1)
+  validas <- grepl("^[0-9]{5}$", cvegeo)
+  cat("[en vivo] 2025 hechos violatorios m2s9p2cp4: ", sum(validas), " de ", length(cvegeo),
+      " filas con clave de 5 digitos; ", length(unique(cvegeo[validas])), " municipios distintos; otras: ",
+      ejemplos(cvegeo[!validas]), "\n", sep = "")
+  expect_true(all(validas))
+
+  # 2020 a 2022: clave del municipio en una columna (5 digitos). La vineta
+  # dice que enticve1 aparece desde 2022 y municve1, desde 2023
   for (year in 2020:2022) {
     temas <- gobierno_temas("cndhf", year)
     halladas <- 0L
+    n_entidad <- 0L
+    n_mun <- 0L
     for (i in seq_len(nrow(temas))) {
       tablas <- tryCatch(suppressMessages(cndhf(year, temas$modulo[i], temas$base[i])), error = function(e) NULL)
       for (nombre in names(tablas)) {
-        if (length(gobierno_columnas_clave(tablas[[nombre]], "cndhf")$municipio) > 0) {
+        columnas <- gobierno_columnas_clave(tablas[[nombre]], "cndhf")
+        n_entidad <- n_entidad + (length(columnas$entidad) > 0)
+        n_mun <- n_mun + (length(columnas$mun) > 0)
+        if (length(columnas$municipio) > 0) {
           halladas <- halladas + 1L
           revisar_claves(tablas[[nombre]], paste(year, temas$base[i], nombre))
         }
       }
     }
-    cat("[en vivo] ", year, ": tablas con la clave del municipio en una columna = ", halladas, "\n", sep = "")
+    cat("[en vivo] ", year, ": tablas con la clave del municipio en una columna = ", halladas,
+        "; con enticve* = ", n_entidad, "; con municve* = ", n_mun, "\n", sep = "")
     expect_gt(halladas, 0L)
+    expect_identical(n_mun, 0L)
+    expect_identical(n_entidad > 0L, year == 2022)
+  }
+
+  # 2023 y 2024: entidad y municipio en columnas separadas, como en 2025
+  for (year in 2023:2024) {
+    separadas <- 0L
+    en_una <- 0L
+    for (tema in c("capdifu_fortacul_dh", "exploespec_hechoviola_dh_selec")) {
+      tablas <- suppressMessages(cndhf(year, "proteccion", tema))
+      for (nombre in names(tablas)) {
+        columnas <- gobierno_columnas_clave(tablas[[nombre]], "cndhf")
+        en_una <- en_una + (length(columnas$municipio) > 0)
+        if (length(columnas$entidad) > 0 && length(columnas$mun) > 0) {
+          separadas <- separadas + 1L
+          revisar_claves(tablas[[nombre]], paste(year, tema, nombre))
+        }
+      }
+    }
+    cat("[en vivo] ", year, ": tablas con enticve* y municve* = ", separadas,
+        "; con la clave del municipio en una columna = ", en_una, "\n", sep = "")
+    expect_gt(separadas, 0L)
+    expect_identical(en_una, 0L)
   }
 })
