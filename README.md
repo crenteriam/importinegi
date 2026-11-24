@@ -23,6 +23,7 @@ En la versión `2.0.0`, las funciones que ya se actualizaron amplían los años 
 - Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México (2011-2025), con la función `cngmd()`
 - Censo Nacional de Derechos Humanos Federal (CNDHF) (2017-2025), con la función nueva `cndhf()`
 - Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH), serie tradicional (1984-2014), con la función `enigh_tradicional()`
+- Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH), Nueva Construcción (2008-2014), con la función `enigh_nc()`
 - Encuesta Nacional de Ocupación y Empleo (ENOE), trimestral (2005-2026), con la función `enoe()`
 
 La función `bases_importinegi()` muestra los años, las bases de datos y las tablas que se pueden descargar con estas funciones. Las funciones de los demás proyectos estadísticos aún no se actualizan.

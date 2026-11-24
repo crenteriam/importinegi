@@ -33,7 +33,7 @@ La versión `2.0.0` requiere R 4.1 o posterior. Las funciones de información ge
 
 # Sintaxis
 
-El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `cngmd()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, la función `enigh_nuevaconstruccion()` descarga la ENIGH de la serie Nueva Construcción. En otros casos, una sola función da acceso a todas las bases de datos del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de varios tipos de bases de datos, siendo ITER una de ellas. Todas se descargan con la función `cpv_censo()`, que tiene un parámetro para elegir la base de datos.
+El nombre de cada función representa las palabras clave o siglas del proyecto INEGI (por ejemplo, `cngmd()` o `enoe()`). En ocasiones, esta nomenclatura es seguida por una característica especifica del proyecto estadístico. Por ejemplo, la función `enigh_nc()` descarga la ENIGH de la serie Nueva Construcción. En otros casos, una sola función da acceso a todas las bases de datos del proyecto estadístico. Por ejemplo, el Censo de Población y Vivienda se puede acceder a través de varios tipos de bases de datos, siendo ITER una de ellas. Todas se descargan con la función `cpv_censo()`, que tiene un parámetro para elegir la base de datos.
 
 En el caso de la información georreferenciada, el nombre de la funcion comienza con las siglas Sistema de Información Georreferenciada (SIG). Estas siglas son sucedidas por una palabra clave del proyecto geoestadístico. Por ejemplo, la función para acceder a lo datos de la Red Nacional de Caminos es `sig_caminos_descarga()`.
 
@@ -368,11 +368,11 @@ datos.municipios$cvegeo = paste0(datos.municipios$enticve1, datos.municipios$mun
 
 ## Encuesta Nacional de Ingreso y Gasto de los Hogares
 
-El INEGI publica la ENIGH en tres series. La serie tradicional abarca los levantamientos de 1984 a 2014 y conserva la construcción original de las variables de ingreso y de gasto. La Nueva Construcción presenta los levantamientos de 2008 a 2014 con otra construcción de esas variables; son las mismas entrevistas que las de la serie tradicional de esos años. La Nueva Serie comienza en 2016, con un diseño distinto, y el INEGI no la considera comparable con las ediciones anteriores. En esta versión, la serie tradicional se descarga con la función `enigh_tradicional()` y la Nueva Construcción, con la función `enigh_nuevaconstruccion()`. La Nueva Serie todavía no se puede descargar con el paquete.
+El INEGI publica la ENIGH en tres series. La serie tradicional abarca los levantamientos de 1984 a 2014 y conserva la construcción original de las variables de ingreso y de gasto. La Nueva Construcción presenta los levantamientos de 2008 a 2014 con otra construcción de esas variables; son las mismas entrevistas que las de la serie tradicional de esos años. La Nueva Serie comienza en 2016, con un diseño distinto, y el INEGI no la considera comparable con las ediciones anteriores. En esta versión, la serie tradicional se descarga con la función `enigh_tradicional()` y la Nueva Construcción, con la función `enigh_nc()`. La Nueva Serie todavía no se puede descargar con el paquete.
 
 ### Serie tradicional
 
-La función `enigh_tradicional()` descarga las bases de datos de la serie tradicional de la ENIGH, que tiene 15 ediciones: 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014. La sintaxis de la función tiene dos parámetros, de los cuales solo el primero es indispensable. El primer parámetro es el año del levantamiento (`year`) en formato numérico. El segundo parámetro es la tabla (`tabla`) en formato alfanumérico. La selección por default es `concentrado`, que contiene una fila por hogar, con su factor de expansión y los principales agregados de ingreso y de gasto.
+La función `enigh_tradicional()` descarga las bases de datos de la serie tradicional de la ENIGH, que tiene 15 ediciones: 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014. La sintaxis de la función tiene dos parámetros, de los cuales solo el primero es indispensable. El primer parámetro es el año del levantamiento (`year`) en formato numérico. El segundo parámetro es la tabla (`tabla`) en formato alfanumérico. La selección por default es `concentrado`, que contiene una fila por hogar, con su factor de expansión y los principales agregados de ingreso y de gasto. Cuando no se indica la tabla, la función avisa con un mensaje que descarga el concentrado y enumera las demás tablas de la edición.
 
 Cada edición se publica en varias tablas, que cambian con el tiempo: las ediciones de 1984 a 1992 tienen seis tablas; las de 1994 a 2006, siete; la de 2008, trece; la de 2010, quince, y las de 2012 y 2014, doce. La siguiente tabla muestra las ediciones en las que existe cada una. Esta información se puede consultar también con `bases_importinegi(proyecto = "enigh_tradicional")`.
 
@@ -430,20 +430,46 @@ attr(concentrado06, "fuente")
 
 ### Nueva Construccion
 
-La función `enigh_nuevaconstruccion()` descarga las bases de datos de la Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH) Nueva Construcción (2008-2014). La ENIGH Cuenta con diversas bases de datos en tres unidades de análisis (vivienda, hogar y personas). La ENIGH se compone de varias cadenas de bases de datos subordinadas. Por ejemplo la base de datos "trabajos" tiene dos bases de datos subordinadas ("agro" y "no agro") y la base de datos "hogares" tiene tres bases de datos subordinadas ("gasto hogar", "erogaciones" y "gasto tarjeta"). La función descarga cada una de las bases de datos que componen la ENIGH.La función tiene dos parámetros. El primero es el año del levantamiento de la ENIGH, que puede ser 2008, 2010, 2012 ó 2014. El segundo parámetro es `datos`, que define la base de datos a descargar. Las opciones son: "viviendas", "hogares", "concentrado", "erogaciones", "gastohogar", "gastotarjetas", "poblacion", "ingresos", "gastopersona", "trabajos", "agro" y "noagro".
+La función `enigh_nc()` descarga las bases de datos de la Encuesta Nacional de Ingreso y Gasto de los Hogares (ENIGH) Nueva Construcción (2008-2014). La ENIGH Cuenta con diversas bases de datos en tres unidades de análisis (vivienda, hogar y personas). La ENIGH se compone de varias cadenas de bases de datos subordinadas. Por ejemplo la base de datos "trabajos" tiene dos bases de datos subordinadas ("agro" y "no agro") y la base de datos "hogares" tiene tres bases de datos subordinadas ("gasto hogar", "erogaciones" y "gasto tarjeta"). La función descarga cada una de las bases de datos que componen la ENIGH. La función tiene dos parámetros, de los cuales solo el primero es indispensable. El primero es el año del levantamiento de la ENIGH (`year`), que puede ser 2008, 2010, 2012 ó 2014. El segundo parámetro es `tabla`, que define la base de datos a descargar. La selección por default es `concentrado`, que contiene una fila por hogar, con su factor de expansión y los principales agregados de ingreso y de gasto. Cuando no se indica la tabla, la función avisa con un mensaje que descarga el concentrado y enumera las demás tablas de la edición.
+
+Cada edición tiene las mismas tablas que la edición del mismo año de la serie tradicional, con los mismos nombres: trece en 2008, quince en 2010 y doce en 2012 y 2014 (ver la tabla de la subsección anterior). Hasta 2010, las características de la vivienda se encuentran en la tabla `hogares` y los gastos, en la tabla `gastos`; desde 2012, la vivienda tiene su propia tabla (`viviendas`) y los gastos se dividen en las tablas `gastohogar` y `gastopersona`. Esta información se puede consultar también con `bases_importinegi(proyecto = "enigh_nc")`.
+
+Las variables de ingreso y de gasto de la Nueva Construcción siguen las recomendaciones de la ONU (la 17.ª Conferencia Internacional de Estadísticos del Trabajo y el Grupo de Canberra). Es la construcción que utiliza el Módulo de Condiciones Socioeconómicas de la ENIGH, fuente de la medición de la pobreza del CONEVAL. Cinco tablas cambian respecto de la serie tradicional: el concentrado, los ingresos, las erogaciones y los negocios agropecuarios y no agropecuarios (`agro` y `noagro`). Las demás tablas tienen la misma estructura y el mismo número de filas en las dos series.
 
 El siguiente bloque de código provee varios ejemplos del uso de esta función para descargar datos de la ENIGH 2014, Nueva Construcción.
 
 ```{r, eval = FALSE}
-# Default: descargar datos de viviendas
-viviendas14 = enigh_nuevaconstruccion(year = 2014, datos = "viviendas")
+# Default: concentrado de hogares de la ENIGH 2014
+concentrado14 = enigh_nc(year = 2014)
+
+# Descargar datos de viviendas
+viviendas14 = enigh_nc(year = 2014, tabla = "viviendas")
 
 # Descargar datos de hogares
-hogares14 = enigh_nuevaconstruccion(year = 2014,  datos = "hogares")
+hogares14 = enigh_nc(year = 2014, tabla = "hogares")
 
 # Descargar datos de agro
-agro14 = enigh_nuevaconstruccion(year = 2014, datos = "agro")
+agro14 = enigh_nc(year = 2014, tabla = "agro")
 ```
+
+Si se indica una sola tabla, la función devuelve una base de datos (data.frame); si se indican varias, devuelve una lista de R con una base de datos por tabla. Las tablas se unen con las mismas variables que en la serie tradicional de 2008 a 2014: `FOLIOVIV` y `FOLIOHOG` identifican al hogar, y `NUMREN`, a la persona. La tabla de viviendas solo incluye `FOLIOVIV`, y las tablas de trabajos y de negocios incluyen, además, el número del trabajo: `NUMTRAB` en 2008 y 2010, e `ID_TRABAJO` en 2012 y 2014.
+
+El factor de expansión se encuentra en la tabla de hogares y en el concentrado; se llama `FACTOR` en 2008 y 2010, y `FACTOR_HOG` en 2012 y 2014. En 2012 y 2014, la tabla de viviendas tiene su propio factor, `FACTOR_VIV`. Las variables del diseño muestral (`EST_DIS` y `UPM`), que sirven para calcular la precisión de las estimaciones, se encuentran en la tabla de hogares y en el concentrado en 2008 y 2010, y en la tabla de viviendas y en el concentrado en 2012 y 2014. El siguiente bloque de código descarga dos tablas y une el factor de expansión de cada hogar a las personas.
+
+```{r, eval = FALSE}
+# Tablas de hogares y de población de la ENIGH 2014, en una lista
+tablas14 = enigh_nc(year = 2014, tabla = c("hogares", "poblacion"))
+
+# Unir el factor de expansión de cada hogar a las personas
+factores14 = tablas14$hogares[, c("FOLIOVIV", "FOLIOHOG", "FACTOR_HOG")]
+personas14 = merge(tablas14$poblacion, factores14, by = c("FOLIOVIV", "FOLIOHOG"))
+```
+
+Las columnas se devuelven como en la serie tradicional: con los nombres que utiliza el INEGI, todos en mayúsculas, y con el tipo de dato que el INEGI les da en cada edición. En la edición de 2008, la mayoría de los códigos se almacenan como números; desde 2010, como texto. Cuatro nombres llegan recortados a diez caracteres, que es el límite del formato DBF: `ANIO_PICKU` y `ANIO_CARRE` en la tabla de hogares, y `COMBUSTIBL` y `MEDIDOR_LU` en la tabla de viviendas, en 2012 y 2014. Los datos que el INEGI deja en blanco o llena con asteriscos se codifican como valores perdidos (`NA`).
+
+La tabla `noagro` de 2010 es una excepción. El archivo DBF que el INEGI publica con el nombre de esa tabla contiene una copia de la tabla `agro`, por lo que la función lee la tabla del archivo CSV del INEGI, que sí contiene los negocios no agropecuarios, y asigna a cada columna el tipo de dato que el INEGI declara para ella.
+
+Como en la serie tradicional, los nombres de las variables cambian de una edición a otra. Por ejemplo, en el concentrado el INEGI cambió el nombre de unas 50 variables entre 2010 y 2012 (`INGCOR` pasó a ser `ING_COR`). La dirección del descriptor de archivos de cada edición queda almacenada en el atributo `descriptor` del objeto.
 
 ## Encuesta Nacional de Ocupacion y Empleo
 

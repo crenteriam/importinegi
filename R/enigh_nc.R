@@ -6,7 +6,7 @@
 #'
 #' Cinco tablas cambian respecto de la serie tradicional: el concentrado, los ingresos, las erogaciones y los negocios agropecuarios y no agropecuarios. Las demas tienen la misma estructura y el mismo numero de filas en las dos series.
 #'
-#' Cada edicion se publica en varias tablas, que cambian con el tiempo. El argumento \code{tabla} elige cuales se descargan:
+#' Cada edicion se publica en varias tablas, que cambian con el tiempo, y tiene las mismas tablas, con los mismos nombres, que la edicion del mismo año de la serie tradicional. El argumento \code{tabla} elige cuales se descargan:
 #' \describe{
 #'   \item{\code{"concentrado"}}{Principales variables por hogar: una fila por hogar, con su factor de expansion y los agregados de ingreso y de gasto. Las cuatro ediciones.}
 #'   \item{\code{"hogares"}}{Caracteristicas de los hogares y, en 2008 y 2010, de las viviendas que habitan. Las cuatro ediciones.}
@@ -27,8 +27,6 @@
 #' \code{\link{bases_importinegi}} lista las tablas de cada edicion sin descargar nada: \code{bases_importinegi("enigh_nc")}.
 #'
 #' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y lee las tablas en formato DBF. Todos los archivos son nacionales: el INEGI no publica esta serie por entidad federativa. Cada tabla viene en su propio archivo y una edicion completa pesa entre 8 y 25 MB. Requiere conexion a internet.
-#'
-#' Esta funcion sustituye a \code{enigh_nuevaconstruccion()}. El argumento \code{datos} se llama ahora \code{tabla} y los nombres de las columnas se devuelven en mayusculas.
 #'
 #' @section Como unir las tablas:
 #' Las tablas de una edicion se unen con el identificador del hogar, que son dos variables: \code{FOLIOVIV} (la vivienda) y \code{FOLIOHOG} (el hogar dentro de la vivienda). La tabla de viviendas solo tiene \code{FOLIOVIV}. Las tablas con una fila por persona traen ademas el numero de renglon de la persona, \code{NUMREN}, y las de trabajos y negocios, el numero del trabajo: \code{NUMTRAB} en 2008 y 2010, e \code{ID_TRABAJO} en 2012 y 2014.
@@ -54,8 +52,9 @@
 #' # Consulta las tablas de cada edicion, sin descargar nada
 #' ediciones <- bases_importinegi("enigh_nc")
 #'
-#' # Descarga el concentrado de la ENIGH 2014: una fila por hogar
-#' \dontrun{concentrado <- enigh_nc(year = 2014, tabla = "concentrado")}
+#' # Descarga el concentrado de la ENIGH 2014: una fila por hogar. Como no se
+#' # indica la tabla, un mensaje avisa cual se descarga y cuales tiene la edicion
+#' \dontrun{concentrado <- enigh_nc(year = 2014)}
 #'
 #' # Descarga dos tablas de la ENIGH 2010 y extrae una
 #' \dontrun{tablas <- enigh_nc(year = 2010, tabla = c("poblacion", "ingresos"))}
