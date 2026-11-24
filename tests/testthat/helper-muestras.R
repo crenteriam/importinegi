@@ -263,6 +263,30 @@ servidor_prueba <- function(entorno = parent.frame()) {
       res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
     }
   })
+  # Archivos de la Encuesta Nacional de Ocupacion y Empleo, en las rutas del
+  # registro del paquete. Responde con las muestras de fixtures/enoe (2005-T1,
+  # 2012-T2, 2013-T1, 2020-T3, 2024-T1 y 2026-T2); para el resto, como el INEGI
+  # cuando un archivo no existe. La muestra se elige por el año y el trimestre
+  # de la ruta: la de ".../microdatos/enoe_n_2020_trim3_dbf.zip" es
+  # "enoe_2020_3.zip".
+  app$locals$descargas_enoe <- 0
+  app$get(webfakes::new_regexp("^/contenidos/programas/enoe/15ymas/microdatos/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_enoe <- locales$descargas_enoe + 1
+    hallado <- regmatches(req$path, regexec("/microdatos/[a-z_]*([0-9]{4})_?trim([1-4])_dbf[.]zip$", req$path))[[1]]
+    archivo <- if (length(hallado) == 3) paste0("enoe_", hallado[2], "_", hallado[3], ".zip") else NA_character_
+    carpeta <- file.path(locales$carpeta, "enoe")
+    if (!is.na(archivo) && file.exists(file.path(carpeta, archivo))) {
+      res$send_file(archivo, root = carpeta)
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
+  app$get("/enoe/descargas", function(req, res) {
+    res$send(as.character(req$app$locals$descargas_enoe))
+  })
   app$get("/enigh/descargas", function(req, res) {
     res$send(as.character(req$app$locals$descargas_enigh))
   })
@@ -311,6 +335,11 @@ descargas_censo <- function(servidor) {
 # Numero de archivos de la ENIGH que se han pedido al servidor local.
 descargas_enigh <- function(servidor) {
   as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/enigh/descargas")))))
+}
+
+# Numero de archivos de la ENOE que se han pedido al servidor local.
+descargas_enoe <- function(servidor) {
+  as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/enoe/descargas")))))
 }
 
 # Las pruebas en vivo consultan el sitio real del INEGI. Solo corren cuando la

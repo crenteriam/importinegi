@@ -4,7 +4,7 @@
 \alias{enoe}
 \title{ENOE}
 \usage{
-enoe(year = NA, trimestre = NA, integrar = FALSE)
+enoe(year, trimestre, integrar = FALSE, tabla = NULL, estado = NULL)
 }
 \arguments{
 \item{year}{Año de levantamiento de la encuesta en formato numerico.}
@@ -12,6 +12,10 @@ enoe(year = NA, trimestre = NA, integrar = FALSE)
 \item{trimestre}{Trimestre de levantamiento de la encuesta en formato alfanumerico. Las opciones son: "trim1", "trim2", "trim3" y "trim4".}
 
 \item{integrar}{\code{FALSE}: descarga por separado y en una lista las cinco bases de datos que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, utilizando el identificador unico del entrevistado.}
+
+\item{tabla}{Tabla o tablas que se devuelven: \code{"viv"} (vivienda), \code{"hog"} (hogar), \code{"sdem"} (sociodemografico), \code{"coe1"} y \code{"coe2"} (cuestionario de ocupacion y empleo, primera y segunda parte). Por omision, las cinco.}
+
+\item{estado}{Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos, y varias entidades a la vez. La funcion descarga el archivo nacional y conserva las filas de las entidades indicadas. Por omision, todo el pais.}
 }
 \value{
 Data.frame

@@ -491,6 +491,7 @@ test_that("bases_importinegi() lista los temas del censo de derechos humanos fed
     gobierno_elegir_tema("cndhf", 2025, fila$modulo, fila$base)$url,
     gobierno_elegir_tema("cndhf", 2025, fila$modulo, fila$descripcion)$url
   )
-  expect_identical(unique(bases_importinegi()$proyecto), c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional"))
+  expect_identical(unique(bases_importinegi()$proyecto),
+                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enoe"))
   expect_error(bases_importinegi("cndh"), "Proyectos disponibles: .*\"cngmd\", \"cndhf\"")
 })

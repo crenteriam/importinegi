@@ -212,9 +212,10 @@ test_that("leer_xlsx() devuelve como NA el texto NULL", {
 })
 
 test_that("las funciones que leen por su cuenta aplican nulos_a_na() a su resultado", {
-  # enoe(), enigh_nuevaconstruccion(), sig_marcogeo() y sig_caminos_extrae()
-  # todavia no usan las utilidades de lectura
-  for (funcion in list(enoe, enigh_nuevaconstruccion, sig_marcogeo, sig_caminos_extrae)) {
+  # enigh_nuevaconstruccion(), sig_marcogeo() y sig_caminos_extrae() todavia no
+  # usan las utilidades de lectura. enoe() ya lee con leer_dbf(): la regla se
+  # prueba con una de sus muestras en test-enoe.R
+  for (funcion in list(enigh_nuevaconstruccion, sig_marcogeo, sig_caminos_extrae)) {
     expect_true(any(grepl("nulos_a_na", deparse(body(funcion)), fixed = TRUE)))
   }
 })

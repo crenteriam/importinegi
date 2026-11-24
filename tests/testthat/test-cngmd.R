@@ -407,6 +407,6 @@ test_that("bases_importinegi() lista los temas del censo municipal", {
   # Los demas proyectos no cambian y no tienen modulo
   expect_identical(nrow(bases_importinegi("cpv_censo", 2020)), 6L)
   expect_identical(unique(bases_importinegi()$proyecto),
-                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional"))
+                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enoe"))
   expect_error(bases_importinegi("censo_municipal"), "Proyectos disponibles: .*\"cngmd\"")
 })
