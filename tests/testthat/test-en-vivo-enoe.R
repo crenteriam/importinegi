@@ -7,11 +7,13 @@
 # enteras. Estas pruebas leen las cinco tablas de un trimestre de cada
 # estructura (cuatro descargas, 112 MB) y comprueban lo que quedo por confirmar:
 # que la llave identifica cada fila tambien en las tablas de personas, que cada
-# fila tiene su fila en la tabla del nivel superior, que los hogares sin
-# entrevista no tienen residentes, que los DBF no declaran mas registros de los
+# fila tiene su fila en la tabla del nivel superior, que los hogares con
+# entrevista tienen residentes, que los DBF no declaran mas registros de los
 # que contienen (y cuantos tienen marcados como borrados, que leer_dbf() omite),
 # y que los ponderadores reproducen las cifras publicadas. Ademas de comprobar
-# el resultado, escriben en el registro de la ejecucion lo que encontraron.
+# el resultado, escriben en el registro de la ejecucion lo que encontraron:
+# entre otras cosas, cuantos hogares sin entrevista tienen residentes y en que
+# columnas difieren las tablas cuando repiten una columna.
 #
 # La opcion enoe_serie del flujo repite las comprobaciones de forma en los 85
 # trimestres (2.3 GB de descarga); no corre en los pull requests.
@@ -53,6 +55,22 @@ registros_dbf <- function(archivo) {
   c(declarados = declarados, reales = reales, borrados = sum(marcas == as.raw(0x2a)))
 }
 
+# Columnas que dos tablas comparten ademas de la llave, y en cuantas filas de
+# la primera el valor es distinto del de su fila en la segunda (`fila`).
+# enoe(integrar = TRUE) deja esas columnas una sola vez, con el valor de la
+# tabla de mas detalle; esto dice cuanto difieren las tablas.
+columnas_distintas <- function(tabla, otra, fila, llave) {
+  comunes <- setdiff(intersect(names(tabla), names(otra)), llave)
+  distintas <- vapply(comunes, function(columna) {
+    a <- as.character(tabla[[columna]])
+    b <- as.character(otra[[columna]])[fila]
+    sum(!((a == b | (is.na(a) & is.na(b))) %in% TRUE))
+  }, integer(1))
+  distintas <- distintas[distintas > 0]
+  paste0(length(comunes), " compartidas, ",
+         if (length(distintas) == 0) "todas iguales" else paste0("distintas ", paste(names(distintas), distintas, sep = "=", collapse = " ")))
+}
+
 # Comprueba la forma de las cinco tablas de un trimestre y escribe un resumen.
 # Devuelve el numero de hogares sin residentes.
 revisar_trimestre <- function(year, trimestre, tablas) {
@@ -86,10 +104,17 @@ revisar_trimestre <- function(year, trimestre, tablas) {
   expect_true(all(clave("hog", "viv") %in% viviendas), info = paste(etiqueta, "hogares sin vivienda"))
   viviendas_sin_hogar <- sum(!viviendas %in% clave("hog", "viv"))
 
-  # Los hogares sin entrevista (R_DEF distinto de "00") no tienen residentes
+  # Un hogar con entrevista completa (R_DEF "00") tiene residentes. Un hogar sin
+  # entrevista casi nunca los tiene, pero no es una regla: en la lectura del 23
+  # de noviembre de 2026 los tenian 25 hogares de 2005-T1, 36 de 2020-T3, 185 de
+  # 2024-T1 y 201 de 2026-T2. Por eso enoe(integrar = TRUE) no usa R_DEF: agrega
+  # los hogares que no estan en la tabla de residentes.
   entrevistado <- tablas$hog$R_DEF %in% "00"
   con_residentes <- hogares %in% hogares_con_residentes
-  expect_identical(sum(!entrevistado & con_residentes), 0L, info = paste(etiqueta, "hogares sin entrevista con residentes"))
+  expect_identical(sum(entrevistado & !con_residentes), 0L, info = paste(etiqueta, "hogares con entrevista y sin residentes"))
+  hogar_del_residente <- match(clave("sdem", "hog"), hogares)
+  en_hogar_sin_entrevista <- !(entrevistado[hogar_del_residente] %in% TRUE)
+  r_def_residentes <- table(tablas$sdem$R_DEF[en_hogar_sin_entrevista])
 
   # Tipos que declara el INEGI
   entidad <- intersect(c("ENT", "CVE_ENT"), names(tablas$sdem))
@@ -105,10 +130,19 @@ revisar_trimestre <- function(year, trimestre, tablas) {
   cat("[en vivo] ", etiqueta, " (", enoe_cuestionario(year, trimestre), "): filas ",
       paste(names(tablas), vapply(tablas, nrow, integer(1)), sep = "=", collapse = " "), "; columnas ",
       paste(names(columnas), columnas, sep = "=", collapse = " "), "; llave de vivienda: ", paste(llaves$viv, collapse = "+"),
-      "; hogares sin entrevista: ", sum(!entrevistado), "; hogares con entrevista y sin residentes: ",
+      "; hogares sin entrevista: ", sum(!entrevistado), "; de ellos, con residentes: ", sum(!entrevistado & con_residentes),
+      " (", sum(en_hogar_sin_entrevista), " residentes; su R_DEF en sdem: ",
+      paste(names(r_def_residentes), r_def_residentes, sep = "=", collapse = " "), "); hogares con entrevista y sin residentes: ",
       sum(entrevistado & !con_residentes), "; viviendas sin hogar: ", viviendas_sin_hogar,
       "; R_DEF de hogares: ", paste(names(table(tablas$hog$R_DEF)), table(tablas$hog$R_DEF), sep = "=", collapse = " "),
       "; nota: ", if (is.null(attr(tablas, "nota"))) "no" else substr(gsub("\n", " / ", attr(tablas, "nota")), 1, 200),
+      "\n", sep = "")
+  cat("[en vivo] ", etiqueta, " columnas repetidas entre tablas. coe1 y sdem: ",
+      columnas_distintas(tablas$coe1, tablas$sdem, match(clave("coe1"), personas), llaves$sdem),
+      ". coe2 y sdem: ", columnas_distintas(tablas$coe2, tablas$sdem, match(clave("coe2"), personas), llaves$sdem),
+      ". sdem y hog: ", columnas_distintas(tablas$sdem, tablas$hog, hogar_del_residente, llaves$hog),
+      ". sdem y viv: ", columnas_distintas(tablas$sdem, tablas$viv, match(clave("sdem", "viv"), viviendas), llaves$viv),
+      ". hog y viv: ", columnas_distintas(tablas$hog, tablas$viv, match(clave("hog", "viv"), viviendas), llaves$viv),
       "\n", sep = "")
   sum(!con_residentes)
 }
@@ -225,7 +259,15 @@ test_that("EN VIVO: enoe() integra y filtra por entidad", {
   residentes <- sum(tablas$sdem$ENT %in% c("06", "18"))
   hogares <- tablas$hog[tablas$hog$ENT %in% c("06", "18"), ]
   expect_identical(sum(!is.na(integrada$N_REN)), residentes)
-  expect_identical(sum(is.na(integrada$N_REN)), sum(!hogares$R_DEF %in% "00"))
+  # Las filas sin residente son los hogares que no estan en la tabla de
+  # residentes: casi todos los hogares sin entrevista, pero no todos
+  llave_hogar <- attr(tablas, "llave")$hog
+  sin_residentes <- !enoe_clave(hogares, llave_hogar) %in% enoe_clave(tablas$sdem, llave_hogar)
+  sin_entrevista <- !hogares$R_DEF %in% "00"
+  cat("[en vivo] 2020-T3 Colima y Nayarit: ", nrow(hogares), " hogares; sin entrevista: ", sum(sin_entrevista),
+      "; sin residentes: ", sum(sin_residentes), "; sin entrevista y con residentes: ", sum(sin_entrevista & !sin_residentes),
+      "\n", sep = "")
+  expect_identical(sum(is.na(integrada$N_REN)), sum(sin_residentes))
   expect_true(all(is.na(integrada$EDA[is.na(integrada$N_REN)])))
   expect_false(any(integrada$R_DEF[is.na(integrada$N_REN)] %in% "00"))
   expect_identical(attr(integrada, "fuente"), enoe_elegir(2020, 3)$url)
