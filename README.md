@@ -8,7 +8,7 @@
 
 - Censo (y Conteo) Poblacion y Vivienda (1990-2010)
 - Censo Nacional de Gobiernos Municipales y Delegacionales (2011-2017)
-- Encuesta Nacional de Ingreso y Gasto (ENIGH) (2008-2014)
+- Encuesta Nacional de Ingresos y Gastos (ENIGH) (2008-2014)
 - Encuesta Nacional de Ocupación y Empleo (ENOE) (2005-2018)
 - Red Nacional Carretera (2014-2016)
 - Marco Geoestadistico Nacional (1995-2018)
