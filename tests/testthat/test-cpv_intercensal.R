@@ -30,9 +30,9 @@ test_that("el registro tiene la muestra y los resultados de la Encuesta Intercen
 
 # Muestra de 2015 -----------------------------------------------------------------
 
-test_that("intercensal() descarga Aguascalientes por omision en 2015 y lo avisa", {
+test_that("cpv_intercensal() descarga Aguascalientes por omision en 2015 y lo avisa", {
   servidor <- censo_local()
-  mensajes <- testthat::capture_messages(personas <- intercensal(2015))
+  mensajes <- testthat::capture_messages(personas <- cpv_intercensal(2015))
   expect_match(
     mensajes[1],
     "No indicaste `estado`: se descarga la muestra de Aguascalientes. Para todo el país usa estado = \"nacional\" \\(32 archivos, 814 MB en total\\)."
@@ -56,58 +56,58 @@ test_that("intercensal() descarga Aguascalientes por omision en 2015 y lo avisa"
   expect_identical(personas$NUMPER, 1:3)
   expect_identical(personas$COBERTURA, rep(2L, 3))
   expect_identical(personas$FACTOR, c(15L, 15L, 22L))
-  expect_identical(suppressMessages(intercensal(2015, tabla = "personas")), personas)
+  expect_identical(suppressMessages(cpv_intercensal(2015, tabla = "personas")), personas)
 
-  viviendas <- suppressMessages(intercensal(2015, tabla = "Viviendas"))
+  viviendas <- suppressMessages(cpv_intercensal(2015, tabla = "Viviendas"))
   expect_identical(viviendas$ID_VIV, c("10010000001", "10010000002"))
   expect_identical(viviendas$NUMPERS, c(2L, 1L))
   expect_identical(viviendas$INGTRHOG, c(12000L, 24000L))
   expect_true(all(personas$ID_VIV %in% viviendas$ID_VIV))
 })
 
-test_that("intercensal() lee la muestra de 2015 de otra entidad, con acentos", {
+test_that("cpv_intercensal() lee la muestra de 2015 de otra entidad, con acentos", {
   censo_local()
-  mensajes <- testthat::capture_messages(colima <- intercensal(2015, estado = "Colima"))
+  mensajes <- testthat::capture_messages(colima <- cpv_intercensal(2015, estado = "Colima"))
   expect_false(any(grepl("No indicaste", mensajes)))
   expect_identical(colima$NOM_MUN, rep("Villa de Álvarez", 2))
   expect_identical(colima$EDAD, c(41L, 39L))
-  expect_identical(suppressMessages(intercensal(2015, estado = 6)), colima)
+  expect_identical(suppressMessages(cpv_intercensal(2015, estado = 6)), colima)
 })
 
-test_that("intercensal() combina las entidades de la muestra de 2015 con estado = 'nacional'", {
+test_that("cpv_intercensal() combina las entidades de la muestra de 2015 con estado = 'nacional'", {
   censo_local()
   withr::local_options(importinegi.registro = registro_reducido("intercensal", 2015L, "muestra", c("01", "06")))
-  mensajes <- testthat::capture_messages(nacional <- intercensal(2015, estado = "nacional"))
+  mensajes <- testthat::capture_messages(nacional <- cpv_intercensal(2015, estado = "nacional"))
   expect_true(any(grepl("Se descargarán 2 archivos del INEGI", mensajes)))
   expect_false(any(grepl("memoria", mensajes)))
   expect_identical(nacional$ENT, c("01", "01", "01", "06", "06"))
   expect_identical(nacional$EDAD, c(34L, 8L, 0L, 41L, 39L))
   expect_length(attr(nacional, "fuente"), 2L)
-  varias <- suppressMessages(intercensal(2015, estado = c("Colima", "Aguascalientes")))
+  varias <- suppressMessages(cpv_intercensal(2015, estado = c("Colima", "Aguascalientes")))
   expect_identical(varias$ENT, c("06", "06", "01", "01", "01"))
 })
 
-test_that("intercensal() avisa de la memoria en las muestras de mas de 500 MB", {
+test_that("cpv_intercensal() avisa de la memoria en las muestras de mas de 500 MB", {
   censo_local()
   registro <- registro_reducido("intercensal", 2015L, "muestra", c("01", "06"))
   grandes <- registro$proyecto == "eic" & registro$edicion %in% 2015L & registro$formato == "csv"
   registro$bytes[grandes] <- 400 * 1024^2
   withr::local_options(importinegi.registro = registro)
-  mensajes <- testthat::capture_messages(intercensal(2015, estado = "nacional"))
+  mensajes <- testthat::capture_messages(cpv_intercensal(2015, estado = "nacional"))
   expect_true(any(grepl(
     "Leer esta muestra \\(800 MB comprimidos\\) puede requerir más memoria de la que tienen muchas computadoras. Si solo necesitas algunas entidades, indícalas en `estado`.",
     mensajes
   )))
   # Una sola entidad no llega al umbral
-  mensajes <- testthat::capture_messages(intercensal(2015, estado = "Colima"))
+  mensajes <- testthat::capture_messages(cpv_intercensal(2015, estado = "Colima"))
   expect_false(any(grepl("memoria", mensajes)))
 })
 
 # Muestra de 2025 -----------------------------------------------------------------
 
-test_that("intercensal() descarga las tres tablas de la muestra de 2025", {
+test_that("cpv_intercensal() descarga las tres tablas de la muestra de 2025", {
   servidor <- censo_local()
-  mensajes <- testthat::capture_messages(personas <- intercensal(2025))
+  mensajes <- testthat::capture_messages(personas <- cpv_intercensal(2025))
   expect_match(
     mensajes[1],
     "se descarga la muestra de Aguascalientes. Para todo el país usa estado = \"nacional\" \\(archivo nacional de 727 MB\\)."
@@ -128,11 +128,11 @@ test_that("intercensal() descarga las tres tablas de la muestra de 2025", {
   expect_identical(personas$ESTRATO, rep("01-001-0000-030", 3))
   expect_identical(personas$INGTRMEN, c(8500L, 0L, NA))
 
-  viviendas <- suppressMessages(intercensal(2025, tabla = "viviendas"))
+  viviendas <- suppressMessages(cpv_intercensal(2025, tabla = "viviendas"))
   expect_identical(viviendas$ID_VIV, c("010010000001", "010010000002"))
   expect_identical(viviendas$NUMPERS, c(2L, 1L))
   expect_true(all(personas$ID_VIV %in% viviendas$ID_VIV))
-  migrantes <- suppressMessages(intercensal(2025, estado = "Colima", tabla = "migrantes"))
+  migrantes <- suppressMessages(cpv_intercensal(2025, estado = "Colima", tabla = "migrantes"))
   expect_identical(migrantes$CVE_ENT, "06")
   expect_identical(migrantes$ID_MII, "06010000000101")
   expect_identical(migrantes$MEDAD, 27L)
@@ -140,9 +140,9 @@ test_that("intercensal() descarga las tres tablas de la muestra de 2025", {
   expect_identical(migrantes$UPM, "00120")
 })
 
-test_that("intercensal() descarga el archivo nacional de la muestra de 2025 con estado = 'nacional'", {
+test_that("cpv_intercensal() descarga el archivo nacional de la muestra de 2025 con estado = 'nacional'", {
   servidor <- censo_local()
-  mensajes <- testthat::capture_messages(nacional <- intercensal(2025, estado = "nacional", tabla = "viviendas"))
+  mensajes <- testthat::capture_messages(nacional <- cpv_intercensal(2025, estado = "nacional", tabla = "viviendas"))
   expect_identical(descargas_censo(servidor), 1L)
   expect_match(attr(nacional, "fuente"), "/eic2025_micro_00_csv\\.zip$")
   expect_identical(nacional$CVE_ENT, c("01", "01", "06"))
@@ -153,10 +153,10 @@ test_that("intercensal() descarga el archivo nacional de la muestra de 2025 con 
 
 # Resultados por localidad de 50 000 y mas habitantes (2025) -----------------------
 
-test_that("intercensal() lee los resultados de 2025 y devuelve las localidades por omision", {
+test_that("cpv_intercensal() lee los resultados de 2025 y devuelve las localidades por omision", {
   testthat::skip_if_not_installed("readxl")
   servidor <- censo_local()
-  mensajes <- testthat::capture_messages(localidades <- intercensal(2025, "resultados"))
+  mensajes <- testthat::capture_messages(localidades <- cpv_intercensal(2025, "resultados"))
   expect_false(any(grepl("No indicaste", mensajes)))
   expect_identical(descargas_censo(servidor), 1L)
   expect_match(attr(localidades, "fuente"), "/eic/2025/microdatos/eic2025_micro_105\\.xlsx$")
@@ -185,10 +185,10 @@ test_that("intercensal() lee los resultados de 2025 y devuelve las localidades p
   expect_identical(puntual$NOM_MUN, c("Aguascalientes", "Colima", "Villa de Álvarez*"))
 })
 
-test_that("intercensal() filtra los niveles de los resultados", {
+test_that("cpv_intercensal() filtra los niveles de los resultados", {
   testthat::skip_if_not_installed("readxl")
   censo_local()
-  municipios <- suppressMessages(intercensal(2025, "resultados", nivel = "municipio"))
+  municipios <- suppressMessages(cpv_intercensal(2025, "resultados", nivel = "municipio"))
   expect_identical(unique(paste(municipios$CVE_ENT, municipios$CVE_MUN)), c("01 001", "01 005", "06 002", "06 010"))
   expect_equal(municipios$POBTOT[municipios$ESTIMADOR == "Valor"], c(1000000, 500000, 300000, 200000))
   # En el municipio de muestra insuficiente (**), los indicadores marcados con
@@ -199,7 +199,7 @@ test_that("intercensal() filtra los niveles de los resultados", {
   expect_true(all(is.na(municipios$PROM_HNV[insuficiente])) && all(is.na(municipios$PCN_POB_AFRO[insuficiente])))
   expect_false(anyNA(municipios$PROM_HNV[!insuficiente]))
 
-  todos <- suppressMessages(intercensal(2025, "resultados", nivel = "todos"))
+  todos <- suppressMessages(cpv_intercensal(2025, "resultados", nivel = "todos"))
   expect_identical(nrow(todos), 60L)
   expect_identical(todos$CVEGEO[1], "000000000")
   # El agregado de las localidades menores de cada entidad (997/9997) solo
@@ -213,17 +213,17 @@ test_that("intercensal() filtra los niveles de los resultados", {
   detalle <- puntual[puntual$CVE_LOC != "0000", ]
   expect_equal(as.vector(tapply(detalle$POBTOT, detalle$CVE_ENT, sum)), entidades$POBTOT)
 
-  nacional <- suppressMessages(intercensal(2025, "resultados", nivel = "nacional"))
+  nacional <- suppressMessages(cpv_intercensal(2025, "resultados", nivel = "nacional"))
   expect_identical(nrow(nacional), 5L)
   expect_equal(nacional$POBTOT[nacional$ESTIMADOR == "Valor"], 2000000)
-  dos <- suppressMessages(intercensal(2025, "resultados", nivel = c("entidad", "localidad")))
+  dos <- suppressMessages(cpv_intercensal(2025, "resultados", nivel = c("entidad", "localidad")))
   expect_identical(nrow(dos), 25L)
 })
 
-test_that("intercensal() conserva las filas de las entidades pedidas en los resultados", {
+test_that("cpv_intercensal() conserva las filas de las entidades pedidas en los resultados", {
   testthat::skip_if_not_installed("readxl")
   servidor <- censo_local()
-  mensajes <- testthat::capture_messages(colima <- intercensal(2025, "resultados", estado = "Colima", nivel = "todos"))
+  mensajes <- testthat::capture_messages(colima <- cpv_intercensal(2025, "resultados", estado = "Colima", nivel = "todos"))
   expect_true(any(grepl(
     "El INEGI publica los principales resultados por localidad de 50 000 y más habitantes de 2025 en un solo archivo nacional: se descarga ese archivo \\(28 MB\\) y se conservan las filas de Colima.",
     mensajes
@@ -233,23 +233,23 @@ test_that("intercensal() conserva las filas de las entidades pedidas en los resu
   expect_identical(nrow(colima), 30L)
   expect_identical(attr(colima, "fuente"), poblacion_archivos("intercensal", 2025L, "resultados")$url)
 
-  mensajes <- testthat::capture_messages(varias <- intercensal(2025, "resultados", estado = c("ags", "col")))
+  mensajes <- testthat::capture_messages(varias <- cpv_intercensal(2025, "resultados", estado = c("ags", "col")))
   expect_true(any(grepl("se conservan las filas de Aguascalientes, Colima", mensajes)))
   expect_identical(unique(varias$CVE_ENT), c("01", "06"))
   expect_identical(nrow(varias), 15L)
   expect_error(
-    intercensal(2025, "resultados", estado = "Colima", nivel = "nacional"),
+    cpv_intercensal(2025, "resultados", estado = "Colima", nivel = "nacional"),
     "`nivel = \"nacional\"` solo está en el archivo nacional"
   )
 })
 
-test_that("intercensal() pide readxl antes de descargar los resultados", {
+test_that("cpv_intercensal() pide readxl antes de descargar los resultados", {
   servidor <- censo_local()
   local_mocked_bindings(requiere_paquete = function(paquete) detener("falta el paquete ", paquete))
-  expect_error(intercensal(2025, "resultados"), "falta el paquete readxl")
+  expect_error(cpv_intercensal(2025, "resultados"), "falta el paquete readxl")
   expect_identical(descargas_censo(servidor), 0L)
   # La muestra no lo necesita
-  expect_no_error(suppressMessages(intercensal(2025)))
+  expect_no_error(suppressMessages(cpv_intercensal(2025)))
 })
 
 test_that("la lectura de XLSX encuentra la tabla o avisa que no la hay", {
@@ -295,7 +295,7 @@ test_that("las marcas de dato faltante dependen de la base y no se buscan en los
   expect_null(poblacion_identificacion(datos, "iter"))
 })
 
-test_that("intercensal() avisa si el INEGI no tiene el archivo XLSX", {
+test_that("cpv_intercensal() avisa si el INEGI no tiene el archivo XLSX", {
   servidor <- censo_local()
   expect_error(
     suppressMessages(inegi_descargar("/contenidos/programas/eic/2025/microdatos/eic2025_micro_999.xlsx")),
@@ -305,17 +305,17 @@ test_that("intercensal() avisa si el INEGI no tiene el archivo XLSX", {
 
 # Argumentos y mensajes cruzados ---------------------------------------------------
 
-test_that("intercensal() valida sus argumentos y remite a censo() y conteo()", {
-  expect_error(intercensal(), "Falta indicar el año en `year`")
-  expect_error(intercensal(2020), "corresponde al Censo de Población y Vivienda, no a la Encuesta Intercensal: usa censo\\(2020\\)")
-  expect_error(intercensal(2005), "corresponde al Conteo de Población y Vivienda, no a la Encuesta Intercensal: usa conteo\\(2005\\)")
-  expect_error(censo(2015), "corresponde a la Encuesta Intercensal, no al Censo de Población y Vivienda: usa intercensal\\(2015\\)")
-  expect_error(conteo(2025), "corresponde a la Encuesta Intercensal, no al Conteo de Población y Vivienda: usa intercensal\\(2025\\)")
-  expect_error(intercensal(2010), "Años disponibles en intercensal\\(\\): 2015, 2025")
-  expect_error(intercensal(2015, "resultados"), "La base \"resultados\" no existe para 2015: el INEGI la publica para 2025")
-  expect_error(intercensal(2015, "iter"), "`base = \"iter\"` no es una opción válida. Bases de 2015: \"muestra\"")
-  expect_error(intercensal(2015, tabla = "migrantes"), "migrantes")
-  expect_error(intercensal(2025, "resultados", tabla = "personas"), "`tabla` solo se usa con la base \"muestra\"")
-  expect_error(intercensal(2015, nivel = "municipio"), "`nivel` solo se usa con la base \"resultados\"")
-  expect_error(intercensal(2025, "resultados", nivel = "manzana"), "no es una opción válida para la base \"resultados\"")
+test_that("cpv_intercensal() valida sus argumentos y remite a cpv_censo() y cpv_conteo()", {
+  expect_error(cpv_intercensal(), "Falta indicar el año en `year`")
+  expect_error(cpv_intercensal(2020), "corresponde al Censo de Población y Vivienda, no a la Encuesta Intercensal: usa cpv_censo\\(2020\\)")
+  expect_error(cpv_intercensal(2005), "corresponde al Conteo de Población y Vivienda, no a la Encuesta Intercensal: usa cpv_conteo\\(2005\\)")
+  expect_error(cpv_censo(2015), "corresponde a la Encuesta Intercensal, no al Censo de Población y Vivienda: usa cpv_intercensal\\(2015\\)")
+  expect_error(cpv_conteo(2025), "corresponde a la Encuesta Intercensal, no al Conteo de Población y Vivienda: usa cpv_intercensal\\(2025\\)")
+  expect_error(cpv_intercensal(2010), "Años disponibles en cpv_intercensal\\(\\): 2015, 2025")
+  expect_error(cpv_intercensal(2015, "resultados"), "La base \"resultados\" no existe para 2015: el INEGI la publica para 2025")
+  expect_error(cpv_intercensal(2015, "iter"), "`base = \"iter\"` no es una opción válida. Bases de 2015: \"muestra\"")
+  expect_error(cpv_intercensal(2015, tabla = "migrantes"), "migrantes")
+  expect_error(cpv_intercensal(2025, "resultados", tabla = "personas"), "`tabla` solo se usa con la base \"muestra\"")
+  expect_error(cpv_intercensal(2015, nivel = "municipio"), "`nivel` solo se usa con la base \"resultados\"")
+  expect_error(cpv_intercensal(2025, "resultados", nivel = "manzana"), "no es una opción válida para la base \"resultados\"")
 })

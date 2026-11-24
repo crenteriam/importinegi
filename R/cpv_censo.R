@@ -12,7 +12,7 @@
 #'   \item{\code{"asistencia"}}{Resultados sobre las caracteristicas de los alojamientos de asistencia social (por ejemplo, casas hogar para menores de edad o para personas adultas mayores y albergues), su poblacion usuaria residente y su poblacion trabajadora, en tres tablas (ver el argumento \code{tabla}). Censo de 2020. Tiene archivo nacional.}
 #' }
 #'
-#' Los Conteos de Poblacion y Vivienda (1995 y 2005) se descargan con \code{\link{conteo}} y las Encuestas Intercensales (2015 y 2025), con \code{\link{intercensal}}.
+#' Los Conteos de Poblacion y Vivienda (1995 y 2005) se descargan con \code{\link{cpv_conteo}} y las Encuestas Intercensales (2015 y 2025), con \code{\link{cpv_intercensal}}.
 #'
 #' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee. Hasta 2010 lee los archivos en formato DBF; en 2020, en formato CSV. Requiere conexion a internet.
 #'
@@ -35,29 +35,29 @@
 #' @examples
 #'
 #' # Principales resultados por localidad (ITER) del Censo 2010, todo el pais.
-#' \dontrun{iter <- censo(2010)}
+#' \dontrun{iter <- cpv_censo(2010)}
 #'
 #' # ITER de Colima: solo los totales de la entidad y de sus municipios.
-#' \dontrun{colima <- censo(2010, estado = "Colima", nivel = c("entidad", "municipio"))}
+#' \dontrun{colima <- cpv_censo(2010, estado = "Colima", nivel = c("entidad", "municipio"))}
 #'
 #' # Resultados por manzana urbana de Jalisco.
-#' \dontrun{manzanas <- censo(2010, base = "ageb", estado = "Jalisco")}
+#' \dontrun{manzanas <- cpv_censo(2010, base = "ageb", estado = "Jalisco")}
 #'
 #' # Viviendas de la muestra del Censo 2010 en dos entidades.
 #' \dontrun{
-#' viviendas <- censo(2010, base = "muestra", estado = c("Colima", "Nayarit"),
+#' viviendas <- cpv_censo(2010, base = "muestra", estado = c("Colima", "Nayarit"),
 #'                    tabla = "viviendas")
 #' }
 #'
 #' # Resultados sobre las localidades pequeñas del Censo 2020, todo el pais.
-#' \dontrun{localidades <- censo(2020, base = "localidades")}
+#' \dontrun{localidades <- cpv_censo(2020, base = "localidades")}
 #'
 #' # Alojamientos de asistencia social del Censo 2020, todo el pais.
-#' \dontrun{alojamientos <- censo(2020, base = "asistencia")}
+#' \dontrun{alojamientos <- cpv_censo(2020, base = "asistencia")}
 #'
 #' # Poblacion usuaria de los alojamientos de asistencia social de Tlaxcala.
 #' \dontrun{
-#' usuarios <- censo(2020, base = "asistencia", estado = "Tlaxcala",
+#' usuarios <- cpv_censo(2020, base = "asistencia", estado = "Tlaxcala",
 #'                   tabla = "usuarios")
 #' }
 #'
@@ -65,10 +65,10 @@
 #' \dontrun{attr(iter, "fuente")}
 #'
 #' @return Data.frame con la base de datos solicitada. El atributo \code{"fuente"} contiene la direccion de los archivos descargados.
-#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada censo y cuanto pesan. \code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos (por ejemplo, \code{catalogo_inegi(buscar = "censo de poblacion")}). La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion con mas ejemplos. \code{\link{conteo}} e \code{\link{intercensal}} para los Conteos de Poblacion y Vivienda y las Encuestas Intercensales.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada censo y cuanto pesan. \code{\link{catalogo_inegi}} para consultar la documentacion de cada censo en la Red Nacional de Metadatos (por ejemplo, \code{catalogo_inegi(buscar = "censo de poblacion")}). La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion con mas ejemplos. \code{\link{cpv_conteo}} e \code{\link{cpv_intercensal}} para los Conteos de Poblacion y Vivienda y las Encuestas Intercensales.
 #' @export
 
-censo <- function(year, base = "iter", estado = NULL, tabla = NULL, nivel = NULL) {
+cpv_censo <- function(year, base = "iter", estado = NULL, tabla = NULL, nivel = NULL) {
   if (missing(year)) {
     year <- NULL
   }

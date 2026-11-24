@@ -2,7 +2,7 @@
 # La version 2.0.0 conserva los nombres de las funciones y de sus argumentos
 # de la serie 1.x. Se pueden agregar funciones y argumentos nuevos (al final),
 # pero no quitar ni reordenar los existentes. Las excepciones son las cinco
-# funciones censo_poblacion_*(), que se eliminaron porque censo() las sustituye,
+# funciones censo_poblacion_*(), que se eliminaron porque cpv_censo() las sustituye,
 # y censo_municipal(), que se elimino porque cngmd() la sustituye.
 
 interfaz_1x <- list(
@@ -23,7 +23,7 @@ test_that("las funciones censo_poblacion_*() ya no se exportan", {
   eliminadas <- c("censo_poblacion_ageb", "censo_poblacion_iter", "censo_poblacion_muestra",
                   "censo_poblacion_rural", "censo_poblacion_urbano")
   expect_identical(intersect(eliminadas, getNamespaceExports("importinegi")), character())
-  expect_true("censo" %in% getNamespaceExports("importinegi"))
+  expect_true("cpv_censo" %in% getNamespaceExports("importinegi"))
 })
 
 test_that("censo_municipal() ya no se exporta y cngmd() la sustituye", {
@@ -36,17 +36,19 @@ test_that("censo_municipal() ya no se exporta y cngmd() la sustituye", {
   expect_null(argumentos$estado)
 })
 
-test_that("censo(), conteo() e intercensal() tienen los mismos argumentos", {
-  expect_true(all(c("conteo", "intercensal") %in% getNamespaceExports("importinegi")))
-  expect_identical(formals(conteo), formals(censo))
-  expect_identical(names(formals(censo)), c("year", "base", "estado", "tabla", "nivel"))
-  expect_null(formals(censo)$estado)
-  # intercensal() solo cambia la base por omision: la Encuesta Intercensal no
+test_that("cpv_censo(), cpv_conteo() y cpv_intercensal() tienen los mismos argumentos", {
+  expect_true(all(c("cpv_conteo", "cpv_intercensal") %in% getNamespaceExports("importinegi")))
+  # Los nombres anteriores, sin el prefijo, ya no se exportan
+  expect_identical(intersect(c("censo", "conteo", "intercensal"), getNamespaceExports("importinegi")), character())
+  expect_identical(formals(cpv_conteo), formals(cpv_censo))
+  expect_identical(names(formals(cpv_censo)), c("year", "base", "estado", "tabla", "nivel"))
+  expect_null(formals(cpv_censo)$estado)
+  # cpv_intercensal() solo cambia la base por omision: la Encuesta Intercensal no
   # tiene ITER
-  argumentos <- formals(intercensal)
+  argumentos <- formals(cpv_intercensal)
   expect_identical(argumentos$base, "muestra")
-  argumentos$base <- formals(censo)$base
-  expect_identical(argumentos, formals(censo))
+  argumentos$base <- formals(cpv_censo)$base
+  expect_identical(argumentos, formals(cpv_censo))
 })
 
 test_that("se conservan los argumentos de la serie 1.x y su orden", {

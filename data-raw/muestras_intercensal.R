@@ -1,4 +1,4 @@
-# Genera los archivos de muestra con los que se prueba intercensal() sin conexion
+# Genera los archivos de muestra con los que se prueba cpv_intercensal() sin conexion
 # (tests/testthat/fixtures/intercensal).
 #
 # Uso, desde la carpeta raiz del paquete:

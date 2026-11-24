@@ -5,7 +5,7 @@
 * El paquete requiere ahora R 4.1 o posterior.
 * Dependencias: se eliminaron `data.table`, `dplyr` y `haven`, que no se usaban, y `rio`, que `enoe()` usaba solo para leer archivos DBF (ahora los lee con `foreign`, con el mismo resultado).
 * `sf` pasa a ser un paquete opcional. Solo lo necesitan `sig_marcogeo()` y `sig_caminos_extrae()`, que avisan si no esta instalado.
-* `readxl` es un paquete opcional nuevo: solo lo necesita la base `"resultados"` de `intercensal()`.
+* `readxl` es un paquete opcional nuevo: solo lo necesita la base `"resultados"` de `cpv_intercensal()`.
 * Pruebas automatizadas con `testthat` (tercera edicion).
 * Integracion continua con GitHub Actions en Windows, macOS y Linux, en sustitucion de Travis CI.
 
@@ -31,17 +31,17 @@
 
 ## Funciones
 
-* Nueva funcion `censo()`, que reune en una sola funcion todas las bases de datos de los Censos de Poblacion y Vivienda.
-* **Cambio incompatible:** se eliminaron `censo_poblacion_iter()`, `censo_poblacion_ageb()`, `censo_poblacion_rural()`, `censo_poblacion_urbano()` y `censo_poblacion_muestra()`. `censo()` las sustituye:
-    * `censo_poblacion_iter(2010, "Jalisco")` pasa a ser `censo(2010, estado = "Jalisco")`.
-    * `censo_poblacion_iter(2010, "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)` pasa a ser `censo(2010, estado = "Jalisco", nivel = c("entidad", "municipio"))`.
-    * `censo_poblacion_ageb(2010, "Jalisco")` pasa a ser `censo(2010, "ageb", estado = "Jalisco")`.
-    * `censo_poblacion_rural(2010, "Jalisco")` pasa a ser `censo(2010, "localidades", estado = "Jalisco")`.
-    * `censo_poblacion_urbano(2010, "Jalisco")` pasa a ser `censo(2010, "entorno", estado = "Jalisco")`.
-    * `censo_poblacion_muestra(2010, "Jalisco", "Personas")` pasa a ser `censo(2010, "muestra", estado = "Jalisco", tabla = "personas")`.
-    * Los Conteos de Poblacion y Vivienda de 1995 y 2005, que se descargaban con `censo_poblacion_iter()` y `censo_poblacion_muestra()`, se descargan ahora con `conteo()`: `censo_poblacion_iter(2005, "Jalisco")` pasa a ser `conteo(2005, estado = "Jalisco")` y `censo_poblacion_muestra(2005, "Jalisco", "Hogar")` pasa a ser `conteo(2005, "muestra", estado = "Jalisco", tabla = "hogares")`.
-* `censo()`:
-    * `censo(year, base, estado, tabla, nivel)`: `year` es obligatorio; `base` elige entre `"iter"`, `"ageb"`, `"muestra"`, `"localidades"`, `"entorno"` y `"asistencia"` (alojamientos de asistencia social, Censo 2020).
+* Nueva funcion `cpv_censo()`, que reune en una sola funcion todas las bases de datos de los Censos de Poblacion y Vivienda.
+* **Cambio incompatible:** se eliminaron `censo_poblacion_iter()`, `censo_poblacion_ageb()`, `censo_poblacion_rural()`, `censo_poblacion_urbano()` y `censo_poblacion_muestra()`. `cpv_censo()` las sustituye:
+    * `censo_poblacion_iter(2010, "Jalisco")` pasa a ser `cpv_censo(2010, estado = "Jalisco")`.
+    * `censo_poblacion_iter(2010, "Jalisco", totalestado = TRUE, totalmunicipio = TRUE, localidades = FALSE)` pasa a ser `cpv_censo(2010, estado = "Jalisco", nivel = c("entidad", "municipio"))`.
+    * `censo_poblacion_ageb(2010, "Jalisco")` pasa a ser `cpv_censo(2010, "ageb", estado = "Jalisco")`.
+    * `censo_poblacion_rural(2010, "Jalisco")` pasa a ser `cpv_censo(2010, "localidades", estado = "Jalisco")`.
+    * `censo_poblacion_urbano(2010, "Jalisco")` pasa a ser `cpv_censo(2010, "entorno", estado = "Jalisco")`.
+    * `censo_poblacion_muestra(2010, "Jalisco", "Personas")` pasa a ser `cpv_censo(2010, "muestra", estado = "Jalisco", tabla = "personas")`.
+    * Los Conteos de Poblacion y Vivienda de 1995 y 2005, que se descargaban con `censo_poblacion_iter()` y `censo_poblacion_muestra()`, se descargan ahora con `cpv_conteo()`: `censo_poblacion_iter(2005, "Jalisco")` pasa a ser `cpv_conteo(2005, estado = "Jalisco")` y `censo_poblacion_muestra(2005, "Jalisco", "Hogar")` pasa a ser `cpv_conteo(2005, "muestra", estado = "Jalisco", tabla = "hogares")`.
+* `cpv_censo()`:
+    * `cpv_censo(year, base, estado, tabla, nivel)`: `year` es obligatorio; `base` elige entre `"iter"`, `"ageb"`, `"muestra"`, `"localidades"`, `"entorno"` y `"asistencia"` (alojamientos de asistencia social, Censo 2020).
     * El argumento `tabla` elige la tabla en las bases que se publican en varias: `"muestra"` (personas, viviendas, migrantes), `"entorno"` de 2020 (manzanas, vialidades) y `"asistencia"` (alojamientos, usuarios, trabajadores).
     * Censos de 1990, 2000, 2010 y 2020. El Censo 2020 es nuevo en el paquete; se lee de los archivos CSV del INEGI.
     * `estado` acepta nombre, abreviatura o clave, sin distinguir mayusculas ni acentos, y varias entidades a la vez, que se combinan en una sola tabla. `"nacional"` devuelve todo el pais: el archivo nacional o, si el INEGI publica la base solo por entidad, las 32 entidades combinadas. Si no se indica `estado`, la muestra y las bases que se publican solo por entidad descargan Aguascalientes, con un aviso.
@@ -51,8 +51,8 @@
     * Los agregados de localidades de una y dos viviendas del ITER (claves 9998 y 9999) ya no se devuelven mezclados con las localidades.
     * La muestra funciona en cualquier sistema operativo (antes solo en Windows).
     * Mensajes de error que indican que años, bases y tablas existen.
-* Nueva funcion `conteo()`, con las bases de datos de los Conteos de Poblacion y Vivienda de 1995 y 2005: ITER, muestra y, en 2005, viviendas habitadas y deshabitadas por localidad. Tiene los mismos argumentos que `censo()`; en la muestra, `tabla` elige entre personas y migrantes (1995) o entre personas, viviendas y hogares (2005).
-* Nueva funcion `intercensal()`, que descarga las Encuestas Intercensales de 2015 y 2025 con los mismos argumentos que `censo()` y `conteo()`: la muestra (personas, viviendas y, en 2025, migrantes) y, en 2025, los principales resultados por localidad de 50 000 y mas habitantes.
+* Nueva funcion `cpv_conteo()`, con las bases de datos de los Conteos de Poblacion y Vivienda de 1995 y 2005: ITER, muestra y, en 2005, viviendas habitadas y deshabitadas por localidad. Tiene los mismos argumentos que `cpv_censo()`; en la muestra, `tabla` elige entre personas y migrantes (1995) o entre personas, viviendas y hogares (2005).
+* Nueva funcion `cpv_intercensal()`, que descarga las Encuestas Intercensales de 2015 y 2025 con los mismos argumentos que `cpv_censo()` y `cpv_conteo()`: la muestra (personas, viviendas y, en 2025, migrantes) y, en 2025, los principales resultados por localidad de 50 000 y mas habitantes.
 * Nueva funcion `bases_importinegi()`, que muestra las bases de datos que se pueden descargar con el paquete, por proyecto y año: tablas, cobertura (nacional o por entidad), formato y tamaño de la descarga. No descarga nada ni requiere conexion a internet. Usa el mismo registro de archivos que las funciones de descarga, de modo que no puede anunciar bases o años que no existan. Por ahora incluye el Censo y el Conteo de Poblacion y Vivienda, la Encuesta Intercensal, el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico y la serie tradicional de la ENIGH; los demas proyectos se agregaran conforme se actualicen sus funciones.
 * Nueva funcion `cngmd()`, que descarga el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (CNGMD) de 2011 a 2025, por modulo y tema. Es la primera de las tres funciones de los censos nacionales de gobierno (municipal, estatal y federal).
 * **Cambio incompatible:** se elimino `censo_municipal()`. `cngmd()` la sustituye: el argumento `fuente` pasa a ser `modulo` y el argumento `datos` pasa a ser `tema`.
@@ -101,10 +101,10 @@
 ## Documentacion
 
 * Ayuda de `catalogo_inegi()`: describe las columnas del catalogo y agrega ejemplos de busqueda.
-* Ayuda de `censo()` y seccion del Censo de Poblacion y Vivienda de la viñeta, reescrita para `censo()`: bases disponibles por año, entidades, niveles de agregacion y tablas. La documentacion ya no menciona las funciones `censo_poblacion_*()`.
+* Ayuda de `cpv_censo()` y seccion del Censo de Poblacion y Vivienda de la viñeta, reescrita para `cpv_censo()`: bases disponibles por año, entidades, niveles de agregacion y tablas. La documentacion ya no menciona las funciones `censo_poblacion_*()`.
 * Ayuda de `bases_importinegi()` y nueva seccion de la viñeta, "Bases de datos disponibles".
-* Ayuda de `conteo()` y nueva seccion de la viñeta, "Conteo de Poblacion y Vivienda", que explica como se levantaron los conteos de 1995 y 2005.
-* Ayuda de `intercensal()` y nueva seccion de la viñeta, "Encuesta Intercensal", que explica como se levantaron las encuestas de 2015 y 2025.
+* Ayuda de `cpv_conteo()` y nueva seccion de la viñeta, "Conteo de Poblacion y Vivienda", que explica como se levantaron los conteos de 1995 y 2005.
+* Ayuda de `cpv_intercensal()` y nueva seccion de la viñeta, "Encuesta Intercensal", que explica como se levantaron las encuestas de 2015 y 2025.
 * Ayuda de `cngmd()` y seccion de la viñeta sobre el Censo Nacional de Gobiernos Municipales, reescrita para `cngmd()`: modulos por edicion, temas, tablas, catalogos y siglas del INEGI. La documentacion ya no menciona `censo_municipal()`.
 * Ayuda de `enigh_tradicional()` y nueva subseccion de la viñeta, "Serie tradicional": tablas por edicion, como unirlas con el identificador del hogar, donde esta el factor de expansion y como se devuelven las columnas. La seccion de la ENIGH de la viñeta presenta ahora las tres series de la encuesta.
 * Ayuda de `cndhf()` y nueva seccion de la viñeta, "Censo Nacional de Derechos Humanos Federal": modulos, temas, tablas, catalogos, siglas del INEGI y claves de la entidad y del municipio.

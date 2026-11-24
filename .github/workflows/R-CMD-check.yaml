@@ -27,7 +27,7 @@ jobs:
           - {os: ubuntu-latest,   r: 'oldrel-1'}
           # Version minima declarada en DESCRIPTION: Depends: R (>= 4.1). La
           # version actual de readxl (paquete opcional, para la base
-          # "resultados" de intercensal()) requiere R 4.2: aqui se instala la
+          # "resultados" de cpv_intercensal()) requiere R 4.2: aqui se instala la
           # 1.5.0.1, la ultima que admite R 4.1.
           - {os: ubuntu-latest,   r: '4.1', readxl: 'readxl@1.5.0.1'}
 
