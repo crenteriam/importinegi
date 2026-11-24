@@ -263,6 +263,27 @@ servidor_prueba <- function(entorno = parent.frame()) {
       res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
     }
   })
+  # Archivos de la Nueva construccion de la ENIGH, con la misma regla: la
+  # muestra de ".../2010/microdatos/NCV_Agropecuario_2010_concil_2010_dbf.zip"
+  # es "nc2010_agropecuario.zip" y la del mismo archivo en CSV,
+  # "nc2010_agropecuario_csv.zip".
+  app$get(webfakes::new_regexp("^/contenidos/programas/enigh/nc/[0-9]{4}/microdatos/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_enigh <- locales$descargas_enigh + 1
+    year <- sub("^/contenidos/programas/enigh/nc/([0-9]{4})/.*$", "\\1", req$path)
+    formato <- tolower(sub("^.*_(dbf|csv)[.]zip$", "\\1", basename(req$path), ignore.case = TRUE))
+    nombre <- tolower(sub("_(dbf|csv)[.]zip$", "", basename(req$path), ignore.case = TRUE))
+    nombre <- sub("_[0-9]{4}_concil_[0-9]{4}$", "", sub("^ncv_", "", nombre))
+    archivo <- paste0("nc", year, "_", nombre, if (identical(formato, "csv")) "_csv" else "", ".zip")
+    carpeta <- file.path(locales$carpeta, "enigh")
+    if (file.exists(file.path(carpeta, archivo))) {
+      res$send_file(archivo, root = carpeta)
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
   # Archivos de la Encuesta Nacional de Ocupacion y Empleo, en las rutas del
   # registro del paquete. Responde con las muestras de fixtures/enoe (2005-T1,
   # 2012-T2, 2013-T1, 2020-T3, 2024-T1 y 2026-T2); para el resto, como el INEGI

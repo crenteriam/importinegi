@@ -17,8 +17,8 @@
 #' \itemize{
 #'   \item \code{\link{cngmd}}: Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico, de 2011 a 2025, por modulo y tema.
 #'   \item \code{\link{cndhf}}: Censo Nacional de Derechos Humanos Federal, de 2017 a 2025, por modulo y tema.
-#'   \item \code{\link{enigh_nuevaconstruccion}}: Encuesta Nacional de Ingreso y Gasto de los Hogares, Nueva Construccion.
 #'   \item \code{\link{enigh_tradicional}}: Encuesta Nacional de Ingresos y Gastos de los Hogares, serie tradicional, de 1984 a 2014, por tabla.
+#'   \item \code{\link{enigh_nc}}: Encuesta Nacional de Ingresos y Gastos de los Hogares, Nueva construccion, de 2008 a 2014, por tabla.
 #'   \item \code{\link{enoe}}: Encuesta Nacional de Ocupacion y Empleo, de 2005 a 2026, por trimestre.
 #' }
 #'

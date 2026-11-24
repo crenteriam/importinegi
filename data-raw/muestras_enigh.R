@@ -1,5 +1,5 @@
-# Genera los archivos de muestra con los que se prueba enigh_tradicional() sin
-# conexion (tests/testthat/fixtures/enigh).
+# Genera los archivos de muestra con los que se prueban enigh_tradicional() y
+# enigh_nc() sin conexion (tests/testthat/fixtures/enigh).
 #
 # Uso, desde la carpeta raiz del paquete:
 #
@@ -23,6 +23,25 @@
 #               en mayusculas (Trabajos.dbf) y otra en minusculas (Poblacion.dbf).
 #   trad2014_*  Una tabla por zip, viviendas con asteriscos en campos numericos
 #               y folio de la vivienda de 10 caracteres.
+#
+# Las muestras de la Nueva construccion (nc*) imitan los 52 zip en DBF y los 52
+# en CSV del INEGI, revisados el 23 de noviembre de 2026. Cada zip trae una
+# sola tabla:
+#
+#   nc2008_*  Nombres de las columnas en mayusculas, codigos numericos (algunos
+#             negativos) y campos de tipo F.
+#   nc2010_*  Nombres en minusculas. El DBF de los negocios no agropecuarios
+#             lleva su nombre, pero es una copia de la tabla agropecuaria, como
+#             el del INEGI; la tabla correcta esta en el CSV ("noagro.csv", sin
+#             comillas, con un espacio en los datos que faltan y lineas que
+#             terminan en CR LF).
+#   nc2012_*  Viviendas en mayusculas, con asteriscos y con nombres recortados
+#             a 10 caracteres; hogares en minusculas.
+#   nc2014_*  Concentrado en mayusculas y las demas tablas en minusculas; el
+#             zip de erogaciones no trae la tabla que se espera.
+#
+# Al regenerar las muestras cambian todos los zip, porque guardan la fecha de
+# sus archivos: conviene restaurar con git los que no cambiaron de contenido.
 
 if (!file.exists("DESCRIPTION")) {
   stop("Ejecuta este script desde la carpeta raiz del paquete importinegi.")
@@ -325,6 +344,132 @@ zip_enigh("trad2014_agropecuario.zip", list(
 ))
 zip_enigh("trad2014_noagropecuario.zip", list(
   "tra_noagropecuario_2014_concil_2010_dbf.dbf" = negocio14(viv14[1], 5200)
+))
+
+# Nueva construccion ------------------------------------------------------------------
+
+# CSV como los del INEGI: sin comillas y con lineas que terminan en CR LF.
+escribir_csv_inegi <- function(lineas) {
+  archivo <- tempfile(fileext = ".csv")
+  writeBin(charToRaw(paste0(paste(lineas, collapse = "\r\n"), "\r\n")), archivo)
+  archivo
+}
+
+# Edicion 2008: mayusculas y codigos numericos
+zip_enigh("nc2008_concentrado.zip", list(
+  "NCV_Concentrado_2008_concil_2010_DBF.dbf" = escribir_dbf(
+    tabla(FOLIOVIV = viv08, FOLIOHOG = c("0", "0", "0"), FACTOR = c(710, 955, 1302), ESTRATO = c(1, 1, 4),
+          UBICA_GEO = c("01001", "01001", "30087"), CONAPO = c(4, 4, 1), TENENCIA = c(4, 1, NA),
+          INGCOR = c(48213.55, 30110, 9120.4), INGTRAB = c(40100.05, 30110, 0),
+          EST_DIS = c("0010", "0010", "3014"), UPM = c("00011", "00016", "30147")),
+    c(FOLIOVIV = "C6", FOLIOHOG = "C1", FACTOR = "N5", ESTRATO = "N1", UBICA_GEO = "C5", CONAPO = "N1",
+      TENENCIA = "N1", INGCOR = "N15.2", INGTRAB = "N15.2", EST_DIS = "C4", UPM = "C5")
+  )
+))
+zip_enigh("nc2008_hogares.zip", list(
+  "NCV_Hogares_2008_concil_2010_DBF.dbf" = escribir_dbf(
+    tabla(FOLIOVIV = viv08, FOLIOHOG = c("0", "0", "0"), FACTOR = c(710, 955, 1302), ESTRATO = c(1, 1, 4),
+          UBICA_GEO = c("01001", "01001", "30087"), CLAVIV = c(3, 3, 1), PARED = c(8, 8, -1),
+          RESIDENTES = c(4, 2, 7), EST_DIS = c("0010", "0010", "3014"), UPM = c("00011", "00016", "30147")),
+    c(FOLIOVIV = "C6", FOLIOHOG = "C1", FACTOR = "N5", ESTRATO = "N1", UBICA_GEO = "C5", CLAVIV = "N2",
+      PARED = "N2", RESIDENTES = "N2", EST_DIS = "C4", UPM = "C5")
+  )
+))
+zip_enigh("nc2008_ingresos.zip", list(
+  "NCV_Ingresos_2008_concil_2010_DBF.dbf" = escribir_dbf(
+    tabla(FOLIOVIV = viv08[c(1, 1, 3)], FOLIOHOG = c("0", "0", "0"), NUMREN = c("01", "02", "01"),
+          CLAVE = c("P001", "P032", "P001"), ING_1 = c(8000, 0, 1500), ING_TRI = c(23934.43, 150.5, 4487.7)),
+    c(FOLIOVIV = "C6", FOLIOHOG = "C1", NUMREN = "C2", CLAVE = "C4", ING_1 = "N9", ING_TRI = "F12.2")
+  )
+))
+
+# Edicion 2010: minusculas
+zip_enigh("nc2010_concentrado.zip", list(
+  "NCV_Concentrado_2010_concil_2010_DBF.dbf" = escribir_dbf(
+    tabla(folioviv = viv10, foliohog = c("0", "0", "1"), factor = c(915, 402, 1310), tam_loc = c(1, 2, 4),
+          ubica_geo = c("01001", "04002", "20067"), ingcor = c(24100.2, 50890.75, 7402),
+          est_dis = c("0010", "0461", "2093"), upm = c("00011", "00460", "20093")),
+    c(folioviv = "C6", foliohog = "C1", factor = "N5", tam_loc = "N1", ubica_geo = "C5", ingcor = "N15.2",
+      est_dis = "C4", upm = "C5"),
+    pagina = 0x00
+  )
+))
+agro10 <- function() {
+  escribir_dbf(
+    tabla(folioviv = viv10[c(2, 3)], foliohog = c("0", "1"), numren = c("01", "02"), numtrab = c("1", "1"),
+          tipoact = c("1", "2"), t_emp = c(2, NA), reg_not = c(2, 2), ventas = c(15000, 800),
+          ing_tri = c(45000.5, 2400)),
+    c(folioviv = "C6", foliohog = "C1", numren = "C2", numtrab = "C1", tipoact = "C1", t_emp = "N2",
+      reg_not = "N1", ventas = "N10", ing_tri = "N15.2"),
+    pagina = 0x00
+  )
+}
+zip_enigh("nc2010_agropecuario.zip", list("NCV_Agropecuario_2010_concil_2010_DBF.dbf" = agro10()))
+# El DBF de los negocios no agropecuarios es una copia de la tabla agropecuaria
+zip_enigh("nc2010_noagropecuario.zip", list("NCV_Noagropecuario_2010_concil_2010_DBF.dbf" = agro10()))
+zip_enigh("nc2010_noagropecuario_csv.zip", list(
+  "noagro.csv" = escribir_csv_inegi(c(
+    paste0("folioviv,foliohog,numren,numtrab,tipoact,numesta,totesta,lugact,mes_2,autocons,mes,peract,",
+           "mesact_1,mesact_10,t_emp,h_emp,reg_not,ventas1,otrosnom1,ing_tri,auto_tri"),
+    "011001,0,02,1,3,1, ,1,08,2,07,1,01,10,2,1,1,497.08,0,1490.5,.831765",
+    "046001,1,01,2,3,2,3, , ,2, ,2, , ,-1, , ,0,163.2,0,0",
+    "200933,0,03,1,1,1, ,5,12,1,11,1,09,12, , ,2,12000,0,36000.25,0"
+  ))
+))
+
+# Edicion 2012: viviendas en mayusculas, hogares en minusculas
+viv12 <- c("011001", "011006", "320455")
+zip_enigh("nc2012_viviendas.zip", list(
+  "NCV_viviendas_2012_concil_2010.dbf" = escribir_dbf(
+    tabla(FOLIOVIV = viv12, TIPO_VIV = c("2", "1", "3"), ANTIGUEDAD = c(35, NA, 20), RENTA = c(1800, 1100, NA),
+          ESTIM_PAGO = c(NA, NA, 1500), COMBUSTIBL = c("3", "3", "1"), MEDIDOR_LU = c("1", "1", "2"),
+          UBICA_GEO = c("010010000", "010010000", "320170000"), EST_DIS = c("001", "001", "418"),
+          UPM = c("0000110", "0000160", "0320450"), FACTOR_VIV = c(3310, 3310, 2988)),
+    c(FOLIOVIV = "C6", TIPO_VIV = "C1", ANTIGUEDAD = "N2", RENTA = "N9", ESTIM_PAGO = "N9", COMBUSTIBL = "C1",
+      MEDIDOR_LU = "C1", UBICA_GEO = "C9", EST_DIS = "C3", UPM = "C7", FACTOR_VIV = "N5"),
+    asteriscos = list(ANTIGUEDAD = 2, RENTA = 3, ESTIM_PAGO = c(1, 2)),
+    pagina = 0x00
+  )
+))
+zip_enigh("nc2012_hogares.zip", list(
+  "ncv_hogares_2012_concil_2010_dbf.dbf" = escribir_dbf(
+    tabla(folioviv = viv12, foliohog = c("1", "1", "1"), huespedes = c(0, 0, 1), num_pickup = c(0, 1, 0),
+          anio_picku = c(NA, "98", NA), factor_hog = c(3310, 3310, 2988)),
+    c(folioviv = "C6", foliohog = "C1", huespedes = "N1", num_pickup = "N2", anio_picku = "C2", factor_hog = "N5"),
+    pagina = 0x00
+  )
+))
+
+# Edicion 2014: concentrado en mayusculas y lo demas en minusculas
+zip_enigh("nc2014_concentrado.zip", list(
+  "NCV_concentrado_2014_concil_2010.dbf" = escribir_dbf(
+    tabla(FOLIOVIV = viv14, FOLIOHOG = c("1", "1", "1"), UBICA_GEO = c("010010000", "010010000", "310500000"),
+          TAM_LOC = c("1", "1", "3"), EST_DIS = c("005", "005", "512"), UPM = c("00670", "00670", "09133"),
+          FACTOR_HOG = c(694, 694, 1100), ING_COR = c(41250.8, 27990.1, 12400), INGTRAB = c(41250.8, 20000, 3000)),
+    c(FOLIOVIV = "C10", FOLIOHOG = "C1", UBICA_GEO = "C9", TAM_LOC = "C1", EST_DIS = "C3", UPM = "C5",
+      FACTOR_HOG = "N5", ING_COR = "N12.2", INGTRAB = "N12.2"),
+    pagina = 0x00
+  )
+))
+zip_enigh("nc2014_hogares.zip", list(
+  "ncv_hogares_2014_concil_2010_dbf.dbf" = escribir_dbf(
+    tabla(folioviv = viv14, foliohog = c("1", "1", "1"), huespedes = c(0, 0, 2), acc_alim1 = c("2", "1", NA),
+          factor_hog = c(694, 694, 1100)),
+    c(folioviv = "C10", foliohog = "C1", huespedes = "N1", acc_alim1 = "C1", factor_hog = "N5"),
+    pagina = 0x00
+  )
+))
+zip_enigh("nc2014_poblacion.zip", list(
+  "ncv_poblacion_2014_concil_2010_dbf.dbf" = escribir_dbf(
+    tabla(folioviv = viv14[c(1, 1, 2, 3)], foliohog = c("1", "1", "1", "1"), numren = c("01", "02", "01", "01"),
+          parentesco = c("101", "201", "101", "101"), sexo = c("1", "2", "2", "1"), edad = c(44, 41, 67, 29)),
+    c(folioviv = "C10", foliohog = "C1", numren = "C2", parentesco = "C3", sexo = "C1", edad = "N2"),
+    pagina = 0x00
+  )
+))
+# El zip de erogaciones de esta muestra no trae la tabla de erogaciones
+zip_enigh("nc2014_erogaciones.zip", list(
+  "otra_tabla.dbf" = escribir_dbf(tabla(folioviv = viv14[1], clave = "Q001"), c(folioviv = "C10", clave = "C4"))
 ))
 
 message("Muestras de la ENIGH generadas en ", destino, ": ", length(list.files(destino)), " archivos.")

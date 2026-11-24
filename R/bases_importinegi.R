@@ -6,7 +6,7 @@
 #'
 #' Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{cpv_censo}}), el Conteo de Poblacion y Vivienda (\code{\link{cpv_conteo}}), la Encuesta Intercensal (\code{\link{cpv_intercensal}}), el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cngmd}}) y el Censo Nacional de Derechos Humanos Federal (\code{\link{cndhf}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 #'
-#' Tambien incluye la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}}), con una fila por edicion, y la Encuesta Nacional de Ocupacion y Empleo (\code{\link{enoe}}), con una fila por trimestre.
+#' Tambien incluye la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}} y \code{\link{enigh_nc}}), con una fila por edicion, y la Encuesta Nacional de Ocupacion y Empleo (\code{\link{enoe}}), con una fila por trimestre.
 #'
 #' A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 #'
@@ -49,10 +49,10 @@
 #'   \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
 #' }
 #'
-#' En \code{"enigh_tradicional"} hay una fila por edicion: \code{base} vale \code{"microdatos"}, \code{tablas} lista las tablas que se pueden pedir con el argumento \code{tabla} de la funcion (la primera es la que se descarga por omision) y \code{tamano_mb} es el peso de todos los archivos de la edicion.
+#' En \code{"enigh_tradicional"} y \code{"enigh_nc"} hay una fila por edicion: \code{base} vale \code{"microdatos"}, \code{tablas} lista las tablas que se pueden pedir con el argumento \code{tabla} de la funcion (la primera es la que se descarga por omision) y \code{tamano_mb} es el peso de todos los archivos de la edicion.
 #'
 #' En \code{"enoe"} hay una fila por trimestre: \code{base} es el trimestre, como se escribe en el argumento \code{trimestre} de la funcion (\code{"trim1"}); \code{descripcion} indica la edicion de la encuesta y el cuestionario de ocupacion y empleo que se aplico (basico o ampliado), y \code{tablas} lista las cinco tablas del trimestre, que se descargan todas por omision.
-#' @seealso \code{\link{enigh_tradicional}} para descargar la serie tradicional de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
+#' @seealso \code{\link{enigh_tradicional}} y \code{\link{enigh_nc}} para descargar la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
 #' @seealso \code{\link{enoe}} para descargar la Encuesta Nacional de Ocupacion y Empleo.
 #' @seealso \code{\link{cpv_censo}}, \code{\link{cpv_conteo}}, \code{\link{cpv_intercensal}}, \code{\link{cngmd}} y \code{\link{cndhf}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 #' @export

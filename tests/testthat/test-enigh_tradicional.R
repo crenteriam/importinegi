@@ -81,7 +81,7 @@ test_that("cada tabla se reconoce en el zip del INEGI por el nombre de su DBF", 
   expect_identical(names(contenido), as.character(ediciones_tradicional))
   elegidos <- vapply(seq_len(nrow(archivos)), function(i) {
     dentro <- tolower(contenido[[as.character(archivos$year[i])]][[archivos$nombre[i]]])
-    hallados <- grep(archivos$dbf[i], dentro, value = TRUE)
+    hallados <- grep(archivos$patron[i], dentro, value = TRUE)
     if (length(hallados) == 1) hallados else NA_character_
   }, character(1))
   expect_false(anyNA(elegidos), info = paste(archivos$year[is.na(elegidos)], archivos$tabla[is.na(elegidos)], collapse = "; "))
@@ -152,6 +152,12 @@ test_that("enigh_tradicional() valida la tabla", {
     "La tabla \"erogaciones\" no existe en la edici\u00f3n 1984"
   )
   expect_error(enigh_tradicional(2014, "gastos"), "La tabla \"gastos\" no existe en la edici\u00f3n 2014")
+  # Cuando el contenido de la tabla esta en otra tabla de la edicion, el error lo dice
+  expect_error(enigh_tradicional(1994, "viviendas"), "Hasta 2010 las caracter\u00edsticas de la vivienda est\u00e1n en la tabla \"hogares\"")
+  expect_error(enigh_tradicional(2006, "gastohogar"), "Hasta 2010 los gastos est\u00e1n en la tabla \"gastos\"")
+  expect_error(enigh_tradicional(2014, "gastos"), "Desde 2012 los gastos est\u00e1n en las tablas \"gastohogar\" y \"gastopersona\"")
+  mensaje <- tryCatch(enigh_tradicional(1984, "erogaciones"), error = conditionMessage)
+  expect_false(grepl("Hasta 2010|Desde 2012", mensaje))
 })
 
 test_that("enigh_tradicional() descarga el concentrado por omision", {
