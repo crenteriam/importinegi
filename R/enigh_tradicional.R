@@ -2,7 +2,7 @@
 #'
 #' Descarga las tablas de la Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH) en su serie tradicional, de 1984 a 2014, y las devuelve como data.frame.
 #'
-#' La ENIGH provee informacion estadistica sobre los ingresos y los gastos de los hogares en cuanto a su monto, procedencia y distribucion, y sobre las caracteristicas sociodemograficas y ocupacionales de sus integrantes. El INEGI la publica en tres series. La serie tradicional conserva la construccion original de las variables de ingreso y de gasto y tiene 15 ediciones: 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014. La Nueva construccion presenta los levantamientos de 2008 a 2014 con otra construccion de las variables y se descarga con \code{\link{enigh_nuevaconstruccion}}. Desde 2016 la encuesta se publica como Nueva serie, que esta funcion no descarga.
+#' La ENIGH provee informacion estadistica sobre los ingresos y los gastos de los hogares en cuanto a su monto, procedencia y distribucion, y sobre las caracteristicas sociodemograficas y ocupacionales de sus integrantes. El INEGI la publica en tres series. La serie tradicional conserva la construccion original de las variables de ingreso y de gasto y tiene 15 ediciones: 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014. La Nueva construccion presenta los levantamientos de 2008 a 2014 con otra construccion de las variables y se descarga con \code{\link{enigh_nc}}. Desde 2016 la encuesta se publica como Nueva serie, que esta funcion no descarga.
 #'
 #' Cada edicion se publica en varias tablas, que cambian con el tiempo. El argumento \code{tabla} elige cuales se descargan:
 #' \describe{
@@ -41,7 +41,7 @@
 #' Los datos que el INEGI deja en blanco o llena con asteriscos se devuelven como \code{NA}. Los codigos no se sustituyen por sus descripciones. La funcion omite los registros que los archivos del INEGI marcan como borrados, que la documentacion del INEGI tampoco cuenta.
 #'
 #' @param year Año del levantamiento de la encuesta en formato numerico. Es obligatorio. Los años disponibles son 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014.
-#' @param tabla Tabla o tablas que se descargan, en formato alfanumerico. Por omision, \code{"concentrado"}. Las opciones son: \code{"concentrado"}, \code{"viviendas"}, \code{"hogares"}, \code{"poblacion"}, \code{"trabajos"}, \code{"ingresos"}, \code{"gastos"}, \code{"gastohogar"}, \code{"gastopersona"}, \code{"gastodiario"}, \code{"gastoeducacion"}, \code{"gastorecibo"}, \code{"gastocosto"}, \code{"gastotarjetas"}, \code{"erogaciones"}, \code{"nomonetario"}, \code{"agro"} y \code{"noagro"}. No todas las tablas existen en todas las ediciones (ver Detalles).
+#' @param tabla Tabla o tablas que se descargan, en formato alfanumerico. Por omision, \code{"concentrado"}; en ese caso la funcion avisa que tabla descarga y cuales son las demas tablas de la edicion. Las opciones son: \code{"concentrado"}, \code{"viviendas"}, \code{"hogares"}, \code{"poblacion"}, \code{"trabajos"}, \code{"ingresos"}, \code{"gastos"}, \code{"gastohogar"}, \code{"gastopersona"}, \code{"gastodiario"}, \code{"gastoeducacion"}, \code{"gastorecibo"}, \code{"gastocosto"}, \code{"gastotarjetas"}, \code{"erogaciones"}, \code{"nomonetario"}, \code{"agro"} y \code{"noagro"}. No todas las tablas existen en todas las ediciones (ver Detalles).
 #'
 #' @examples
 #'
@@ -65,11 +65,11 @@
 #' \dontrun{attr(concentrado, "descriptor")}
 #'
 #' @return Si se indica una sola tabla, un data.frame. Si se indican varias, una lista con un data.frame por tabla, cada uno con el nombre de su tabla. El atributo \code{"fuente"} contiene la direccion de los archivos descargados y el atributo \code{"descriptor"}, la direccion del descriptor de archivos de la edicion.
-#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, las tablas de cada edicion y cuanto pesan. \code{\link{enigh_nuevaconstruccion}} para la Nueva construccion de la ENIGH. \code{\link{catalogo_inegi}} para la documentacion de la encuesta en la Red Nacional de Metadatos.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, las tablas de cada edicion y cuanto pesan. \code{\link{enigh_nc}} para la Nueva construccion de la ENIGH. \code{\link{catalogo_inegi}} para la documentacion de la encuesta en la Red Nacional de Metadatos.
 #' @export
 enigh_tradicional <- function(year, tabla = "concentrado") {
   if (missing(year)) {
     year <- NULL
   }
-  enigh_obtener("enigh_tradicional", year, tabla)
+  enigh_obtener("enigh_tradicional", year, tabla, omision = missing(tabla))
 }

@@ -162,9 +162,9 @@ test_that("bases_importinegi() coincide con lo que cpv_censo() puede descargar",
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CPV_CENSO "), bases_importinegi("cpv_censo"))
   expect_identical(unique(bases_importinegi()$proyecto),
-                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enoe"))
+                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe"))
   expect_identical(
-    bases_importinegi(c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enoe")),
+    bases_importinegi(c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe")),
     bases_importinegi()
   )
   de_2020 <- bases_importinegi(year = 2020)

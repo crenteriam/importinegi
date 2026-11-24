@@ -2,12 +2,12 @@
 # La version 2.0.0 conserva los nombres de las funciones y de sus argumentos
 # de la serie 1.x. Se pueden agregar funciones y argumentos nuevos (al final),
 # pero no quitar ni reordenar los existentes. Las excepciones son las cinco
-# funciones censo_poblacion_*(), que se eliminaron porque cpv_censo() las sustituye,
-# y censo_municipal(), que se elimino porque cngmd() la sustituye.
+# funciones censo_poblacion_*(), que se eliminaron porque cpv_censo() las sustituye;
+# censo_municipal(), que se elimino porque cngmd() la sustituye, y
+# enigh_nuevaconstruccion(), que se elimino porque enigh_nc() la sustituye.
 
 interfaz_1x <- list(
   catalogo_inegi          = c("id"),
-  enigh_nuevaconstruccion = c("year", "datos"),
   enoe                    = c("year", "trimestre", "integrar"),
   sig_caminos_descarga    = c("year"),
   sig_caminos_extrae      = c(".", "mapa"),
@@ -65,6 +65,16 @@ test_that("enoe() conserva los argumentos de la serie 1.x y agrega `tabla` y `es
   expect_false(argumentos$integrar)
   expect_null(argumentos$tabla)
   expect_null(argumentos$estado)
+})
+
+test_that("enigh_nuevaconstruccion() ya no se exporta y enigh_nc() la sustituye", {
+  expect_false("enigh_nuevaconstruccion" %in% getNamespaceExports("importinegi"))
+  expect_true("enigh_nc" %in% getNamespaceExports("importinegi"))
+  argumentos <- formals(enigh_nc)
+  expect_identical(names(argumentos), c("year", "tabla"))
+  expect_identical(argumentos$tabla, "concentrado")
+  # Las dos funciones de la ENIGH tienen los mismos argumentos
+  expect_identical(formals(enigh_nc), formals(enigh_tradicional))
 })
 
 test_that("enigh_tradicional() se exporta con sus dos argumentos", {

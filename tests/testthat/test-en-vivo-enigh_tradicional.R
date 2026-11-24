@@ -10,48 +10,6 @@ hogares_enigh <- c(
   "2010" = 27655, "2012" = 9002, "2014" = 19479
 )
 
-# Revisa un DBF sin interpretarlo: registros que declara, registros marcados
-# como borrados y campos numericos sin decimales declarados que tienen un punto
-# decimal en algun registro (foreign::read.dbf() los leeria como enteros y
-# perderia los decimales).
-revisar_dbf <- function(archivo) {
-  conexion <- file(archivo, open = "rb")
-  on.exit(close(conexion))
-  entero <- function(x) sum(as.numeric(x) * 256^(seq_along(x) - 1))
-  encabezado <- readBin(conexion, "raw", n = 32)
-  declarados <- entero(encabezado[5:8])
-  inicio <- entero(encabezado[9:10])
-  largo <- entero(encabezado[11:12])
-  resto <- readBin(conexion, "raw", n = inicio - 32)
-  campos <- 0
-  while (32 * campos < length(resto) && resto[32 * campos + 1] != as.raw(0x0d)) {
-    campos <- campos + 1
-  }
-  descriptor <- matrix(resto[seq_len(campos * 32)], nrow = 32)
-  nombre <- apply(descriptor[1:11, , drop = FALSE], 2, function(x) rawToChar(x[cumsum(x == as.raw(0)) == 0]))
-  tipo <- rawToChar(descriptor[12, ], multiple = TRUE)
-  ancho <- as.integer(descriptor[17, ])
-  decimales <- as.integer(descriptor[18, ])
-  # Los registros, uno por columna de la matriz
-  registros <- readBin(conexion, "raw", n = declarados * largo)
-  completos <- length(registros) %/% largo
-  length(registros) <- completos * largo
-  dim(registros) <- c(largo, completos)
-  desde <- cumsum(c(2, ancho))[seq_len(campos)]
-  enteros <- which(tipo %in% c("N", "F") & decimales == 0)
-  con_punto <- vapply(enteros, function(i) {
-    any(registros[desde[i] + seq_len(ancho[i]) - 1, , drop = FALSE] == as.raw(0x2e))
-  }, logical(1))
-  list(
-    declarados = declarados,
-    leidos = as.numeric(completos),
-    borrados = sum(registros[1, ] == as.raw(0x2a)),
-    con_decimales = nombre[enteros[con_punto]],
-    tipos = table(tipo),
-    ancho_registro = c(declarado = largo, campos = 1 + sum(ancho))
-  )
-}
-
 test_that("EN VIVO: enigh_tradicional() lee las tablas de todas las ediciones", {
   en_vivo()
   ediciones <- bases_importinegi("enigh_tradicional")
@@ -88,7 +46,7 @@ test_that("EN VIVO: enigh_tradicional() lee las tablas de todas las ediciones", 
       fila <- archivos[archivos$tabla == nombre, ]
       zip <- suppressMessages(inegi_descargar(fila$url))
       contenido <- enigh_contenido(zip)
-      extraido <- gobierno_extraer(zip, contenido[grep(fila$dbf, contenido$nombre), , drop = FALSE])
+      extraido <- gobierno_extraer(zip, contenido[grep(fila$patron, contenido$nombre), , drop = FALSE])
       revision <- revisar_dbf(extraido$archivos[1])
       unlink(extraido$carpeta, recursive = TRUE)
       expect_identical(revision$leidos, revision$declarados, info = etiqueta)
