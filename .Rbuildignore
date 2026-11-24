@@ -5,3 +5,4 @@
 ^CRAN-SUBMISSION$
 ^\.github$
 ^data-raw$
+^tests/testthat/testthat-problems\.rds$
