@@ -301,7 +301,7 @@ test_that("integrar = TRUE devuelve una fila por residente y conserva los hogare
     "La tabla integrada tiene 10 filas: 8 de \"sdem\" y 2 de \"hog\" sin fila en \"sdem\", \"coe1\" ni \"coe2\""
   ))
   expect_s3_class(integrada, "data.frame")
-  expect_identical(dim(integrada), c(10L, 36L))
+  expect_identical(dim(integrada), c(10L, 40L))
   expect_identical(rownames(integrada), as.character(1:10))
   expect_identical(anyDuplicated(names(integrada)), 0L)
   residentes <- integrada[1:8, ]
@@ -315,7 +315,8 @@ test_that("integrar = TRUE devuelve una fila por residente y conserva los hogare
   # Despues, las columnas que agrega cada tabla: coe1, coe2, hog y viv
   expect_identical(
     setdiff(names(integrada), names(todas$sdem)),
-    c("N_INF", "P1", "P3", "P4_1", "P4_2", "P6B1", "P6B2", "P4_1_HOG", "P4_2_HOG", "TIPOLEV", "P1_VIV", "P2_VIV", "P3_VIV")
+    c("N_INF", "P1", "P3", "P4_1", "P4_2", "P6B1", "P6B2", "P4_1_HOG", "P4_2_HOG", "TIPOLEV", "FAC_TRI_HOG", "FAC_MEN_HOG",
+      "P1_VIV", "P2_VIV", "P3_VIV", "FAC_TRI_VIV", "FAC_MEN_VIV")
   )
   # Los residentes sin cuestionario de ocupacion (menores de 12 a\u00f1os) quedan con NA
   expect_identical(integrada$P1, c("1", "1", NA, "1", "2", "2", "1", NA, NA, NA))
@@ -332,22 +333,34 @@ test_that("integrar = TRUE devuelve una fila por residente y conserva los hogare
   expect_identical(integrada$TIPOLEV, c("1", "1", "1", "1", "1", "2", "1", "1", "1", "1"))
 
   # Hogares sin entrevista: sin residentes, con NA en las columnas de las tablas
-  # de residentes y con los valores de la tabla de hogares en las demas
+  # de residentes (tambien en el ponderador del residente) y con los valores de
+  # la tabla de hogares en las demas
   expect_identical(sin_entrevista$R_DEF, c("03", "15"))
-  solo_residentes <- c("N_REN", "C_RES", "SEX", "EDA", "CS_P21_DES", "CLASE1", "INGOCUP",
+  solo_residentes <- c("N_REN", "C_RES", "SEX", "EDA", "CS_P21_DES", "CLASE1", "INGOCUP", "FAC_TRI", "FAC_MEN",
                        "N_INF", "P1", "P3", "P4_1", "P4_2", "P6B1", "P6B2")
   expect_true(all(is.na(sin_entrevista[solo_residentes])))
   hogares <- todas$hog[todas$hog$R_DEF != "00", ]
-  for (columna in setdiff(names(hogares), c("P4_1", "P4_2"))) {
+  con_sufijo <- c("P4_1", "P4_2", "FAC_TRI", "FAC_MEN")
+  for (columna in setdiff(names(hogares), con_sufijo)) {
     expect_identical(sin_entrevista[[columna]], hogares[[columna]], info = columna)
+  }
+  for (columna in con_sufijo) {
+    expect_identical(sin_entrevista[[paste0(columna, "_HOG")]], hogares[[columna]], info = columna)
   }
   expect_identical(which(is.na(integrada$N_REN)), 9:10)
 
-  # Las columnas repetidas quedan con el valor de la tabla de mas detalle: el
-  # ponderador de los residentes es el de la tabla sociodemografica (202) y no
-  # el de hogares (201) ni el de viviendas (200)
-  expect_identical(integrada$FAC_TRI, c(100L, 100L, 100L, 202L, 202L, 300L, 400L, 400L, 100L, 500L))
+  # Tres ponderadores, uno por nivel. El del residente conserva su nombre: es el
+  # de la tabla sociodemografica (202 en el hogar de la vivienda 2) y es NA en
+  # los hogares sin residentes. El del hogar (201) y el de la vivienda (200)
+  # llevan el sufijo de su tabla y llegan a todas las filas.
+  expect_identical(integrada$FAC_TRI, c(100L, 100L, 100L, 202L, 202L, 300L, 400L, 400L, NA, NA))
+  expect_identical(integrada$FAC_TRI_HOG, c(100L, 100L, 100L, 201L, 201L, 300L, 400L, 400L, 100L, 500L))
+  expect_identical(integrada$FAC_TRI_VIV, c(100L, 100L, 100L, 200L, 200L, 300L, 400L, 400L, 100L, 500L))
   expect_identical(integrada$FAC_MEN, integrada$FAC_TRI * 3L)
+  expect_identical(integrada$FAC_MEN_HOG, integrada$FAC_TRI_HOG * 3L)
+  expect_identical(integrada$FAC_MEN_VIV, integrada$FAC_TRI_VIV * 3L)
+  # Las demas columnas repetidas quedan una vez, con el valor de la tabla de
+  # mas detalle en la que existe la fila
   expect_identical(integrada$UR, c(1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 1L, 2L))
   expect_identical(integrada$CS_P21_DES[c(1, 4, 6)], c("CIUDAD DE M\u00c9XICO", "NUEVO LE\u00d3N", "MICHOAC\u00c1N"))
 
@@ -370,7 +383,16 @@ test_that("la integracion funciona con las cuatro estructuras de la serie", {
     expect_identical(integrada$EDA, c("40", "38", "08", "25", "13", "70", "33", "05", NA, NA), info = etiqueta)
     expect_identical(integrada$P1_VIV, c("03", "03", "03", "02", "02", "01", "02", "02", "03", NA), info = etiqueta)
     expect_identical(integrada$P6B1, c("1", "1", NA, "1", NA, NA, "1", NA, NA, NA), info = etiqueta)
-    expect_identical(integrada[[ponderador]], c(100L, 100L, 100L, 202L, 202L, 300L, 400L, 400L, 100L, 500L), info = etiqueta)
+    expect_identical(integrada[[ponderador]], c(100L, 100L, 100L, 202L, 202L, 300L, 400L, 400L, NA, NA), info = etiqueta)
+    expect_identical(integrada[[paste0(ponderador, "_HOG")]], c(100L, 100L, 100L, 201L, 201L, 300L, 400L, 400L, 100L, 500L),
+                     info = etiqueta)
+    expect_identical(integrada[[paste0(ponderador, "_VIV")]], c(100L, 100L, 100L, 200L, 200L, 300L, 400L, 400L, 100L, 500L),
+                     info = etiqueta)
+    # FAC hasta 2020-T1; despues, FAC_TRI y FAC_MEN
+    expect_identical(grep("^FAC", names(integrada), value = TRUE),
+                     if (trimestre[1] < 2020) c("FAC", "FAC_HOG", "FAC_VIV")
+                     else c("FAC_TRI", "FAC_MEN", "FAC_TRI_HOG", "FAC_MEN_HOG", "FAC_TRI_VIV", "FAC_MEN_VIV"),
+                     info = etiqueta)
     expect_identical(anyDuplicated(integrada[attr(integrada, "llave")]), 0L, info = etiqueta)
     expect_identical(attr(integrada, "nota"), attr(enoe_silencio(trimestre[1], trimestre[2], tabla = "viv"), "nota"),
                      info = etiqueta)
@@ -391,11 +413,14 @@ test_that("la integracion usa solo las tablas pedidas", {
   expect_identical(names(personas), c(names(todas$sdem), "N_INF", "P1", "P3", "P4_1", "P4_2", "P6B1", "P6B2"))
   expect_identical(attr(personas, "llave"), attr(todas, "llave")$sdem)
 
-  # Hogares y viviendas: una fila por hogar, con las preguntas con su sufijo
+  # Hogares y viviendas: una fila por hogar, con las preguntas y los
+  # ponderadores con su sufijo
   hogares <- enoe_silencio(2024, 1, integrar = TRUE, tabla = c("viv", "hog"))
   expect_identical(nrow(hogares), 6L)
-  expect_identical(names(hogares), c(sub("^(P4_[12])$", "\\1_HOG", names(todas$hog)), "P1_VIV", "P2_VIV", "P3_VIV"))
-  expect_identical(hogares$FAC_TRI, todas$hog$FAC_TRI)
+  expect_identical(names(hogares), c(sub("^(P4_[12]|FAC_TRI|FAC_MEN)$", "\\1_HOG", names(todas$hog)),
+                                     "P1_VIV", "P2_VIV", "P3_VIV", "FAC_TRI_VIV", "FAC_MEN_VIV"))
+  expect_identical(hogares$FAC_TRI_HOG, todas$hog$FAC_TRI)
+  expect_identical(hogares$FAC_TRI_VIV, c(100L, 100L, 200L, 300L, 400L, 500L))
   expect_identical(hogares$P1_VIV, c("03", "03", "02", "01", "02", NA))
   expect_identical(attr(hogares, "llave"), attr(todas, "llave")$hog)
 
@@ -409,7 +434,9 @@ test_that("la integracion usa solo las tablas pedidas", {
   expect_identical(ocupacion$P1_VIV, c("03", "03", "02", "02", "01", "02", NA))
   expect_identical(ocupacion$MUN, c("002", "002", "015", "015", "015", "039", "039"))
   expect_identical(ocupacion$MES_CAL, c("01", "01", "02", "02", "02", "03", "01"))
-  expect_identical(ocupacion$FAC_TRI, c(100L, 100L, 202L, 202L, 300L, 400L, 500L))
+  # El ponderador sin sufijo es el de la persona; la vivienda sin personas no lo tiene
+  expect_identical(ocupacion$FAC_TRI, c(100L, 100L, 202L, 202L, 300L, 400L, NA))
+  expect_identical(ocupacion$FAC_TRI_VIV, c(100L, 100L, 200L, 200L, 300L, 400L, 500L))
   expect_identical(attr(ocupacion, "llave"), attr(todas, "llave")$coe1)
 
   # Con una sola tabla no hay nada que integrar
@@ -480,6 +507,53 @@ test_that("enoe_integrar() no pierde filas y avisa cuando las tablas no correspo
   expect_identical(dim(vacia), c(0L, 11L))
 })
 
+test_that("enoe_integrar() mantiene los ponderadores del residente, del hogar y de la vivienda", {
+  expect_identical(enoe_es_ponderador(c("FAC", "FAC_TRI", "FAC_MEN", "FACTOR", "FAC_", "P1", "R_DEF")),
+                   c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE))
+  # El segundo residente de la vivienda 1 tiene un ponderador distinto del de su
+  # hogar, y el hogar de la vivienda 2, uno distinto del de su vivienda. La
+  # vivienda 3 tiene un hogar sin residentes.
+  sdem <- tabla_prueba(CD_A = "01", ENT = "09", CON = c("1", "1", "2"), V_SEL = "01", N_HOG = "1", H_MUD = "0",
+                       N_REN = c("01", "02", "01"), FAC = c(10L, 0L, 30L))
+  hog <- tabla_prueba(CD_A = "01", ENT = "09", CON = c("1", "2", "3"), V_SEL = "01", N_HOG = "1", H_MUD = "0",
+                      R_DEF = c("00", "00", "03"), FAC = c(10L, 31L, 50L))
+  viv <- tabla_prueba(CD_A = "01", ENT = "09", CON = c("1", "2", "3"), V_SEL = "01", FAC = c(10.5, 30, 50))
+  integrada <- suppressMessages(enoe_integrar(list(viv = viv, hog = hog, sdem = sdem)))
+  expect_identical(grep("^FAC", names(integrada), value = TRUE), c("FAC", "FAC_HOG", "FAC_VIV"))
+  expect_identical(integrada$N_REN, c("01", "02", "01", NA))
+  # El del residente: el de la tabla sociodemografica, y NA en el hogar sin residentes
+  expect_identical(integrada$FAC, c(10L, 0L, 30L, NA))
+  # El del hogar y el de la vivienda llegan a todas las filas, con su tipo
+  expect_identical(integrada$FAC_HOG, c(10L, 10L, 31L, 50L))
+  expect_identical(integrada$FAC_VIV, c(10.5, 10.5, 30, 50))
+
+  # Entre tablas de personas el ponderador queda una sola vez
+  coe1 <- tabla_prueba(CD_A = "01", ENT = "09", CON = c("1", "2"), V_SEL = "01", N_HOG = "1", H_MUD = "0",
+                       N_REN = "01", FAC = c(10L, 30L), P1 = c("1", "2"))
+  personas <- enoe_integrar(list(sdem = sdem, coe1 = coe1))
+  expect_identical(grep("^FAC", names(personas), value = TRUE), "FAC")
+  expect_identical(personas$FAC, c(10L, 0L, 30L))
+  # Sin tablas de personas no hay ponderador sin sufijo
+  hogares <- enoe_integrar(list(hog = hog, viv = viv))
+  expect_identical(grep("^FAC", names(hogares), value = TRUE), c("FAC_HOG", "FAC_VIV"))
+  expect_identical(hogares$FAC_HOG, c(10L, 31L, 50L))
+  # Con el cuestionario y la vivienda, el de la persona y el de la vivienda
+  ocupacion <- suppressMessages(enoe_integrar(list(coe1 = coe1, viv = viv)))
+  expect_identical(grep("^FAC", names(ocupacion), value = TRUE), c("FAC", "FAC_VIV"))
+  expect_identical(ocupacion$FAC, c(10L, 30L, NA))
+  expect_identical(ocupacion$FAC_VIV, c(10.5, 30, 50))
+
+  # Desde 2020-T3 son dos ponderadores por tabla
+  names(sdem)[names(sdem) == "FAC"] <- "FAC_TRI"
+  names(hog)[names(hog) == "FAC"] <- "FAC_TRI"
+  sdem$FAC_MEN <- sdem$FAC_TRI * 3L
+  hog$FAC_MEN <- hog$FAC_TRI * 3L
+  nueva <- suppressMessages(enoe_integrar(list(sdem = sdem, hog = hog)))
+  expect_identical(grep("^FAC", names(nueva), value = TRUE), c("FAC_TRI", "FAC_MEN", "FAC_TRI_HOG", "FAC_MEN_HOG"))
+  expect_identical(nueva$FAC_MEN, c(30L, 0L, 90L, NA))
+  expect_identical(nueva$FAC_MEN_HOG, c(30L, 30L, 93L, 150L))
+})
+
 # Entidades --------------------------------------------------------------------------
 
 test_that("`estado` conserva las filas de las entidades indicadas", {
@@ -517,7 +591,7 @@ test_that("`estado` conserva las filas de las entidades indicadas", {
   colima <- enoe_silencio(2024, 1, tabla = "sdem", estado = "Colima")
   expect_identical(nrow(colima), 0L)
   expect_named(colima, names(todas$sdem))
-  expect_identical(dim(enoe_silencio(2024, 1, integrar = TRUE, estado = "Colima")), c(0L, 36L))
+  expect_identical(dim(enoe_silencio(2024, 1, integrar = TRUE, estado = "Colima")), c(0L, 40L))
 })
 
 test_that("la clave de la entidad se reconoce como texto o como numero", {

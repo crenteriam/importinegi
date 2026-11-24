@@ -4,9 +4,46 @@
 #'
 #' La ENOE es un proyecto estadistico de encuestas en hogares especializado en informacion sobre el mercado laboral. La ENOE provee informacion trimestral sobre la fuerza laboral, la ocupacion, subocupacion y desocupacion de los miembros del hogar encuestado.
 #'
-#' @param year Año de levantamiento de la encuesta en formato numerico.
-#' @param trimestre Trimestre de levantamiento de la encuesta en formato alfanumerico. Las opciones son: "trim1", "trim2", "trim3" y "trim4".
-#' @param integrar \code{FALSE}: descarga por separado y en una lista las cinco bases de datos que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, utilizando el identificador unico del entrevistado.
+#' La funcion descarga la serie vigente de la encuesta (poblacion de 15 años y mas), del primer trimestre de 2005 al segundo trimestre de 2026. El INEGI no publico la ENOE del segundo trimestre de 2020: en ese trimestre levanto la Encuesta Telefonica de Ocupacion y Empleo (ETOE), que esta funcion no descarga. \code{\link{bases_importinegi}} lista los trimestres disponibles sin descargar nada: \code{bases_importinegi("enoe")}.
+#'
+#' Cada trimestre se publica en cinco bases de datos (tablas), que se eligen con el argumento \code{tabla}:
+#' \describe{
+#'   \item{\code{"viv"}}{Vivienda: una fila por vivienda seleccionada.}
+#'   \item{\code{"hog"}}{Hogar: una fila por hogar, incluidos los hogares que no se entrevistaron.}
+#'   \item{\code{"sdem"}}{Sociodemografico: una fila por residente del hogar, de cualquier edad.}
+#'   \item{\code{"coe1"} y \code{"coe2"}}{Cuestionario de ocupacion y empleo, primera y segunda parte: una fila por residente de 12 años o mas. El cuestionario tiene una version basica y una ampliada, con mas preguntas; \code{bases_importinegi("enoe")} indica cual se aplico en cada trimestre.}
+#' }
+#'
+#' La funcion toma la direccion del archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga el archivo nacional del trimestre (de 18 a 40 MB) en una carpeta temporal y lee las bases de datos en formato DBF. El INEGI no publica la ENOE por entidad federativa: con el argumento \code{estado}, la funcion descarga el archivo nacional y conserva las filas de las entidades indicadas. Requiere conexion a internet.
+#'
+#' @section Como unir las bases de datos:
+#' Las bases de datos de un trimestre se unen con las columnas que identifican a la vivienda (\code{CD_A}, \code{ENT}, \code{CON} y \code{V_SEL}), al hogar (las de la vivienda, \code{N_HOG} y \code{H_MUD}) y al residente (las del hogar y \code{N_REN}). Desde el tercer trimestre de 2020, la vivienda se identifica ademas con \code{TIPO} y \code{MES_CAL} (y con \code{CA} hasta el segundo trimestre de 2021); desde el tercer trimestre de 2025, la columna \code{ENT} se llama \code{CVE_ENT}. El atributo \code{"llave"} del resultado indica las columnas que identifican cada fila en el trimestre descargado.
+#'
+#' Con \code{integrar = TRUE}, la funcion hace esa union y devuelve una sola base de datos:
+#' \itemize{
+#'   \item Tiene una fila por residente. Los residentes sin cuestionario de ocupacion y empleo (los menores de 12 años, principalmente) quedan con \code{NA} en las columnas del cuestionario.
+#'   \item No se pierde ninguna fila. Los hogares sin residentes, que son hogares que no se entrevistaron, se agregan al final, con \code{NA} en las columnas de los residentes. Se reconocen porque su \code{N_REN} es \code{NA}; su \code{R_DEF} indica el resultado de la entrevista. Los hogares con entrevista suspendida (\code{R_DEF} igual a \code{"15"}) si tienen residentes y aparecen en las filas de sus residentes.
+#'   \item Las columnas que se repiten en varias bases de datos quedan una sola vez, con el valor de la base de datos de mas detalle.
+#'   \item Las preguntas de vivienda y de hogar llevan el sufijo de su base de datos (\code{P1_VIV}, \code{P2_VIV}, \code{P3_VIV}, \code{P4_1_HOG} y \code{P4_2_HOG}), porque se llaman igual que otras preguntas del cuestionario de ocupacion y empleo.
+#'   \item Se mantienen los ponderadores del residente, del hogar y de la vivienda (ver la seccion Ponderadores).
+#'   \item Con el argumento \code{tabla}, se integran solamente las bases de datos indicadas. Por ejemplo, \code{tabla = c("hog", "viv")} devuelve una fila por hogar.
+#' }
+#'
+#' @section Ponderadores:
+#' El ponderador indica cuantas personas, hogares o viviendas representa cada fila de la muestra, y las estimaciones deben usarlo. Hasta el primer trimestre de 2020 se llama \code{FAC}. Desde el tercer trimestre de 2020 hay dos: \code{FAC_TRI}, para las estimaciones trimestrales, y \code{FAC_MEN}, para las mensuales. Las cifras que publica el INEGI se reproducen con el ponderador de la base de datos \code{"sdem"} y los residentes con entrevista completa (\code{R_DEF} igual a \code{"00"}), sin los ausentes definitivos (\code{C_RES} igual a \code{"1"} o \code{"3"}) y de 15 a 98 años de edad (\code{EDA}).
+#'
+#' Las bases de datos de vivienda, de hogar y sociodemografica tienen cada una su ponderador, y los tres no siempre coinciden: en cada trimestre, el ponderador de entre 1.7 y 4 de cada 100 residentes es distinto del de su hogar. Por eso, la base de datos integrada mantiene los tres. El ponderador del residente conserva su nombre (\code{FAC}, o \code{FAC_TRI} y \code{FAC_MEN}); el del hogar y el de la vivienda llevan el sufijo de su base de datos: \code{FAC_HOG} y \code{FAC_VIV}, o \code{FAC_TRI_HOG}, \code{FAC_MEN_HOG}, \code{FAC_TRI_VIV} y \code{FAC_MEN_VIV}. Las estimaciones de personas usan el ponderador del residente; las de hogares, el del hogar, y las de viviendas, el de la vivienda. Los hogares sin residentes tienen \code{NA} en el ponderador del residente.
+#'
+#' @section Contenido de las bases de datos:
+#' Los nombres de las columnas son los del INEGI, en mayusculas. Las columnas conservan el tipo que les da el INEGI: las que declara como texto se devuelven como texto, con sus ceros a la izquierda (las columnas de identificacion y las respuestas de los cuestionarios, incluida la edad, \code{EDA}), y las que declara como numero, como numero (los ponderadores y las variables precodificadas de la base de datos \code{"sdem"}). Los datos que el INEGI deja en blanco se devuelven como \code{NA}. Los codigos no se sustituyen por sus descripciones.
+#'
+#' Algunas columnas cambian de nombre, aparecen o desaparecen a lo largo de la serie (los cambios mayores ocurren en el tercer trimestre de 2020, de 2021 y de 2025), y el cuestionario ampliado tiene mas columnas que el basico, asi que las bases de datos de dos trimestres no se pueden apilar sin revisarlas.
+#'
+#' El INEGI reemplaza los archivos de trimestres ya publicados cuando actualiza sus estimaciones de poblacion o corrige datos, y lo explica en una nota que acompaña a los archivos. Cuando el trimestre descargado trae esa nota, la funcion la muestra como mensaje y la guarda en el atributo \code{"nota"} del resultado. La direccion del archivo descargado queda en el atributo \code{"fuente"}.
+#'
+#' @param year Año de levantamiento de la encuesta en formato numerico, de 2005 en adelante.
+#' @param trimestre Trimestre de levantamiento de la encuesta en formato alfanumerico. Las opciones son: "trim1", "trim2", "trim3" y "trim4". Tambien se acepta el numero del trimestre, de 1 a 4.
+#' @param integrar \code{FALSE}: descarga por separado y en una lista las cinco bases de datos que componen la ENOE. \code{TRUE}: integra las cinco bases de datos en una sola, utilizando el identificador unico del entrevistado. La base de datos integrada tiene una fila por residente, conserva los hogares sin residentes y mantiene los ponderadores del residente, del hogar y de la vivienda (ver las secciones Como unir las bases de datos y Ponderadores).
 #' @param tabla Tabla o tablas que se devuelven: \code{"viv"} (vivienda), \code{"hog"} (hogar), \code{"sdem"} (sociodemografico), \code{"coe1"} y \code{"coe2"} (cuestionario de ocupacion y empleo, primera y segunda parte). Por omision, las cinco.
 #' @param estado Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos, y varias entidades a la vez. La funcion descarga el archivo nacional y conserva las filas de las entidades indicadas. Por omision, todo el pais.
 #'
@@ -17,7 +54,14 @@
 #'
 #' # Descargar las bases de datos de la ENOE 2009, Trimestre 1, integradas
 #' \dontrun{enoe(year = 2009, trimestre = "trim1", integrar = TRUE)}
-#' @return Data.frame
+#'
+#' # Descargar solamente la base de datos sociodemografica de la ENOE 2024, Trimestre 1
+#' \dontrun{enoe(year = 2024, trimestre = "trim1", tabla = "sdem")}
+#'
+#' # Descargar las bases de datos de la ENOE 2024, Trimestre 1, de Jalisco, integradas
+#' \dontrun{enoe(year = 2024, trimestre = "trim1", integrar = TRUE, estado = "Jalisco")}
+#' @return Con \code{integrar = FALSE}, una lista con las cinco bases de datos en formato data.frame, con los nombres \code{coe1}, \code{coe2}, \code{hog}, \code{sdem} y \code{viv}. Si en \code{tabla} se indica una sola base de datos, un data.frame; si se indican varias, una lista con esas bases de datos, en el orden indicado. Con \code{integrar = TRUE}, un data.frame. El resultado tiene los atributos \code{"fuente"}, \code{"llave"} y, cuando el INEGI publico una nota sobre los archivos del trimestre, \code{"nota"}.
+#' @seealso \code{\link{bases_importinegi}} para consultar los trimestres disponibles.
 #' @export
 
 enoe <- function(year, trimestre, integrar = FALSE, tabla = NULL, estado = NULL) {
@@ -403,6 +447,11 @@ enoe_como <- function(valores, modelo) {
   }
 }
 
+# Columnas de ponderadores: FAC hasta 2020-T1; FAC_TRI y FAC_MEN despues.
+enoe_es_ponderador <- function(columnas) {
+  grepl("^FAC(_[A-Z0-9]+)?$", columnas)
+}
+
 # Integra las tablas de un trimestre en una sola. Reglas:
 #
 # 1. La tabla base es la de mas detalle entre las pedidas (sdem; si no esta,
@@ -416,15 +465,24 @@ enoe_como <- function(valores, modelo) {
 #    sin residentes, como los que no se entrevistaron, con NA en las columnas
 #    de las tablas de residentes.
 # 4. Las columnas que se repiten entre tablas (identificacion, geografia,
-#    R_DEF, UR, ponderadores) se toman de la tabla de mas detalle en la que
-#    existe la fila: la de residentes para un residente y la de hogares para un
-#    hogar sin residentes.
+#    R_DEF, UR) se toman de la tabla de mas detalle en la que existe la fila:
+#    la de residentes para un residente y la de hogares para un hogar sin
+#    residentes.
 # 5. Las preguntas de vivienda y de hogar (P1, P2 y P3; P4_1 y P4_2) llevan el
 #    sufijo de su tabla (P1_VIV, P4_1_HOG), porque se llaman igual que otras
 #    preguntas del cuestionario de ocupacion y empleo.
+# 6. Los ponderadores (FAC; desde 2020-T3, FAC_TRI y FAC_MEN) no se funden
+#    entre niveles, por decision del autor (24 de noviembre de 2026): el de la
+#    tabla de hogares y el de la de viviendas llevan tambien el sufijo de su
+#    tabla (FAC_TRI_HOG, FAC_TRI_VIV) y el que queda sin sufijo es el del
+#    residente. En los 85 trimestres, el ponderador del residente es distinto
+#    del de su hogar en 1.7 a 4.0 % de los residentes, y el del hogar es
+#    distinto del de su vivienda en decenas o miles de hogares. Un hogar sin
+#    residentes queda con NA en el ponderador del residente.
 #
 # `tablas` es una lista con nombre o un entorno. Si es un entorno, cada tabla
 # se quita de el en cuanto se usa, para liberar su memoria.
+
 enoe_integrar <- function(tablas) {
   if (!is.environment(tablas)) {
     tablas <- list2env(as.list(tablas), envir = new.env(parent = emptyenv()))
@@ -513,7 +571,10 @@ enoe_integrar <- function(tablas) {
       actual[[columna]] <- NULL
       pregunta <- grepl("^P[0-9]", columna)
       repetida <- columna %in% names(resultado)
-      if (repetida && !pregunta) {
+      # Reglas 5 y 6: las preguntas y los ponderadores de las tablas de hogares
+      # y de viviendas llevan siempre el sufijo de su tabla.
+      propia <- nombre %in% c("hog", "viv") && (pregunta || enoe_es_ponderador(columna))
+      if (repetida && !pregunta && !propia) {
         # Regla 4: solo se llenan las filas que no existen en las tablas de las
         # que ya se tomo la columna.
         falta <- presentes[[nombre]] & !Reduce(`|`, presentes[fuentes[[columna]]])
@@ -524,7 +585,7 @@ enoe_integrar <- function(tablas) {
         next
       }
       destino <- columna
-      if (repetida || (pregunta && nombre %in% c("hog", "viv"))) {
+      if (repetida || propia) {
         destino <- paste0(columna, "_", toupper(nombre))
       }
       destino <- make.unique(c(names(resultado), destino), sep = "_")[length(resultado) + 1L]

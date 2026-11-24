@@ -13,7 +13,9 @@
 # y que los ponderadores reproducen las cifras publicadas. Ademas de comprobar
 # el resultado, escriben en el registro de la ejecucion lo que encontraron:
 # entre otras cosas, cuantos hogares sin entrevista tienen residentes y en que
-# columnas difieren las tablas cuando repiten una columna.
+# columnas difieren las tablas cuando repiten una columna. Los ponderadores son
+# el caso mas frecuente: por eso la tabla integrada mantiene el del residente,
+# el del hogar y el de la vivienda.
 #
 # La opcion enoe_serie del flujo repite las comprobaciones de forma en los 85
 # trimestres (2.3 GB de descarga); no corre en los pull requests.
@@ -58,7 +60,8 @@ registros_dbf <- function(archivo) {
 # Columnas que dos tablas comparten ademas de la llave, y en cuantas filas de
 # la primera el valor es distinto del de su fila en la segunda (`fila`).
 # enoe(integrar = TRUE) deja esas columnas una sola vez, con el valor de la
-# tabla de mas detalle; esto dice cuanto difieren las tablas.
+# tabla de mas detalle, salvo los ponderadores, que conserva por separado; esto
+# dice cuanto difieren las tablas.
 columnas_distintas <- function(tabla, otra, fila, llave) {
   comunes <- setdiff(intersect(names(tabla), names(otra)), llave)
   distintas <- vapply(comunes, function(columna) {
@@ -158,9 +161,25 @@ revisar_integracion <- function(year, trimestre, tablas, sin_residentes) {
   expect_identical(anyDuplicated(enoe_clave(integrada, attr(tablas, "llave")$sdem)), 0L, info = paste(etiqueta, "llave"))
   expect_true(all(c("P1_VIV", "P2_VIV", "P3_VIV", "P4_1_HOG", "P4_2_HOG", "P1", "P3", "P4_1", "P4_2") %in% names(integrada)),
               info = paste(etiqueta, "preguntas con sufijo"))
+  # Tres ponderadores, uno por nivel. El del residente conserva su nombre: es el
+  # de la tabla sociodemografica y es NA en los hogares sin residentes. El del
+  # hogar y el de la vivienda llevan el sufijo de su tabla y son los de la fila
+  # que corresponde a cada fila de la tabla integrada.
   residentes <- seq_len(nrow(tablas$sdem))
-  ponderador <- intersect(c("FAC", "FAC_TRI"), names(integrada))
-  expect_identical(integrada[[ponderador]][residentes], tablas$sdem[[ponderador]], info = paste(etiqueta, ponderador))
+  llaves <- attr(tablas, "llave")
+  fila_hogar <- match(enoe_clave(integrada, llaves$hog), enoe_clave(tablas$hog, llaves$hog))
+  fila_vivienda <- match(enoe_clave(integrada, llaves$viv), enoe_clave(tablas$viv, llaves$viv))
+  ponderadores <- names(tablas$sdem)[enoe_es_ponderador(names(tablas$sdem))]
+  expect_identical(ponderadores, if (year < 2020 || (year == 2020 && trimestre == 1)) "FAC" else c("FAC_TRI", "FAC_MEN"),
+                   info = paste(etiqueta, "ponderadores"))
+  for (ponderador in ponderadores) {
+    expect_identical(integrada[[ponderador]][residentes], tablas$sdem[[ponderador]], info = paste(etiqueta, ponderador))
+    expect_true(all(is.na(integrada[[ponderador]][-residentes])), info = paste(etiqueta, ponderador, "sin residente"))
+    expect_identical(integrada[[paste0(ponderador, "_HOG")]], tablas$hog[[ponderador]][fila_hogar],
+                     info = paste(etiqueta, ponderador, "del hogar"))
+    expect_identical(integrada[[paste0(ponderador, "_VIV")]], tablas$viv[[ponderador]][fila_vivienda],
+                     info = paste(etiqueta, ponderador, "de la vivienda"))
+  }
   expect_identical(sum(!is.na(integrada$P1)), sum(!is.na(tablas$coe1$P1)), info = paste(etiqueta, "P1 del cuestionario"))
   expect_identical(sum(is.na(integrada$R_DEF)), 0L, info = paste(etiqueta, "R_DEF"))
   sufijos <- setdiff(names(integrada), unlist(lapply(tablas, names), use.names = FALSE))
