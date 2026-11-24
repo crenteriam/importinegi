@@ -59,6 +59,14 @@ test_that("se conservan los argumentos de la serie 1.x y su orden", {
   }
 })
 
+test_that("enoe() conserva los argumentos de la serie 1.x y agrega `tabla` y `estado`", {
+  argumentos <- formals(enoe)
+  expect_identical(names(argumentos), c("year", "trimestre", "integrar", "tabla", "estado"))
+  expect_false(argumentos$integrar)
+  expect_null(argumentos$tabla)
+  expect_null(argumentos$estado)
+})
+
 test_that("enigh_tradicional() se exporta con sus dos argumentos", {
   expect_true("enigh_tradicional" %in% getNamespaceExports("importinegi"))
   argumentos <- formals(enigh_tradicional)

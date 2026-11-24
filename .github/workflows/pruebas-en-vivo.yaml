@@ -4,7 +4,10 @@
 # - Manual: pestana Actions > pruebas-en-vivo.yaml > Run workflow. La opcion
 #   medir_memoria agrega mediciones de tiempo y memoria con la muestra nacional
 #   del Conteo 2005 (descarga 121 MB) y con la entidad mas grande de las
-#   Encuestas Intercensales 2015 y 2025 (148 MB); no corren en los pull requests.
+#   Encuestas Intercensales 2015 y 2025 (148 MB), y con el primer trimestre de
+#   2024 de la ENOE; no corren en los pull requests. La opcion enoe_serie lee e
+#   integra los 85 trimestres de la ENOE (descarga 2.3 GB; tarda cerca de una
+#   hora); tampoco corre en los pull requests.
 # - En pull requests que tocan el codigo del paquete o estas pruebas.
 #
 # Si el sitio del INEGI no responde, esta tarea falla aunque el paquete este
@@ -14,6 +17,10 @@ on:
     inputs:
       medir_memoria:
         description: 'Medir tiempo y memoria con las muestras mas grandes (descarga 269 MB)'
+        type: boolean
+        default: false
+      enoe_serie:
+        description: 'Leer e integrar los 85 trimestres de la ENOE (descarga 2.3 GB, cerca de una hora)'
         type: boolean
         default: false
   pull_request:
@@ -30,12 +37,15 @@ permissions: read-all
 jobs:
   en-vivo:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Los pull requests tardan de 15 a 25 minutos; la serie completa de la ENOE,
+    # cerca de una hora mas.
+    timeout-minutes: ${{ inputs.enoe_serie && 180 || 45 }}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       IMPORTINEGI_EN_VIVO: "true"
       IMPORTINEGI_MEDIR_MEMORIA: ${{ inputs.medir_memoria && 'true' || 'false' }}
+      IMPORTINEGI_ENOE_SERIE: ${{ inputs.enoe_serie && 'true' || 'false' }}
 
     steps:
       - uses: actions/checkout@v6

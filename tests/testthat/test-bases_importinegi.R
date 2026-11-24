@@ -90,6 +90,42 @@ test_that("bases_importinegi() describe las bases de la Encuesta Intercensal", {
   expect_equal(fila(2025, "resultados")$tamano_mb, 28.3)
 })
 
+test_that("bases_importinegi() describe los trimestres de la ENOE", {
+  ocupacion <- bases_importinegi("enoe")
+  expect_identical(unique(ocupacion$proyecto), "enoe")
+  expect_identical(nrow(ocupacion), 85L)
+  expect_identical(range(ocupacion$year), c(2005L, 2026L))
+  # `base` es el trimestre como se escribe en enoe(); 2020-T2 no existe
+  expect_identical(ocupacion$base[ocupacion$year == 2019], c("trim1", "trim2", "trim3", "trim4"))
+  expect_identical(ocupacion$base[ocupacion$year == 2020], c("trim1", "trim3", "trim4"))
+  expect_identical(ocupacion$base[ocupacion$year == 2026], c("trim1", "trim2"))
+  expect_true(all(is.na(ocupacion$modulo)))
+  expect_identical(unique(ocupacion$tablas), "coe1, coe2, hog, sdem, viv")
+  expect_identical(unique(ocupacion$cobertura), "nacional")
+  expect_identical(unique(ocupacion$formato), "dbf")
+  fila <- function(year, base) ocupacion[ocupacion$year == year & ocupacion$base == base, ]
+  expect_identical(fila(2005, "trim1")$descripcion, "ENOE, cuestionario ampliado")
+  expect_identical(fila(2019, "trim4")$descripcion, "ENOE, cuestionario b\u00e1sico")
+  expect_identical(fila(2020, "trim3")$descripcion, "ENOE Nueva Edici\u00f3n (ENOE_N), cuestionario b\u00e1sico")
+  expect_identical(fila(2022, "trim1")$descripcion, "ENOE Nueva Edici\u00f3n (ENOE_N), cuestionario ampliado")
+  expect_identical(fila(2023, "trim1")$descripcion, "ENOE, cuestionario ampliado")
+  cuantos <- function(descripcion) sum(ocupacion$descripcion == descripcion)
+  expect_identical(cuantos("ENOE, cuestionario ampliado"), 24L)
+  expect_identical(cuantos("ENOE, cuestionario b\u00e1sico"), 51L)
+  expect_identical(cuantos("ENOE Nueva Edici\u00f3n (ENOE_N), cuestionario ampliado"), 2L)
+  expect_identical(cuantos("ENOE Nueva Edici\u00f3n (ENOE_N), cuestionario b\u00e1sico"), 8L)
+  expect_equal(fila(2005, "trim1")$tamano_mb, 27.2)
+  expect_equal(fila(2020, "trim3")$tamano_mb, 18.3)
+  expect_equal(fila(2024, "trim1")$tamano_mb, 34)
+  expect_true(all(ocupacion$tamano_mb > 18 & ocupacion$tamano_mb < 40))
+  # Coincide con lo que enoe() puede descargar
+  for (i in seq_len(nrow(ocupacion))) {
+    elegido <- enoe_elegir(ocupacion$year[i], ocupacion$base[i])
+    expect_true(elegido$registrado, info = paste(ocupacion$year[i], ocupacion$base[i]))
+  }
+  expect_identical(bases_importinegi("enoe", 2024)$base, c("trim1", "trim2", "trim3", "trim4"))
+})
+
 test_that("bases_importinegi() coincide con lo que cpv_censo(), cpv_conteo() y cpv_intercensal() pueden descargar", {
   for (programa in c("cpv_censo", "cpv_conteo", "cpv_intercensal")) {
     tabla <- bases_importinegi(programa)
@@ -126,14 +162,17 @@ test_that("bases_importinegi() coincide con lo que cpv_censo() puede descargar",
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CPV_CENSO "), bases_importinegi("cpv_censo"))
   expect_identical(unique(bases_importinegi()$proyecto),
-                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional"))
-  expect_identical(bases_importinegi(c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional")),
-                   bases_importinegi())
+                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enoe"))
+  expect_identical(
+    bases_importinegi(c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enoe")),
+    bases_importinegi()
+  )
   de_2020 <- bases_importinegi(year = 2020)
   expect_identical(unique(de_2020$year), 2020L)
-  # Seis bases del censo y los 18 temas del censo de derechos humanos federal
-  expect_identical(unique(de_2020$proyecto), c("cpv_censo", "cndhf"))
-  expect_identical(nrow(de_2020), 24L)
+  # Seis bases del censo, los 18 temas del censo de derechos humanos federal y
+  # tres trimestres de la ENOE
+  expect_identical(unique(de_2020$proyecto), c("cpv_censo", "cndhf", "enoe"))
+  expect_identical(nrow(de_2020), 27L)
   expect_identical(bases_importinegi("cpv_censo", "2020"),
                    structure(de_2020[de_2020$proyecto == "cpv_censo", ], registro = registro_generado()))
   varios <- bases_importinegi(year = c(1990, 2000))
@@ -142,27 +181,26 @@ test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(nrow(varios), 5L)
 
   conteos <- bases_importinegi(year = c(1995, 2005))
-  # Cinco bases de los conteos y la ENIGH de 2005
-  expect_identical(unique(conteos$proyecto), c("cpv_conteo", "enigh_tradicional"))
-  expect_identical(nrow(conteos), 6L)
+  # Cinco bases de los conteos, la ENIGH de 2005 y los cuatro primeros trimestres de la ENOE
+  expect_identical(conteos$proyecto, rep(c("cpv_conteo", "enigh_tradicional", "enoe"), c(5L, 1L, 4L)))
 
-  # En 2015 y 2025 hay Encuesta Intercensal y censo de gobiernos municipales; en
-  # 2025, tambien censo de derechos humanos federal
+  # En 2015 y 2025 hay Encuesta Intercensal, censo de gobiernos municipales y
+  # ENOE; en 2025, tambien censo de derechos humanos federal
   de_2015_y_2025 <- bases_importinegi(year = c(2015, 2025))
-  expect_identical(unique(de_2015_y_2025$proyecto), c("cpv_intercensal", "cngmd", "cndhf"))
+  expect_identical(unique(de_2015_y_2025$proyecto), c("cpv_intercensal", "cngmd", "cndhf", "enoe"))
   intercensales <- bases_importinegi("cpv_intercensal", year = c(2015, 2025))
   expect_identical(intercensales, structure(de_2015_y_2025[de_2015_y_2025$proyecto == "cpv_intercensal", ],
                                             registro = registro_generado()))
   expect_identical(nrow(intercensales), 3L)
 
   # Un año sin bases
-  expect_message(vacia <- bases_importinegi(year = 2007), "no tiene bases de datos para esa consulta")
+  expect_message(vacia <- bases_importinegi(year = 1980), "no tiene bases de datos para esa consulta")
   expect_identical(nrow(vacia), 0L)
   expect_named(vacia, names(bases_importinegi()))
 })
 
 test_that("bases_importinegi() valida sus argumentos", {
-  expect_error(bases_importinegi("enoe"), "`proyecto = \"enoe\"` no es una opci\u00f3n v\u00e1lida. Proyectos disponibles: \"cpv_censo\", \"cpv_conteo\", \"cpv_intercensal\"")
+  expect_error(bases_importinegi("enut"), "`proyecto = \"enut\"` no es una opci\u00f3n v\u00e1lida. Proyectos disponibles: \"cpv_censo\", \"cpv_conteo\", \"cpv_intercensal\"")
   expect_error(bases_importinegi(2020), "`proyecto` debe ser el nombre de un proyecto")
   expect_error(bases_importinegi(NA_character_), "`proyecto` debe ser el nombre de un proyecto")
   expect_error(bases_importinegi(year = "dos mil"), "`year` debe ser uno o varios a\u00f1os")
@@ -182,6 +220,11 @@ test_that("bases_importinegi() solo muestra lo que esta en el registro", {
   withr::local_options(importinegi.registro = sin_gobierno)
   expect_false("cngmd" %in% bases_importinegi()$proyecto)
   expect_error(cngmd(2025, "agua", "x"), "`year = 2025` no est\u00e1 disponible")
+  sin_ocupacion <- registro_archivos[registro_archivos$proyecto != "enoe", ]
+  withr::local_options(importinegi.registro = sin_ocupacion)
+  expect_false("enoe" %in% bases_importinegi()$proyecto)
+  expect_message(vacia <- bases_importinegi("enoe"), "no tiene bases de datos para esa consulta")
+  expect_identical(nrow(vacia), 0L)
 })
 
 test_that("los errores de cpv_censo() remiten a bases_importinegi()", {
