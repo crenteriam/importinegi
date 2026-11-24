@@ -1,4 +1,4 @@
-# Genera los archivos de muestra con los que se prueba conteo() sin conexion
+# Genera los archivos de muestra con los que se prueba cpv_conteo() sin conexion
 # (tests/testthat/fixtures/conteo).
 #
 # Uso, desde la carpeta raiz del paquete:

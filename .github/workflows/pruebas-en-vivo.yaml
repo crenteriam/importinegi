@@ -45,7 +45,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"hard"'
-          # readxl: lo necesita la base "resultados" de intercensal()
+          # readxl: lo necesita la base "resultados" de cpv_intercensal()
           extra-packages: any::pkgload, any::testthat, any::withr, any::webfakes, any::readxl
 
       - name: Pruebas en vivo contra el INEGI

@@ -1,4 +1,4 @@
-# Genera los archivos de muestra con los que se prueba censo() sin conexion
+# Genera los archivos de muestra con los que se prueba cpv_censo() sin conexion
 # (tests/testthat/fixtures/censo).
 #
 # Uso, desde la carpeta raiz del paquete:

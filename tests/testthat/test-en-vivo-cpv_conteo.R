@@ -1,4 +1,4 @@
-# Pruebas en vivo de conteo(): descargan archivos reales del INEGI. Solo corren
+# Pruebas en vivo de cpv_conteo(): descargan archivos reales del INEGI. Solo corren
 # con IMPORTINEGI_EN_VIVO=true (ver .github/workflows/pruebas-en-vivo.yaml).
 #
 # De cada base se descarga el archivo de la entidad mas pequeña. Ademas de
@@ -10,12 +10,12 @@ years_conteo <- function() {
   poblacion_programas()$conteo$years
 }
 
-test_that("EN VIVO: conteo() descarga el ITER de una entidad en cada conteo", {
+test_that("EN VIVO: cpv_conteo() descarga el ITER de una entidad en cada conteo", {
   en_vivo()
   for (year in years_conteo()) {
     clave <- entidad_menor("conteo", year, "iter")
     describir_zip("conteo", year, "iter", clave)
-    todos <- suppressMessages(conteo(year, estado = clave, nivel = "todos"))
+    todos <- suppressMessages(cpv_conteo(year, estado = clave, nivel = "todos"))
     describir_tabla(paste(year, "iter", clave, "nivel = todos"), todos)
     niveles <- poblacion_clasificar_nivel(todos, "iter")
     expect_false(is.null(niveles), info = paste(year, "claves geograficas"))
@@ -59,14 +59,14 @@ test_that("EN VIVO: conteo() descarga el ITER de una entidad en cada conteo", {
     }
 
     # Por omision, solo localidades
-    localidades <- suppressMessages(conteo(year, estado = clave))
+    localidades <- suppressMessages(cpv_conteo(year, estado = clave))
     expect_identical(nrow(localidades), sum(niveles == "localidad"), info = as.character(year))
   }
 })
 
-test_that("EN VIVO: conteo() descarga el archivo nacional del ITER de 1995", {
+test_that("EN VIVO: cpv_conteo() descarga el archivo nacional del ITER de 1995", {
   en_vivo()
-  nacional <- suppressMessages(conteo(1995, nivel = "todos"))
+  nacional <- suppressMessages(cpv_conteo(1995, nivel = "todos"))
   describir_tabla("1995 iter nacional", nacional)
   niveles <- poblacion_clasificar_nivel(nacional, "iter")
   expect_false(is.null(niveles))
@@ -95,20 +95,20 @@ test_that("EN VIVO: conteo() descarga el archivo nacional del ITER de 1995", {
                                         collapse = "; "))
       },
       "\n", sep = "")
-  # Como dice la ayuda de conteo(): las localidades solas suman menos que el
+  # Como dice la ayuda de cpv_conteo(): las localidades solas suman menos que el
   # total en todas las entidades, y con los agregados de los municipios lo
   # alcanzan con una diferencia menor de 0.3 por ciento
   expect_true(all(solo_localidades < totales))
   expect_true(all(abs(sumas - totales) / totales < 0.003))
 })
 
-test_that("EN VIVO: conteo() descarga cada tabla de la muestra", {
+test_that("EN VIVO: cpv_conteo() descarga cada tabla de la muestra", {
   en_vivo()
   for (year in years_conteo()) {
     clave <- entidad_menor("conteo", year, "muestra")
     describir_zip("conteo", year, "muestra", clave)
     for (tabla in names(poblacion_tablas("conteo", year, "muestra"))) {
-      muestra <- suppressMessages(conteo(year, "muestra", estado = clave, tabla = tabla))
+      muestra <- suppressMessages(cpv_conteo(year, "muestra", estado = clave, tabla = tabla))
       etiqueta <- paste(year, "muestra", clave, tabla)
       describir_tabla(etiqueta, muestra)
       revisar_texto(etiqueta, muestra)
@@ -137,14 +137,14 @@ test_that("EN VIVO: conteo() descarga cada tabla de la muestra", {
   }
 })
 
-test_that("EN VIVO: conteo() descarga Aguascalientes por omision en la muestra", {
+test_that("EN VIVO: cpv_conteo() descarga Aguascalientes por omision en la muestra", {
   en_vivo()
-  mensajes <- testthat::capture_messages(muestra <- conteo(1995, "muestra"))
+  mensajes <- testthat::capture_messages(muestra <- cpv_conteo(1995, "muestra"))
   expect_match(mensajes[1], "No indicaste `estado`: se descarga la muestra de Aguascalientes")
   expect_identical(unique(muestra[[columna_clave(muestra, "ent")]]), "01")
 })
 
-test_that("EN VIVO: conteo() combina las 32 entidades de la muestra de 1995", {
+test_that("EN VIVO: cpv_conteo() combina las 32 entidades de la muestra de 1995", {
   en_vivo()
   # Informativo: zip de entidades que traen una tabla repetida
   archivos <- poblacion_archivos("conteo", 1995L, "muestra")
@@ -158,7 +158,7 @@ test_that("EN VIVO: conteo() combina las 32 entidades de la muestra de 1995", {
     }
   }
   inicio <- Sys.time()
-  nacional <- suppressMessages(conteo(1995, "muestra", estado = "nacional"))
+  nacional <- suppressMessages(cpv_conteo(1995, "muestra", estado = "nacional"))
   segundos <- as.numeric(difftime(Sys.time(), inicio, units = "secs"))
   describir_tabla("1995 muestra nacional", nacional)
   entidad <- columna_clave(nacional, "ent")
@@ -168,21 +168,21 @@ test_that("EN VIVO: conteo() combina las 32 entidades de la muestra de 1995", {
       format(utils::object.size(nacional), units = "MB"), "\n", sep = "")
   # Cada entidad aporta las mismas filas que su descarga individual
   clave <- entidad_menor("conteo", 1995L, "muestra")
-  sola <- suppressMessages(conteo(1995, "muestra", estado = clave))
+  sola <- suppressMessages(cpv_conteo(1995, "muestra", estado = clave))
   expect_identical(sum(nacional[[entidad]] == clave), nrow(sola))
 })
 
-test_that("EN VIVO: conteo() descarga las viviendas habitadas y deshabitadas de 2005", {
+test_that("EN VIVO: cpv_conteo() descarga las viviendas habitadas y deshabitadas de 2005", {
   en_vivo()
   clave <- entidad_menor("conteo", 2005L, "viviendas")
   describir_zip("conteo", 2005L, "viviendas", clave)
-  viviendas <- suppressMessages(conteo(2005, "viviendas", estado = clave))
+  viviendas <- suppressMessages(cpv_conteo(2005, "viviendas", estado = clave))
   describir_tabla(paste("2005 viviendas", clave), viviendas)
   revisar_texto(paste("2005 viviendas", clave), viviendas)
   expect_gt(nrow(viviendas), 0)
   expect_false(is.na(columna_clave(viviendas, "ent")))
   expect_false(is.na(columna_clave(viviendas, "mun")))
-  todas <- suppressMessages(conteo(2005, "viviendas", estado = clave, nivel = "todos"))
+  todas <- suppressMessages(cpv_conteo(2005, "viviendas", estado = clave, nivel = "todos"))
   niveles <- poblacion_clasificar_nivel(todas, "viviendas")
   expect_false(is.null(niveles))
   cat("[en vivo] 2005 viviendas ", clave, " niveles: ", resumir_niveles(niveles), "\n", sep = "")
@@ -197,7 +197,7 @@ test_that("EN VIVO: conteo() descarga las viviendas habitadas y deshabitadas de 
         "; suma de localidades = ", sum(valores[niveles == "localidad"], na.rm = TRUE), "\n", sep = "")
     expect_equal(sum(valores[niveles == "municipio"], na.rm = TRUE), sum(valores[niveles == "entidad"]))
   }
-  nacional <- suppressMessages(conteo(2005, "viviendas", nivel = "todos"))
+  nacional <- suppressMessages(cpv_conteo(2005, "viviendas", nivel = "todos"))
   niveles <- poblacion_clasificar_nivel(nacional, "viviendas")
   cat("[en vivo] 2005 viviendas nacional: ", nrow(nacional), " filas; niveles: ", resumir_niveles(niveles), "\n", sep = "")
   expect_identical(sum(niveles == "entidad"), 32L)
@@ -211,7 +211,7 @@ test_that("EN VIVO (medicion): tiempo y memoria de la muestra nacional del Conte
   en_vivo()
   invisible(gc(reset = TRUE))
   inicio <- Sys.time()
-  nacional <- suppressMessages(conteo(2005, "muestra", estado = "nacional"))
+  nacional <- suppressMessages(cpv_conteo(2005, "muestra", estado = "nacional"))
   segundos <- as.numeric(difftime(Sys.time(), inicio, units = "secs"))
   memoria <- gc()
   pico <- sum(memoria[, max(which(colnames(memoria) == "(Mb)"))])

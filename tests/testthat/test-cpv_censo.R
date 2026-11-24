@@ -5,9 +5,9 @@
 
 # ITER ---------------------------------------------------------------------------
 
-test_that("censo() descarga el ITER de una entidad y devuelve solo localidades", {
+test_that("cpv_censo() descarga el ITER de una entidad y devuelve solo localidades", {
   censo_local()
-  expect_message(iter <- censo(2010, estado = "Colima"), "Descargando 06_colima_2010_iter_dbf.zip")
+  expect_message(iter <- cpv_censo(2010, estado = "Colima"), "Descargando 06_colima_2010_iter_dbf.zip")
   expect_s3_class(iter, "data.frame")
   expect_identical(iter$LOC, c("0001", "0015", "0020", "0001"))
   expect_identical(iter$MUN, c("001", "001", "001", "002"))
@@ -16,9 +16,9 @@ test_that("censo() descarga el ITER de una entidad y devuelve solo localidades",
   expect_match(attr(iter, "fuente"), "/contenidos/programas/ccpv/2010/microdatos/iter/06_colima_2010_iter_dbf\\.zip$")
 })
 
-test_that("censo() convierte los indicadores a numero y los datos reservados a NA", {
+test_that("cpv_censo() convierte los indicadores a numero y los datos reservados a NA", {
   censo_local()
-  iter <- suppressMessages(censo(2010, estado = "Colima"))
+  iter <- suppressMessages(cpv_censo(2010, estado = "Colima"))
   expect_type(iter$POBTOT, "integer")
   expect_identical(iter$POBTOT, c(240L, 3L, 7L, 400L))
   expect_identical(iter$POBMAS, c(119L, NA, NA, 195L))
@@ -36,63 +36,63 @@ test_that("censo() convierte los indicadores a numero y los datos reservados a N
   expect_identical(sum(iter$POBTOT), 650L)
 })
 
-test_that("censo() filtra los niveles de agregacion del ITER", {
+test_that("cpv_censo() filtra los niveles de agregacion del ITER", {
   censo_local()
-  todos <- suppressMessages(censo(2010, estado = "Colima", nivel = "todos"))
+  todos <- suppressMessages(cpv_censo(2010, estado = "Colima", nivel = "todos"))
   expect_identical(nrow(todos), 11L)
   expect_true(all(c("9998", "9999") %in% todos$LOC))
 
-  entidad <- suppressMessages(censo(2010, estado = "Colima", nivel = "entidad"))
+  entidad <- suppressMessages(cpv_censo(2010, estado = "Colima", nivel = "entidad"))
   expect_identical(entidad[, c("MUN", "LOC", "POBTOT")],
                    data.frame(MUN = "000", LOC = "0000", POBTOT = 650L))
 
-  totales <- suppressMessages(censo(2010, estado = "Colima", nivel = c("municipio", "Entidad")))
+  totales <- suppressMessages(cpv_censo(2010, estado = "Colima", nivel = c("municipio", "Entidad")))
   expect_identical(totales$MUN, c("000", "001", "002"))
   expect_identical(totales$POBTOT, c(650L, 250L, 400L))
 })
 
-test_that("censo() usa el archivo nacional por omision", {
+test_that("cpv_censo() usa el archivo nacional por omision", {
   servidor <- censo_local()
-  expect_message(iter <- censo(2010), "Descargando 00_nacional_2010_iter_dbf.zip \\(")
+  expect_message(iter <- cpv_censo(2010), "Descargando 00_nacional_2010_iter_dbf.zip \\(")
   expect_identical(descargas_censo(servidor), 1L)
   expect_identical(iter$ENTIDAD, c("06", "06", "06", "06", "18"))
   expect_identical(sum(iter$POBTOT), 750L)
 
-  nacional <- suppressMessages(censo(2010, nivel = "nacional"))
+  nacional <- suppressMessages(cpv_censo(2010, nivel = "nacional"))
   expect_identical(nacional[, c("ENTIDAD", "MUN", "LOC", "POBTOT")],
                    data.frame(ENTIDAD = "00", MUN = "000", LOC = "0000", POBTOT = 750L))
-  entidades <- suppressMessages(censo(2010, estado = "nacional", nivel = "entidad"))
+  entidades <- suppressMessages(cpv_censo(2010, estado = "nacional", nivel = "entidad"))
   expect_identical(entidades$ENTIDAD, c("06", "18"))
 })
 
-test_that("censo() combina varias entidades en una sola tabla", {
+test_that("cpv_censo() combina varias entidades en una sola tabla", {
   servidor <- censo_local()
-  mensajes <- testthat::capture_messages(iter <- censo(2010, estado = c("Nayarit", "col")))
+  mensajes <- testthat::capture_messages(iter <- cpv_censo(2010, estado = c("Nayarit", "col")))
   expect_match(mensajes[1], "Se descargar\u00e1n 2 archivos del INEGI \\([0-9.]+ [KM]B en total\\)")
   expect_length(mensajes, 3)
   expect_identical(descargas_censo(servidor), 2L)
   expect_identical(iter$ENTIDAD, c("18", "06", "06", "06", "06"))
   expect_length(attr(iter, "fuente"), 2)
   # Una entidad repetida se descarga una sola vez
-  repetida <- suppressMessages(censo(2010, estado = c("Colima", "06", 6)))
+  repetida <- suppressMessages(cpv_censo(2010, estado = c("Colima", "06", 6)))
   expect_identical(nrow(repetida), 4L)
   expect_identical(descargas_censo(servidor), 3L)
 })
 
-test_that("censo() acepta el a\u00f1o como texto y otros censos", {
+test_that("cpv_censo() acepta el a\u00f1o como texto y otros censos", {
   censo_local()
-  iter <- suppressMessages(censo("2000", estado = 18))
+  iter <- suppressMessages(cpv_censo("2000", estado = 18))
   expect_identical(iter$ENTIDAD, "18")
   expect_match(attr(iter, "fuente"), "/ccpv/2000/microdatos/iter/18_nayarit_2000_iter_dbf\\.zip$")
-  iter <- suppressMessages(censo(1990, base = "ITER", estado = "NAY"))
+  iter <- suppressMessages(cpv_censo(1990, base = "ITER", estado = "NAY"))
   expect_match(attr(iter, "fuente"), "/ccpv/1990/microdatos/iter/18_nayarit_1990_iter_dbf\\.zip$")
 })
 
 # AGEB y manzana -----------------------------------------------------------------
 
-test_that("censo() descarga los resultados por AGEB y manzana", {
+test_that("cpv_censo() descarga los resultados por AGEB y manzana", {
   censo_local()
-  manzanas <- suppressMessages(censo(2010, "ageb", estado = "Colima"))
+  manzanas <- suppressMessages(cpv_censo(2010, "ageb", estado = "Colima"))
   expect_identical(manzanas$AGEB, c("0012", "0012", "003A"))
   expect_identical(manzanas$MZA, c("001", "002", "001"))
   expect_identical(manzanas$POBTOT, c(150L, 100L, 150L))
@@ -100,21 +100,21 @@ test_that("censo() descarga los resultados por AGEB y manzana", {
   # La ruta de Colima en el registro del INEGI trae una diagonal doble
   expect_match(attr(manzanas, "fuente"), "ageb_manzana//06_colima_2010_ageb_manzana_urbana_dbf\\.zip$")
 
-  agebs <- suppressMessages(censo(2010, "ageb", estado = "Colima", nivel = "ageb"))
+  agebs <- suppressMessages(cpv_censo(2010, "ageb", estado = "Colima", nivel = "ageb"))
   expect_identical(agebs$AGEB, c("0012", "003A"))
   expect_identical(agebs$POBTOT, c(250L, 150L))
-  niveles <- suppressMessages(censo(2010, "ageb", estado = "Colima", nivel = c("entidad", "municipio", "localidad")))
+  niveles <- suppressMessages(cpv_censo(2010, "ageb", estado = "Colima", nivel = c("entidad", "municipio", "localidad")))
   expect_identical(niveles$POBTOT, c(640L, 400L, 400L))
-  expect_identical(nrow(suppressMessages(censo(2010, "ageb", estado = "Colima", nivel = "todos"))), 8L)
+  expect_identical(nrow(suppressMessages(cpv_censo(2010, "ageb", estado = "Colima", nivel = "todos"))), 8L)
 
-  dos <- suppressMessages(censo(2010, "ageb", estado = c("Colima", "Nayarit")))
+  dos <- suppressMessages(cpv_censo(2010, "ageb", estado = c("Colima", "Nayarit")))
   expect_identical(dos$ENTIDAD, c("06", "06", "06", "18"))
   expect_identical(dos$AGEB[4], "0105")
 })
 
-test_that("censo() descarga Aguascalientes por omision en las bases sin archivo nacional y lo avisa", {
+test_that("cpv_censo() descarga Aguascalientes por omision en las bases sin archivo nacional y lo avisa", {
   servidor <- censo_local()
-  mensajes <- testthat::capture_messages(manzanas <- censo(2010, "ageb"))
+  mensajes <- testthat::capture_messages(manzanas <- cpv_censo(2010, "ageb"))
   expect_match(
     mensajes[1],
     "No indicaste `estado`: se descargan los datos de Aguascalientes. Para todo el pa\u00eds usa estado = \"nacional\" \\(32 archivos, 264 MB en total\\)."
@@ -124,38 +124,38 @@ test_that("censo() descarga Aguascalientes por omision en las bases sin archivo 
   expect_identical(manzanas$MZA, "004")
   expect_match(attr(manzanas, "fuente"), "01_aguascalientes_2010_ageb_manzana_urbana_dbf\\.zip$")
 
-  mensajes <- testthat::capture_messages(muestra <- censo(2010, "muestra"))
+  mensajes <- testthat::capture_messages(muestra <- cpv_censo(2010, "muestra"))
   expect_match(mensajes[1], "No indicaste `estado`: se descarga la muestra de Aguascalientes.*\\(32 archivos, 345 MB en total\\)")
   expect_identical(muestra$ENT, c("01", "01"))
-  mensajes <- testthat::capture_messages(entorno <- censo(2010, "entorno"))
+  mensajes <- testthat::capture_messages(entorno <- cpv_censo(2010, "entorno"))
   expect_match(mensajes[1], "se descargan los datos de Aguascalientes")
   expect_identical(entorno$AGEB, "0230")
 
   # Las bases con archivo nacional lo descargan sin aviso
-  mensajes <- testthat::capture_messages(censo(2010, "localidades"))
+  mensajes <- testthat::capture_messages(cpv_censo(2010, "localidades"))
   expect_false(any(grepl("No indicaste", mensajes)))
 })
 
-test_that("con estado = \"nacional\", censo() combina las entidades si no hay archivo nacional", {
+test_that("con estado = \"nacional\", cpv_censo() combina las entidades si no hay archivo nacional", {
   servidor <- censo_local()
   registro <- registro_archivos
   archivos <- poblacion_archivos("censo", 2010L, "ageb")
   registro <- registro[!registro_url(registro) %in% archivos$url[!archivos$clave %in% c("06", "18")], ]
   attr(registro, "generado") <- registro_generado()
   withr::local_options(importinegi.registro = registro)
-  mensajes <- testthat::capture_messages(nacional <- censo(2010, "ageb", estado = "nacional"))
+  mensajes <- testthat::capture_messages(nacional <- cpv_censo(2010, "ageb", estado = "nacional"))
   expect_match(mensajes[1], "Se descargar\u00e1n 2 archivos del INEGI")
   expect_false(any(grepl("No indicaste", mensajes)))
   expect_identical(descargas_censo(servidor), 2L)
   expect_identical(nacional$ENTIDAD, c("06", "06", "06", "18"))
-  expect_identical(nacional, suppressMessages(censo(2010, "ageb", estado = c("Colima", "Nayarit"))))
+  expect_identical(nacional, suppressMessages(cpv_censo(2010, "ageb", estado = c("Colima", "Nayarit"))))
 })
 
 # Muestra ------------------------------------------------------------------------
 
-test_that("censo() descarga cada tabla de la muestra de 2010", {
+test_that("cpv_censo() descarga cada tabla de la muestra de 2010", {
   censo_local()
-  personas <- suppressMessages(censo(2010, "muestra", estado = "Colima"))
+  personas <- suppressMessages(cpv_censo(2010, "muestra", estado = "Colima"))
   expect_named(personas, c("ENT", "MUN", "ID_VIV", "NUMPER", "SEXO", "EDAD", "ESCOLARI", "FACTOR"))
   expect_identical(nrow(personas), 3L)
   expect_identical(personas$ENT, rep("06", 3))
@@ -166,56 +166,56 @@ test_that("censo() descarga cada tabla de la muestra de 2010", {
   expect_identical(personas$ID_VIV, c("06000000001", "06000000002", "06000000003"))
   expect_identical(personas$SEXO, c(1L, 3L, 1L))
   expect_identical(personas$FACTOR, c(12L, 12L, 9L))
-  expect_identical(suppressMessages(censo(2010, "muestra", estado = "Colima", tabla = "Personas")), personas)
+  expect_identical(suppressMessages(cpv_censo(2010, "muestra", estado = "Colima", tabla = "Personas")), personas)
 
-  viviendas <- suppressMessages(censo(2010, "muestra", estado = "Colima", tabla = "viviendas"))
+  viviendas <- suppressMessages(cpv_censo(2010, "muestra", estado = "Colima", tabla = "viviendas"))
   expect_named(viviendas, c("ENT", "MUN", "ID_VIV", "PISOS", "NUMPERS", "FACTOR"))
   expect_identical(nrow(viviendas), 2L)
-  migrantes <- suppressMessages(censo(2010, "muestra", estado = "Colima", tabla = "migrantes"))
+  migrantes <- suppressMessages(cpv_censo(2010, "muestra", estado = "Colima", tabla = "migrantes"))
   expect_identical(migrantes$MPAIS, 221L)
 
-  dos <- suppressMessages(censo(2010, "muestra", estado = c("Colima", "Nayarit"), tabla = "viviendas"))
+  dos <- suppressMessages(cpv_censo(2010, "muestra", estado = c("Colima", "Nayarit"), tabla = "viviendas"))
   expect_identical(dos$ENT, c("06", "06", "18"))
 })
 
-test_that("censo() reconoce las tablas de la muestra de 2000 y la tabla unica de 1990", {
+test_that("cpv_censo() reconoce las tablas de la muestra de 2000 y la tabla unica de 1990", {
   censo_local()
-  personas <- suppressMessages(censo(2000, "muestra", estado = "Colima"))
+  personas <- suppressMessages(cpv_censo(2000, "muestra", estado = "Colima"))
   expect_identical(nrow(personas), 3L)
   expect_true("EDAD" %in% names(personas))
-  viviendas <- suppressMessages(censo(2000, "muestra", estado = "Colima", tabla = "viviendas"))
+  viviendas <- suppressMessages(cpv_censo(2000, "muestra", estado = "Colima", tabla = "viviendas"))
   expect_true("PISOS" %in% names(viviendas))
-  migrantes <- suppressMessages(censo(2000, "muestra", estado = "Colima", tabla = "migrantes"))
+  migrantes <- suppressMessages(cpv_censo(2000, "muestra", estado = "Colima", tabla = "migrantes"))
   expect_true("MPAIS" %in% names(migrantes))
 
-  muestra <- suppressMessages(censo(1990, "muestra", estado = "Colima"))
+  muestra <- suppressMessages(cpv_censo(1990, "muestra", estado = "Colima"))
   expect_identical(nrow(muestra), 3L)
   # Las claves que llegan como numero se completan con ceros
   expect_identical(muestra$ENT, rep("06", 3))
   expect_identical(muestra$MUN, c("001", "001", "010"))
-  expect_error(censo(1990, "muestra", estado = "Colima", tabla = "personas"),
+  expect_error(cpv_censo(1990, "muestra", estado = "Colima", tabla = "personas"),
                "La base \"muestra\" de 1990 se publica en una sola tabla")
 })
 
-test_that("censo() valida los argumentos de la muestra", {
+test_that("cpv_censo() valida los argumentos de la muestra", {
   censo_local()
-  expect_error(censo(2010, "muestra", estado = "Colima", tabla = "hogares"),
+  expect_error(cpv_censo(2010, "muestra", estado = "Colima", tabla = "hogares"),
                "`tabla = \"hogares\"` no es una opci\u00f3n v\u00e1lida.*\"personas\", \"viviendas\", \"migrantes\"")
-  expect_error(censo(2010, "muestra", estado = "Colima", tabla = c("personas", "viviendas")),
+  expect_error(cpv_censo(2010, "muestra", estado = "Colima", tabla = c("personas", "viviendas")),
                "`tabla` debe ser una sola")
-  expect_error(censo(2010, "muestra", estado = "Colima", nivel = "municipio"),
+  expect_error(cpv_censo(2010, "muestra", estado = "Colima", nivel = "municipio"),
                "`nivel` solo se usa con las bases \"iter\" y \"ageb\"")
-  expect_error(censo(2010, "iter", estado = "Colima", tabla = "personas"),
+  expect_error(cpv_censo(2010, "iter", estado = "Colima", tabla = "personas"),
                "`tabla` solo se usa con las bases \"muestra\", \"entorno\" y \"asistencia\"; la base \"iter\" tiene una sola tabla")
-  expect_error(censo(2010, "entorno", estado = "Colima", tabla = "vialidades"),
+  expect_error(cpv_censo(2010, "entorno", estado = "Colima", tabla = "vialidades"),
                "La base \"entorno\" de 2010 se publica en una sola tabla")
 })
 
 # Localidades y entorno urbano ---------------------------------------------------
 
-test_that("censo() descarga los resultados sobre localidades", {
+test_that("cpv_censo() descarga los resultados sobre localidades", {
   censo_local()
-  nacional <- suppressMessages(censo(2010, "localidades"))
+  nacional <- suppressMessages(cpv_censo(2010, "localidades"))
   expect_identical(nacional$ENTIDAD, c("06", "06", "18"))
   expect_identical(nacional$NOM_LOC[3], "El Resbal\u00f3n")
   expect_identical(nacional$DIST_CAB, c(12L, NA, 8L))
@@ -223,14 +223,14 @@ test_that("censo() descarga los resultados sobre localidades", {
   expect_match(attr(nacional, "fuente"), "cinco_mil_menos/resloc_nal_2010_dbf\\.zip$")
 
   # El archivo de Colima declara la pagina de codigos 850
-  colima <- suppressMessages(censo(2010, "localidades", estado = "Colima"))
+  colima <- suppressMessages(cpv_censo(2010, "localidades", estado = "Colima"))
   expect_identical(colima$NOM_LOC, c("El Para\u00edso", "Rinc\u00f3n de L\u00f3pez"))
   expect_identical(colima$LOC, c("0015", "0020"))
 })
 
-test_that("censo() descarga los resultados sobre el entorno urbano", {
+test_that("cpv_censo() descarga los resultados sobre el entorno urbano", {
   censo_local()
-  entorno <- suppressMessages(censo(2010, "entorno", estado = "Colima"))
+  entorno <- suppressMessages(cpv_censo(2010, "entorno", estado = "Colima"))
   expect_named(entorno, c("ENT", "MUN", "LOC", "AGEB", "MZA", "CONJHAB", "RECUCALL_", "ALUMPUB_"))
   expect_identical(entorno$AGEB, c("0012", "0012", "003A"))
   expect_identical(entorno$MZA, c("001", "002", "001"))
@@ -239,57 +239,57 @@ test_that("censo() descarga los resultados sobre el entorno urbano", {
 
 # Validacion y errores -----------------------------------------------------------
 
-test_that("censo() exige el a\u00f1o y distingue censos, conteos y encuestas", {
-  expect_error(censo(), "Falta indicar el a\u00f1o en `year`.*1990, 2000, 2010, 2020")
-  expect_error(censo(NULL), "Falta indicar el a\u00f1o")
-  expect_error(censo(c(2000, 2010)), "Falta indicar el a\u00f1o en `year` \\(un solo valor\\)")
-  expect_error(censo(1995), "`year = 1995` corresponde al Conteo de Poblaci\u00f3n y Vivienda, no al Censo")
-  expect_error(censo(2005), "corresponde al Conteo")
-  expect_error(censo(2015), "corresponde a la Encuesta Intercensal")
-  expect_error(censo(1980), "`year = 1980` no est\u00e1 disponible")
-  expect_error(censo("dos mil"), "no es un a\u00f1o")
-  expect_error(censo(2010.5), "no es un a\u00f1o")
+test_that("cpv_censo() exige el a\u00f1o y distingue censos, conteos y encuestas", {
+  expect_error(cpv_censo(), "Falta indicar el a\u00f1o en `year`.*1990, 2000, 2010, 2020")
+  expect_error(cpv_censo(NULL), "Falta indicar el a\u00f1o")
+  expect_error(cpv_censo(c(2000, 2010)), "Falta indicar el a\u00f1o en `year` \\(un solo valor\\)")
+  expect_error(cpv_censo(1995), "`year = 1995` corresponde al Conteo de Poblaci\u00f3n y Vivienda, no al Censo")
+  expect_error(cpv_censo(2005), "corresponde al Conteo")
+  expect_error(cpv_censo(2015), "corresponde a la Encuesta Intercensal")
+  expect_error(cpv_censo(1980), "`year = 1980` no est\u00e1 disponible")
+  expect_error(cpv_censo("dos mil"), "no es un a\u00f1o")
+  expect_error(cpv_censo(2010.5), "no es un a\u00f1o")
 })
 
-test_that("censo() valida la base y dice para que a\u00f1os existe", {
-  expect_error(censo(2000, "ageb"), "La base \"ageb\" no existe para 2000.*2010.*Bases de 2000: \"iter\", \"muestra\"")
-  expect_error(censo(1990, "entorno"), "La base \"entorno\" no existe para 1990")
-  expect_error(censo(2010, "enoe"), "`base = \"enoe\"` no es una opci\u00f3n v\u00e1lida")
-  expect_error(censo(2010, c("iter", "ageb")), "`base` debe ser el nombre de una base")
-  expect_error(censo(2010, NA), "`base` debe ser el nombre de una base")
+test_that("cpv_censo() valida la base y dice para que a\u00f1os existe", {
+  expect_error(cpv_censo(2000, "ageb"), "La base \"ageb\" no existe para 2000.*2010.*Bases de 2000: \"iter\", \"muestra\"")
+  expect_error(cpv_censo(1990, "entorno"), "La base \"entorno\" no existe para 1990")
+  expect_error(cpv_censo(2010, "enoe"), "`base = \"enoe\"` no es una opci\u00f3n v\u00e1lida")
+  expect_error(cpv_censo(2010, c("iter", "ageb")), "`base` debe ser el nombre de una base")
+  expect_error(cpv_censo(2010, NA), "`base` debe ser el nombre de una base")
 })
 
-test_that("censo() valida la entidad y el nivel antes de descargar", {
+test_that("cpv_censo() valida la entidad y el nivel antes de descargar", {
   servidor <- censo_local()
-  expect_error(censo(2010, estado = "Colimaa"), "No se reconoce la entidad.*Colima")
-  expect_error(censo(2010, estado = 40), "no es una clave de entidad v\u00e1lida")
-  expect_error(censo(2010, estado = c("nacional", "Colima")), "no se combina con otras entidades")
-  expect_error(censo(2010, estado = character()), "Falta indicar `estado`: una o varias entidades, o \"nacional\"")
-  expect_error(censo(2010, estado = "todas"), "No se reconoce la entidad `estado = \"todas\"`")
-  expect_error(censo(2010, estado = "Colima", nivel = "nacional"), "solo est\u00e1 en el archivo nacional")
-  expect_error(censo(2010, estado = "Colima", nivel = "manzana"), "no es una opci\u00f3n v\u00e1lida para la base \"iter\"")
-  expect_error(censo(2010, estado = "Colima", nivel = c("todos", "entidad")), "no es una opci\u00f3n v\u00e1lida")
-  expect_error(censo(2010, estado = "Colima", nivel = 1), "`nivel` debe ser")
+  expect_error(cpv_censo(2010, estado = "Colimaa"), "No se reconoce la entidad.*Colima")
+  expect_error(cpv_censo(2010, estado = 40), "no es una clave de entidad v\u00e1lida")
+  expect_error(cpv_censo(2010, estado = c("nacional", "Colima")), "no se combina con otras entidades")
+  expect_error(cpv_censo(2010, estado = character()), "Falta indicar `estado`: una o varias entidades, o \"nacional\"")
+  expect_error(cpv_censo(2010, estado = "todas"), "No se reconoce la entidad `estado = \"todas\"`")
+  expect_error(cpv_censo(2010, estado = "Colima", nivel = "nacional"), "solo est\u00e1 en el archivo nacional")
+  expect_error(cpv_censo(2010, estado = "Colima", nivel = "manzana"), "no es una opci\u00f3n v\u00e1lida para la base \"iter\"")
+  expect_error(cpv_censo(2010, estado = "Colima", nivel = c("todos", "entidad")), "no es una opci\u00f3n v\u00e1lida")
+  expect_error(cpv_censo(2010, estado = "Colima", nivel = 1), "`nivel` debe ser")
   expect_identical(descargas_censo(servidor), 0L)
 })
 
-test_that("censo() avisa cuando el INEGI no tiene el archivo o cambio su contenido", {
+test_that("cpv_censo() avisa cuando el INEGI no tiene el archivo o cambio su contenido", {
   censo_local()
   # Zacatecas: el servidor responde con la pagina de "no encontrado"
-  expect_error(suppressMessages(censo(2010, estado = "Zacatecas")),
+  expect_error(suppressMessages(cpv_censo(2010, estado = "Zacatecas")),
                "El INEGI no tiene publicado el archivo .*32_zacatecas_2010_iter_dbf\\.zip")
   # Aguascalientes: el zip trae dos tablas donde se espera una
-  expect_error(suppressMessages(censo(2010, estado = "Aguascalientes")),
+  expect_error(suppressMessages(cpv_censo(2010, estado = "Aguascalientes")),
                "m\u00e1s de un archivo para la tabla de datos.*ITER_01DBF10")
   # Si una entidad falla, no se devuelve una tabla incompleta
-  expect_error(suppressMessages(censo(2010, estado = c("Colima", "Zacatecas"))),
+  expect_error(suppressMessages(cpv_censo(2010, estado = c("Colima", "Zacatecas"))),
                "El INEGI no tiene publicado el archivo")
 })
 
 test_that("si falla una descarga de varios archivos, los ya descargados se conservan para repetirla", {
   servidor <- censo_local()
   expect_error(
-    suppressMessages(censo(2010, estado = c("Colima", "Zacatecas"))),
+    suppressMessages(cpv_censo(2010, estado = c("Colima", "Zacatecas"))),
     "El INEGI no tiene publicado el archivo .*32_zacatecas.* El archivo que ya se descarg\u00f3 se conserva durante esta sesi\u00f3n de R: si repites la llamada, solo se descargar\u00e1n los que faltan\\."
   )
   expect_identical(descargas_censo(servidor), 2L)
@@ -298,7 +298,7 @@ test_that("si falla una descarga de varios archivos, los ya descargados se conse
 
   # La siguiente llamada usa el archivo de Colima que ya estaba y, si termina
   # bien, borra los archivos de la carpeta temporal
-  mensajes <- testthat::capture_messages(dos <- censo(2010, estado = c("Colima", "Nayarit")))
+  mensajes <- testthat::capture_messages(dos <- cpv_censo(2010, estado = c("Colima", "Nayarit")))
   expect_true(any(grepl("Usando la copia local de 06_colima_2010_iter_dbf.zip", mensajes)))
   expect_identical(descargas_censo(servidor), 3L)
   expect_identical(dos$ENTIDAD, c("06", "06", "06", "06", "18"))
@@ -306,22 +306,22 @@ test_that("si falla una descarga de varios archivos, los ya descargados se conse
   expect_false(any(file.exists(ruta_reintento(attr(dos, "fuente")))))
 
   # Con una sola entidad no se usa la carpeta temporal
-  error <- tryCatch(suppressMessages(censo(2010, estado = "Zacatecas")), error = conditionMessage)
+  error <- tryCatch(suppressMessages(cpv_censo(2010, estado = "Zacatecas")), error = conditionMessage)
   expect_match(error, "El INEGI no tiene publicado el archivo")
   expect_false(grepl("se conserva", error))
 })
 
-test_that("censo() no deja archivos temporales y respeta la copia local", {
+test_that("cpv_censo() no deja archivos temporales y respeta la copia local", {
   censo_local()
   antes <- list.files(tempdir(), pattern = "^importinegi_")
-  suppressMessages(censo(2010, estado = "Colima"))
+  suppressMessages(cpv_censo(2010, estado = "Colima"))
   expect_identical(list.files(tempdir(), pattern = "^importinegi_"), antes)
 
   servidor <- censo_local()
   copia <- withr::local_tempdir()
   withr::local_options(importinegi.cache = TRUE, importinegi.cache_dir = copia)
-  primera <- suppressMessages(censo(2010, estado = "Colima"))
-  expect_message(segunda <- censo(2010, estado = "Colima"), "Usando la copia local")
+  primera <- suppressMessages(cpv_censo(2010, estado = "Colima"))
+  expect_message(segunda <- cpv_censo(2010, estado = "Colima"), "Usando la copia local")
   expect_identical(primera, segunda)
   expect_identical(descargas_censo(servidor), 1L)
   expect_true(file.exists(file.path(copia, "contenidos/programas/ccpv/2010/microdatos/iter/06_colima_2010_iter_dbf.zip")))
@@ -359,72 +359,72 @@ test_that("las reglas de cada base encuentran sus archivos en el registro del pa
   expect_identical(sum(grepl("/caas/", todas)), length(asistencia))
 })
 
-test_that("censo() descarga el Censo 2020 en CSV desde las rutas del registro", {
+test_that("cpv_censo() descarga el Censo 2020 en CSV desde las rutas del registro", {
   censo_local()
-  iter <- suppressMessages(censo(2020, estado = "Colima"))
+  iter <- suppressMessages(cpv_censo(2020, estado = "Colima"))
   expect_match(attr(iter, "fuente"), "/ccpv/2020/microdatos/iter/ITER_06_2020_csv\\.zip$")
   expect_identical(iter$LOC, c("0001", "0015", "0020", "0001"))
   expect_identical(iter$POBTOT, c(240L, 3L, 7L, 400L))
   expect_identical(iter$NOM_LOC[1], "Ciudad de Armer\u00eda")
   expect_identical(names(iter)[1], "ENTIDAD")
-  nacional <- suppressMessages(censo(2020, nivel = "nacional"))
+  nacional <- suppressMessages(cpv_censo(2020, nivel = "nacional"))
   expect_match(attr(nacional, "fuente"), "/ITER_NAL_2020_csv\\.zip$")
   expect_identical(nacional[, c("ENTIDAD", "MUN", "LOC", "POBTOT")],
                    data.frame(ENTIDAD = "00", MUN = "000", LOC = "0000", POBTOT = 750L))
 })
 
-test_that("censo() descarga las dos tablas del entorno urbano 2020", {
+test_that("cpv_censo() descarga las dos tablas del entorno urbano 2020", {
   censo_local()
-  manzanas <- suppressMessages(censo(2020, "entorno", estado = "Colima"))
+  manzanas <- suppressMessages(cpv_censo(2020, "entorno", estado = "Colima"))
   expect_match(attr(manzanas, "fuente"), "/ccpv/2020/microdatos/ceu/Censo2020_CEU_col_csv\\.zip$")
   expect_identical(manzanas$MZA, c("001", "002"))
   expect_identical(manzanas$RECUCALL_, c(1L, 2L))
-  expect_identical(suppressMessages(censo(2020, "entorno", estado = "Colima", tabla = "manzanas")), manzanas)
-  vialidades <- suppressMessages(censo(2020, "entorno", estado = "Colima", tabla = "vialidades"))
+  expect_identical(suppressMessages(cpv_censo(2020, "entorno", estado = "Colima", tabla = "manzanas")), manzanas)
+  vialidades <- suppressMessages(cpv_censo(2020, "entorno", estado = "Colima", tabla = "vialidades"))
   expect_named(vialidades, c("ENT", "MUN", "LOC", "AGEB", "MZA", "CVEVIAL", "TIPOVIAL", "BANQUETA"))
   expect_identical(vialidades$CVEVIAL, c("00012", "00013", "00099"))
-  expect_error(censo(2020, "entorno", estado = "Colima", tabla = "personas"),
+  expect_error(cpv_censo(2020, "entorno", estado = "Colima", tabla = "personas"),
                "`tabla = \"personas\"` no es una opci\u00f3n v\u00e1lida.*\"manzanas\", \"vialidades\"")
 })
 
-test_that("censo() descarga los alojamientos de asistencia social de 2020", {
+test_that("cpv_censo() descarga los alojamientos de asistencia social de 2020", {
   censo_local()
-  colima <- suppressMessages(censo(2020, "asistencia", estado = "Colima"))
+  colima <- suppressMessages(cpv_censo(2020, "asistencia", estado = "Colima"))
   expect_match(attr(colima, "fuente"), "/ccpv/2020/microdatos/caas/Censo2020_CAAS_col_csv\\.zip$")
   expect_identical(colima$ENT, c("06", "06"))
   expect_identical(colima$MUN, c("002", "007"))
   expect_identical(colima$RESIDENTES, c(24L, 11L))
   expect_identical(colima$NOM_ALOJ[1], "Casa Hogar Ni\u00f1os de Colima")
-  nacional <- suppressMessages(censo(2020, "asistencia"))
+  nacional <- suppressMessages(cpv_censo(2020, "asistencia"))
   expect_match(attr(nacional, "fuente"), "/caas/Censo2020_CAAS_eum_csv\\.zip$")
   expect_identical(nrow(nacional), 3L)
-  expect_identical(suppressMessages(censo(2020, "asistencia", estado = "Colima", tabla = "alojamientos")), colima)
+  expect_identical(suppressMessages(cpv_censo(2020, "asistencia", estado = "Colima", tabla = "alojamientos")), colima)
 
   # Poblacion usuaria y trabajadora: la edad pasa a numero; el identificador
   # del alojamiento se conserva como texto
-  usuarios <- suppressMessages(censo(2020, "asistencia", estado = "Colima", tabla = "usuarios"))
+  usuarios <- suppressMessages(cpv_censo(2020, "asistencia", estado = "Colima", tabla = "usuarios"))
   expect_identical(nrow(usuarios), 3L)
   expect_identical(usuarios$ID_ALOJ, c("1", "1", "2"))
   expect_identical(usuarios$EDAD, c(9L, 11L, 82L))
-  trabajadores <- suppressMessages(censo(2020, "asistencia", estado = "Colima", tabla = "trabajadores"))
+  trabajadores <- suppressMessages(cpv_censo(2020, "asistencia", estado = "Colima", tabla = "trabajadores"))
   expect_identical(nrow(trabajadores), 2L)
 
-  expect_error(censo(2010, "asistencia"), "La base \"asistencia\" no existe para 2010: el INEGI la publica para 2020")
-  expect_error(censo(2020, "asistencia", estado = "Colima", tabla = "personas"),
+  expect_error(cpv_censo(2010, "asistencia"), "La base \"asistencia\" no existe para 2010: el INEGI la publica para 2020")
+  expect_error(cpv_censo(2020, "asistencia", estado = "Colima", tabla = "personas"),
                "`tabla = \"personas\"` no es una opci\u00f3n v\u00e1lida.*\"alojamientos\", \"usuarios\", \"trabajadores\"")
-  expect_error(censo(2020, "asistencia", estado = "Colima", nivel = "municipio"),
+  expect_error(cpv_censo(2020, "asistencia", estado = "Colima", nivel = "municipio"),
                "`nivel` solo se usa con las bases")
 })
 
-test_that("censo() explica cuando el registro no incluye una base", {
+test_that("cpv_censo() explica cuando el registro no incluye una base", {
   registro <- registro_archivos[!(registro_archivos$proyecto == "ccpv" & registro_archivos$edicion %in% 2020L), ]
   attr(registro, "generado") <- "2026-11-11"
   withr::local_options(importinegi.registro = registro)
-  expect_error(censo(2020), "El registro de archivos de esta versi\u00f3n del paquete \\(generado el 2026-11-11\\) no incluye los principales resultados por localidad \\(ITER\\) de 2020")
-  expect_error(censo(2020, "muestra", estado = "Colima"), "no incluye la muestra de 2020")
+  expect_error(cpv_censo(2020), "El registro de archivos de esta versi\u00f3n del paquete \\(generado el 2026-11-11\\) no incluye los principales resultados por localidad \\(ITER\\) de 2020")
+  expect_error(cpv_censo(2020, "muestra", estado = "Colima"), "no incluye la muestra de 2020")
 })
 
-test_that("censo() lee archivos CSV de datos abiertos cuando el registro los incluye", {
+test_that("cpv_censo() lee archivos CSV de datos abiertos cuando el registro los incluye", {
   # Registro de prueba con una fila para el ITER 2020 de Colima. La forma del
   # archivo (carpetas conjunto_de_datos, diccionario_de_datos, catalogos y
   # metadatos) es la que describen otros usuarios; se confirmara con el INEGI.
@@ -443,7 +443,7 @@ test_that("censo() lee archivos CSV de datos abiertos cuando el registro los inc
   attr(registro, "generado") <- "2099-01-01"
   withr::local_options(importinegi.registro = registro)
 
-  iter <- suppressMessages(censo(2020, estado = "Colima"))
+  iter <- suppressMessages(cpv_censo(2020, estado = "Colima"))
   expect_match(attr(iter, "fuente"), "/ccpv/2020/datosabiertos/iter/iter_06_cpv2020_csv\\.zip$")
   expect_named(iter, c("ENTIDAD", "NOM_ENT", "MUN", "NOM_MUN", "LOC", "NOM_LOC", "LONGITUD",
                        "ALTITUD", "POBTOT", "POBMAS", "PROM_OCUP", "VIVTOT"))
@@ -451,9 +451,9 @@ test_that("censo() lee archivos CSV de datos abiertos cuando el registro los inc
   expect_identical(iter$POBTOT, c(240L, 3L, 7L, 400L))
   expect_identical(iter$POBMAS, c(119L, NA, NA, 195L))
   expect_identical(iter$NOM_LOC[1], "Ciudad de Armer\u00eda")
-  expect_error(censo(2020, estado = "Nayarit"), "El registro del paquete no tiene el archivo de .* para: \"Nayarit\"")
+  expect_error(cpv_censo(2020, estado = "Nayarit"), "El registro del paquete no tiene el archivo de .* para: \"Nayarit\"")
   # Sin archivo nacional en el registro, "nacional" combina las entidades que
   # tiene (aqui, solo Colima) y, sin `estado`, se pide Aguascalientes
-  expect_identical(suppressMessages(censo(2020, estado = "nacional")), iter)
-  expect_error(suppressMessages(censo(2020)), "no tiene el archivo de .* para: \"Aguascalientes\"")
+  expect_identical(suppressMessages(cpv_censo(2020, estado = "nacional")), iter)
+  expect_error(suppressMessages(cpv_censo(2020)), "no tiene el archivo de .* para: \"Aguascalientes\"")
 })

@@ -8,7 +8,7 @@
 #'   \item{\code{"resultados"}}{Principales resultados por localidad de 50 000 y mas habitantes: estimaciones de 341 indicadores, con su precision, para el pais, las entidades, los municipios y las localidades de 50 000 y mas habitantes. Encuesta de 2025. Solo tiene archivo nacional.}
 #' }
 #'
-#' Los Censos de Poblacion y Vivienda se descargan con \code{\link{censo}} y los Conteos de Poblacion y Vivienda, con \code{\link{conteo}}.
+#' Los Censos de Poblacion y Vivienda se descargan con \code{\link{cpv_censo}} y los Conteos de Poblacion y Vivienda, con \code{\link{cpv_conteo}}.
 #'
 #' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee: la muestra en formato CSV y los resultados en formato XLSX, que requiere el paquete \code{readxl}. Requiere conexion a internet.
 #'
@@ -42,25 +42,25 @@
 #' @examples
 #'
 #' # Personas de la muestra de 2015 en Aguascalientes (entidad por omision).
-#' \dontrun{personas <- intercensal(2015)}
+#' \dontrun{personas <- cpv_intercensal(2015)}
 #'
 #' # Viviendas de la muestra de 2025 en Oaxaca.
-#' \dontrun{viviendas <- intercensal(2025, estado = "Oaxaca", tabla = "viviendas")}
+#' \dontrun{viviendas <- cpv_intercensal(2025, estado = "Oaxaca", tabla = "viviendas")}
 #'
 #' # Migrantes internacionales de la muestra de 2025 en Michoacan.
-#' \dontrun{migrantes <- intercensal(2025, estado = "Michoacan", tabla = "migrantes")}
+#' \dontrun{migrantes <- cpv_intercensal(2025, estado = "Michoacan", tabla = "migrantes")}
 #'
 #' # Resultados de todos los municipios del pais en 2025.
-#' \dontrun{municipios <- intercensal(2025, base = "resultados", nivel = "municipio")}
+#' \dontrun{municipios <- cpv_intercensal(2025, base = "resultados", nivel = "municipio")}
 #'
 #' # Resultados de las localidades de 50 000 y mas habitantes de Jalisco.
-#' \dontrun{jalisco <- intercensal(2025, base = "resultados", estado = "Jalisco")}
+#' \dontrun{jalisco <- cpv_intercensal(2025, base = "resultados", estado = "Jalisco")}
 #'
 #' @return Data.frame con la base de datos solicitada. El atributo \code{"fuente"} contiene la direccion de los archivos descargados.
-#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada encuesta y cuanto pesan. \code{\link{censo}} y \code{\link{conteo}} para los Censos y los Conteos de Poblacion y Vivienda. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion y como se levantaron las encuestas.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada encuesta y cuanto pesan. \code{\link{cpv_censo}} y \code{\link{cpv_conteo}} para los Censos y los Conteos de Poblacion y Vivienda. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion y como se levantaron las encuestas.
 #' @export
 
-intercensal <- function(year, base = "muestra", estado = NULL, tabla = NULL, nivel = NULL) {
+cpv_intercensal <- function(year, base = "muestra", estado = NULL, tabla = NULL, nivel = NULL) {
   if (missing(year)) {
     year <- NULL
   }

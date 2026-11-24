@@ -1,4 +1,4 @@
-# Pruebas en vivo de intercensal(): descargan archivos reales del INEGI. Solo
+# Pruebas en vivo de cpv_intercensal(): descargan archivos reales del INEGI. Solo
 # corren con IMPORTINEGI_EN_VIVO=true (ver .github/workflows/pruebas-en-vivo.yaml).
 #
 # De la muestra se descarga la entidad con el archivo mas pequeño (Baja
@@ -26,14 +26,14 @@ columna_factor <- function(datos) {
   if (length(factores) == 0) NA_character_ else factores[1]
 }
 
-test_that("EN VIVO: intercensal() descarga cada tabla de la muestra", {
+test_that("EN VIVO: cpv_intercensal() descarga cada tabla de la muestra", {
   en_vivo()
   for (year in poblacion_programas()$intercensal$years) {
     clave <- entidad_menor("intercensal", year, "muestra")
     describir_zip("intercensal", year, "muestra", clave)
     tablas <- list()
     for (tabla in names(poblacion_tablas("intercensal", year, "muestra"))) {
-      muestra <- suppressMessages(intercensal(year, estado = clave, tabla = tabla))
+      muestra <- suppressMessages(cpv_intercensal(year, estado = clave, tabla = tabla))
       etiqueta <- paste(year, "muestra", clave, tabla)
       describir_tabla(etiqueta, muestra)
       revisar_texto(etiqueta, muestra)
@@ -87,14 +87,14 @@ test_that("EN VIVO: intercensal() descarga cada tabla de la muestra", {
   }
 })
 
-test_that("EN VIVO: intercensal() descarga Aguascalientes por omision en la muestra", {
+test_that("EN VIVO: cpv_intercensal() descarga Aguascalientes por omision en la muestra", {
   en_vivo()
-  mensajes <- testthat::capture_messages(muestra <- intercensal(2025, tabla = "migrantes"))
+  mensajes <- testthat::capture_messages(muestra <- cpv_intercensal(2025, tabla = "migrantes"))
   expect_match(mensajes[1], "No indicaste `estado`: se descarga la muestra de Aguascalientes")
   expect_identical(unique(muestra[[columna_clave(muestra, "ent")]]), "01")
 })
 
-test_that("EN VIVO: intercensal() lee los principales resultados por localidad de 2025", {
+test_that("EN VIVO: cpv_intercensal() lee los principales resultados por localidad de 2025", {
   en_vivo()
   # Sin readxl esta prueba falla en lugar de saltarse: una ejecucion en vivo no
   # debe terminar en verde sin haber leido el XLSX (paso en la primera del PR #21)
@@ -113,7 +113,7 @@ test_that("EN VIVO: intercensal() lee los principales resultados por localidad d
     cat("[en vivo] 2025 resultados, hoja ", hoja, ", primeras filas: ", paste(filas, collapse = " || "), "\n", sep = "")
   }
 
-  todos <- suppressMessages(intercensal(2025, "resultados", nivel = "todos"))
+  todos <- suppressMessages(cpv_intercensal(2025, "resultados", nivel = "todos"))
   describir_tabla("2025 resultados nivel = todos", todos)
   revisar_texto("2025 resultados", todos)
   niveles <- poblacion_clasificar_nivel(todos, "resultados")
@@ -204,7 +204,7 @@ test_that("EN VIVO: intercensal() lee los principales resultados por localidad d
   }
 
   # Una entidad conserva sus filas del archivo nacional
-  bcs <- suppressMessages(intercensal(2025, "resultados", estado = "03", nivel = "todos"))
+  bcs <- suppressMessages(cpv_intercensal(2025, "resultados", estado = "03", nivel = "todos"))
   expect_identical(unique(bcs$CVE_ENT), "03")
   expect_identical(nrow(bcs), sum(todos$CVE_ENT == "03"))
 })
@@ -223,7 +223,7 @@ test_that("EN VIVO (medicion): tiempo y memoria de la muestra de personas de la 
     clave <- entidades$clave[which.max(entidades$bytes)]
     invisible(gc(reset = TRUE))
     inicio <- Sys.time()
-    personas <- suppressMessages(intercensal(year, estado = clave))
+    personas <- suppressMessages(cpv_intercensal(year, estado = clave))
     segundos <- as.numeric(difftime(Sys.time(), inicio, units = "secs"))
     memoria <- gc()
     pico <- sum(memoria[, max(which(colnames(memoria) == "(Mb)"))])

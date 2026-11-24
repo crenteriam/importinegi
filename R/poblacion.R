@@ -1,6 +1,6 @@
 # Censos, conteos y encuestas de poblacion: motor compartido --------------------
 #
-# censo(), conteo() e intercensal() usan las funciones de este archivo. El
+# cpv_censo(), cpv_conteo() y cpv_intercensal() usan las funciones de este archivo. El
 # trabajo se reparte en tres piezas:
 #
 #   1. El registro de archivos del INEGI (registro_inegi()) dice que archivos
@@ -12,7 +12,9 @@
 #      el nivel de agregacion y combina las entidades.
 
 # Programas de poblacion del INEGI y sus años. `funcion` es la funcion del
-# paquete que los descarga (NA mientras no exista).
+# paquete que los descarga (NA mientras no exista); con ese nombre aparece el
+# programa en bases_importinegi(). Dentro del motor, cada programa conserva su
+# nombre corto ("censo", "conteo", "intercensal").
 poblacion_programas <- function() {
   list(
     censo = list(
@@ -20,21 +22,21 @@ poblacion_programas <- function() {
       nombre = "Censo de Poblaci\u00f3n y Vivienda",
       con_articulo = "al Censo de Poblaci\u00f3n y Vivienda",
       years = c(1990L, 2000L, 2010L, 2020L),
-      funcion = "censo"
+      funcion = "cpv_censo"
     ),
     conteo = list(
       proyecto = "ccpv",
       nombre = "Conteo de Poblaci\u00f3n y Vivienda",
       con_articulo = "al Conteo de Poblaci\u00f3n y Vivienda",
       years = c(1995L, 2005L),
-      funcion = "conteo"
+      funcion = "cpv_conteo"
     ),
     intercensal = list(
       proyecto = "eic",
       nombre = "Encuesta Intercensal",
       con_articulo = "a la Encuesta Intercensal",
       years = c(2015L, 2025L),
-      funcion = "intercensal"
+      funcion = "cpv_intercensal"
     )
   )
 }
@@ -237,7 +239,7 @@ claves_geograficas <- function() {
 poblacion_validar_year <- function(programa, year) {
   programas <- poblacion_programas()
   propios <- programas[[programa]]$years
-  disponibles <- paste0("A\u00f1os disponibles en ", programa, "(): ", enumerar(propios), ".")
+  disponibles <- paste0("A\u00f1os disponibles en ", programas[[programa]]$funcion, "(): ", enumerar(propios), ".")
   if (is.null(year) || length(year) != 1 || is.na(year)) {
     detener("Falta indicar el a\u00f1o en `year` (un solo valor). ", disponibles)
   }
@@ -274,12 +276,12 @@ poblacion_validar_base <- function(programa, year, base) {
       detener(
         "La base ", comillas(base), " no existe para ", year, ": el INEGI la publica para ",
         enumerar(otros), ". Bases de ", year, ": ", enumerar(del_year),
-        ". Consulta todas con bases_importinegi(\"", programa, "\")."
+        ". Consulta todas con bases_importinegi(\"", poblacion_programas()[[programa]]$funcion, "\")."
       )
     }
     detener(
       "`base = ", comillas(base), "` no es una opci\u00f3n v\u00e1lida. Bases de ", year, ": ",
-      enumerar(del_year), ". Consulta todas con bases_importinegi(\"", programa, "\")."
+      enumerar(del_year), ". Consulta todas con bases_importinegi(\"", poblacion_programas()[[programa]]$funcion, "\")."
     )
   }
   base

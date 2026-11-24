@@ -1,4 +1,4 @@
-# Pruebas en vivo de censo(): descargan archivos reales del INEGI. Solo corren
+# Pruebas en vivo de cpv_censo(): descargan archivos reales del INEGI. Solo corren
 # con IMPORTINEGI_EN_VIVO=true (ver .github/workflows/pruebas-en-vivo.yaml).
 #
 # De cada base se descarga el archivo de la entidad mas pequeña, para que la
@@ -27,7 +27,7 @@ test_that("EN VIVO (informativo): bases del censo, del conteo y de la Encuesta I
   expect_gt(nrow(poblacion_archivos("censo", 2010L, "iter")), 0)
 })
 
-test_that("EN VIVO: censo() descarga el ITER de una entidad en cada censo", {
+test_that("EN VIVO: cpv_censo() descarga el ITER de una entidad en cada censo", {
   en_vivo()
   for (year in years_censo()) {
     clave <- entidad_menor("censo", year, "iter")
@@ -36,7 +36,7 @@ test_that("EN VIVO: censo() descarga el ITER de una entidad en cada censo", {
       next
     }
     describir_zip("censo", year, "iter", clave)
-    todos <- suppressMessages(censo(year, estado = clave, nivel = "todos"))
+    todos <- suppressMessages(cpv_censo(year, estado = clave, nivel = "todos"))
     describir_tabla(paste(year, "iter", clave, "nivel = todos"), todos)
     niveles <- poblacion_clasificar_nivel(todos, "iter")
     expect_false(is.null(niveles), info = paste(year, "claves geograficas"))
@@ -70,15 +70,15 @@ test_that("EN VIVO: censo() descarga el ITER de una entidad en cada censo", {
     }
 
     # Por omision, solo localidades
-    localidades <- suppressMessages(censo(year, estado = clave))
+    localidades <- suppressMessages(cpv_censo(year, estado = clave))
     expect_identical(nrow(localidades), sum(niveles == "localidad"), info = as.character(year))
   }
 })
 
-test_that("EN VIVO: censo() descarga el archivo nacional del ITER", {
+test_that("EN VIVO: cpv_censo() descarga el archivo nacional del ITER", {
   en_vivo()
   # El archivo nacional mas pequeño es el de 1990
-  nacional <- suppressMessages(censo(1990, nivel = "todos"))
+  nacional <- suppressMessages(cpv_censo(1990, nivel = "todos"))
   describir_tabla("1990 iter nacional", nacional)
   niveles <- poblacion_clasificar_nivel(nacional, "iter")
   expect_false(is.null(niveles))
@@ -90,14 +90,14 @@ test_that("EN VIVO: censo() descarga el archivo nacional del ITER", {
   expect_identical(sort(entidades), sprintf("%02d", 1:32))
 })
 
-test_that("EN VIVO: censo() descarga Aguascalientes por omision en las bases sin archivo nacional", {
+test_that("EN VIVO: cpv_censo() descarga Aguascalientes por omision en las bases sin archivo nacional", {
   en_vivo()
-  mensajes <- testthat::capture_messages(entorno <- censo(2010, "entorno"))
+  mensajes <- testthat::capture_messages(entorno <- cpv_censo(2010, "entorno"))
   expect_match(mensajes[1], "No indicaste `estado`: se descargan los datos de Aguascalientes")
   expect_identical(unique(entorno[[columna_clave(entorno, "ent")]]), "01")
 })
 
-test_that("EN VIVO: censo() descarga los resultados por AGEB y manzana", {
+test_that("EN VIVO: cpv_censo() descarga los resultados por AGEB y manzana", {
   en_vivo()
   for (year in years_censo()) {
     clave <- entidad_menor("censo", year, "ageb")
@@ -105,7 +105,7 @@ test_that("EN VIVO: censo() descarga los resultados por AGEB y manzana", {
       next
     }
     describir_zip("censo", year, "ageb", clave)
-    todos <- suppressMessages(censo(year, "ageb", estado = clave, nivel = "todos"))
+    todos <- suppressMessages(cpv_censo(year, "ageb", estado = clave, nivel = "todos"))
     describir_tabla(paste(year, "ageb", clave, "nivel = todos"), todos)
     niveles <- poblacion_clasificar_nivel(todos, "ageb")
     expect_false(is.null(niveles), info = as.character(year))
@@ -120,12 +120,12 @@ test_that("EN VIVO: censo() descarga los resultados por AGEB y manzana", {
       expect_gt(sum(niveles == nivel), 0)
     }
     revisar_texto(paste(year, "ageb", clave), todos)
-    manzanas <- suppressMessages(censo(year, "ageb", estado = clave))
+    manzanas <- suppressMessages(cpv_censo(year, "ageb", estado = clave))
     expect_identical(nrow(manzanas), sum(niveles == "manzana"), info = as.character(year))
   }
 })
 
-test_that("EN VIVO: censo() descarga cada tabla de la muestra", {
+test_that("EN VIVO: cpv_censo() descarga cada tabla de la muestra", {
   en_vivo()
   for (year in years_censo()) {
     clave <- entidad_menor("censo", year, "muestra")
@@ -136,14 +136,14 @@ test_that("EN VIVO: censo() descarga cada tabla de la muestra", {
     describir_zip("censo", year, "muestra", clave)
     tablas <- names(poblacion_tablas("censo", year, "muestra"))
     if (is.null(tablas)) {
-      muestra <- suppressMessages(censo(year, "muestra", estado = clave))
+      muestra <- suppressMessages(cpv_censo(year, "muestra", estado = clave))
       describir_tabla(paste(year, "muestra", clave), muestra)
       revisar_texto(paste(year, "muestra", clave), muestra)
       expect_gt(nrow(muestra), 0)
       next
     }
     for (tabla in tablas) {
-      muestra <- suppressMessages(censo(year, "muestra", estado = clave, tabla = tabla))
+      muestra <- suppressMessages(cpv_censo(year, "muestra", estado = clave, tabla = tabla))
       etiqueta <- paste(year, "muestra", clave, tabla)
       describir_tabla(etiqueta, muestra)
       revisar_texto(etiqueta, muestra)
@@ -158,7 +158,7 @@ test_that("EN VIVO: censo() descarga cada tabla de la muestra", {
   }
 })
 
-test_that("EN VIVO: censo() descarga las localidades, el entorno urbano y la asistencia social", {
+test_that("EN VIVO: cpv_censo() descarga las localidades, el entorno urbano y la asistencia social", {
   en_vivo()
   for (base in c("localidades", "entorno", "asistencia")) {
     for (year in years_censo()) {
@@ -170,7 +170,7 @@ test_that("EN VIVO: censo() descarga las localidades, el entorno urbano y la asi
       tablas <- names(poblacion_tablas("censo", year, base)) %||% NA_character_
       for (tabla in tablas) {
         etiqueta <- paste(year, base, clave, if (!is.na(tabla)) tabla)
-        datos <- suppressMessages(censo(year, base, estado = clave, tabla = if (!is.na(tabla)) tabla))
+        datos <- suppressMessages(cpv_censo(year, base, estado = clave, tabla = if (!is.na(tabla)) tabla))
         describir_tabla(etiqueta, datos)
         revisar_texto(etiqueta, datos)
         expect_gt(nrow(datos), 0)

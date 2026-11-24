@@ -9,7 +9,7 @@
 #'   \item{\code{"viviendas"}}{Viviendas habitadas y deshabitadas por localidad. Conteo de 2005. Tiene archivo nacional.}
 #' }
 #'
-#' Los Censos de Poblacion y Vivienda se descargan con \code{\link{censo}} y las Encuestas Intercensales, con \code{\link{intercensal}}.
+#' Los Censos de Poblacion y Vivienda se descargan con \code{\link{cpv_censo}} y las Encuestas Intercensales, con \code{\link{cpv_intercensal}}.
 #'
 #' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y los lee en formato DBF. Requiere conexion a internet.
 #'
@@ -39,22 +39,22 @@
 #' @examples
 #'
 #' # ITER del Conteo 2005, todo el pais.
-#' \dontrun{iter <- conteo(2005)}
+#' \dontrun{iter <- cpv_conteo(2005)}
 #'
 #' # Personas de la muestra del Conteo 1995 en Aguascalientes (entidad por omision).
-#' \dontrun{personas <- conteo(1995, base = "muestra")}
+#' \dontrun{personas <- cpv_conteo(1995, base = "muestra")}
 #'
 #' # Hogares de la muestra del Conteo 2005 en Yucatan.
-#' \dontrun{hogares <- conteo(2005, base = "muestra", estado = "Yucatan", tabla = "hogares")}
+#' \dontrun{hogares <- cpv_conteo(2005, base = "muestra", estado = "Yucatan", tabla = "hogares")}
 #'
 #' # Muestra del Conteo 2005 de todo el pais: descarga y combina las 32 entidades.
-#' \dontrun{nacional <- conteo(2005, base = "muestra", estado = "nacional")}
+#' \dontrun{nacional <- cpv_conteo(2005, base = "muestra", estado = "nacional")}
 #'
 #' @return Data.frame con la base de datos solicitada. El atributo \code{"fuente"} contiene la direccion de los archivos descargados.
-#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada conteo y cuanto pesan. \code{\link{censo}} e \code{\link{intercensal}} para los Censos de Poblacion y Vivienda y las Encuestas Intercensales. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion y como se levantaron los conteos.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, que bases existen para cada conteo y cuanto pesan. \code{\link{cpv_censo}} e \code{\link{cpv_intercensal}} para los Censos de Poblacion y Vivienda y las Encuestas Intercensales. La viñeta del paquete, \code{vignette("importinegi")}, explica la funcion y como se levantaron los conteos.
 #' @export
 
-conteo <- function(year, base = "iter", estado = NULL, tabla = NULL, nivel = NULL) {
+cpv_conteo <- function(year, base = "iter", estado = NULL, tabla = NULL, nivel = NULL) {
   if (missing(year)) {
     year <- NULL
   }
