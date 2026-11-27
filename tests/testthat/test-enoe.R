@@ -74,7 +74,11 @@ test_that("el a\u00f1o y el trimestre se validan sin descargar", {
     enoe(2004, 4),
     "La ENOE del cuarto trimestre de 2004 no existe.*del primer trimestre de 2005 al segundo trimestre de 2026"
   )
-  expect_error(enoe(2020, "trim2"), "El INEGI no public\u00f3 la ENOE del segundo trimestre de 2020.*\\(ETOE\\)")
+  # 2020-T2: el mensaje remite a etoe()
+  expect_error(
+    enoe(2020, "trim2"),
+    "El INEGI no public\u00f3 la ENOE del segundo trimestre de 2020.*\\(ETOE\\), que es otro proyecto y se descarga con etoe\\(\\): por ejemplo, etoe\\(2020, \"abril\"\\)"
+  )
   expect_error(enoe(2999, 1), "El primer trimestre de 2999 todav\u00eda no ocurre")
   # El trimestre se escribe como en la serie 1.x o como numero
   for (trimestre in list("trim3", "TRIM3", " trim3 ", "trim 3", "Trimestre 3", "t3", "3", 3, 3L)) {

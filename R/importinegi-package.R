@@ -20,6 +20,7 @@
 #'   \item \code{\link{enigh_tradicional}}: Encuesta Nacional de Ingresos y Gastos de los Hogares, serie tradicional, de 1984 a 2014, por tabla.
 #'   \item \code{\link{enigh_nc}}: Encuesta Nacional de Ingresos y Gastos de los Hogares, Nueva construccion, de 2008 a 2014, por tabla.
 #'   \item \code{\link{enoe}}: Encuesta Nacional de Ocupacion y Empleo, de 2005 a 2026, por trimestre.
+#'   \item \code{\link{etoe}}: Encuesta Telefonica de Ocupacion y Empleo, de abril, mayo y junio de 2020, por mes.
 #' }
 #'
 #' Informacion georreferenciada:

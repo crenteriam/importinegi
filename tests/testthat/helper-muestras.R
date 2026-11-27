@@ -71,8 +71,9 @@ servidor_prueba <- function(entorno = parent.frame()) {
   app$get("/rnm/consultas", function(req, res) {
     res$send(paste(req$app$locals$consultas_catalogo, req$app$locals$ultimo_ps))
   })
-  # Paginas de programa y servicio de descargas, como en el sitio del INEGI
-  app$get(webfakes::new_regexp("^/programas/.+/$"), function(req, res) {
+  # Paginas de programa y servicio de descargas, como en el sitio del INEGI.
+  # La pagina de la ETOE esta en la seccion de investigacion.
+  app$get(webfakes::new_regexp("^/(programas|investigacion)/.+/$"), function(req, res) {
     res$send_file("pagina_programa.html", root = req$app$locals$carpeta)
   })
   app$get(
@@ -305,6 +306,29 @@ servidor_prueba <- function(entorno = parent.frame()) {
       res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
     }
   })
+  # Archivos de la Encuesta Telefonica de Ocupacion y Empleo, en las rutas del
+  # registro del paquete. Responde con las muestras de fixtures/etoe (abril en
+  # las dos versiones de los ponderadores, y mayo y junio en la version del
+  # Censo 2020); para el resto, como el INEGI cuando un archivo no existe. La
+  # muestra de ".../microdatos/etoe_2020_abril_cpv2020_dbf.zip" es
+  # "etoe_2020_abril_cpv2020.zip".
+  app$locals$descargas_etoe <- 0
+  app$get(webfakes::new_regexp("^/contenidos/investigacion/etoe/microdatos/"), function(req, res) {
+    locales <- req$app$locals
+    locales$descargas_etoe <- locales$descargas_etoe + 1
+    archivo <- sub("_dbf[.]zip$", ".zip", basename(req$path))
+    carpeta <- file.path(locales$carpeta, "etoe")
+    if (grepl("^etoe_[0-9]{4}_[a-z0-9_]+[.]zip$", archivo) && file.exists(file.path(carpeta, archivo))) {
+      res$send_file(archivo, root = carpeta)
+    } else {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+    }
+  })
+  app$get("/etoe/descargas", function(req, res) {
+    res$send(as.character(req$app$locals$descargas_etoe))
+  })
   app$get("/enoe/descargas", function(req, res) {
     res$send(as.character(req$app$locals$descargas_enoe))
   })
@@ -361,6 +385,11 @@ descargas_enigh <- function(servidor) {
 # Numero de archivos de la ENOE que se han pedido al servidor local.
 descargas_enoe <- function(servidor) {
   as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/enoe/descargas")))))
+}
+
+# Numero de archivos de la ETOE que se han pedido al servidor local.
+descargas_etoe <- function(servidor) {
+  as.integer(httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/etoe/descargas")))))
 }
 
 # Las pruebas en vivo consultan el sitio real del INEGI. Solo corren cuando la

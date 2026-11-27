@@ -88,7 +88,7 @@ El catálogo se descarga una sola vez por sesión de R: las consultas posteriore
 
 La función `bases_importinegi()` muestra las bases de datos que se pueden descargar con las funciones de este paquete. A diferencia de `catalogo_inegi()`, que consulta en línea todos los proyectos estadísticos que documenta el INEGI, esta función muestra solamente lo que `importinegi` puede descargar. La función no descarga ningún archivo ni requiere conexión a internet.
 
-El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla. En el Censo Nacional de Gobiernos Municipales y en el Censo Nacional de Derechos Humanos Federal, cada fila es un tema del censo y la columna `modulo` indica el módulo al que pertenece. En la serie tradicional de la ENIGH, cada fila es una edición de la encuesta y la columna `tablas` indica las tablas que se pueden descargar. En la ENOE, cada fila es un trimestre: la columna `base` indica el trimestre, como se escribe en la función de descarga (`trim1`), y la columna `descripcion` indica la edición de la encuesta y el cuestionario de ocupación y empleo que se aplicó (básico o ampliado).
+El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla. En el Censo Nacional de Gobiernos Municipales y en el Censo Nacional de Derechos Humanos Federal, cada fila es un tema del censo y la columna `modulo` indica el módulo al que pertenece. En la serie tradicional de la ENIGH, cada fila es una edición de la encuesta y la columna `tablas` indica las tablas que se pueden descargar. En la ENOE, cada fila es un trimestre: la columna `base` indica el trimestre, como se escribe en la función de descarga (`trim1`), y la columna `descripcion` indica la edición de la encuesta y el cuestionario de ocupación y empleo que se aplicó (básico o ampliado). En la ETOE, cada fila es un mes: la columna `base` indica el mes, como se escribe en la función de descarga (`abril`), y la columna `descripcion` indica las versiones de los ponderadores que se pueden descargar.
 
 La función tiene dos parámetros, ambos opcionales. El parámetro `proyecto` limita la consulta a un proyecto estadístico y el parámetro `year` la limita a uno o varios años. El siguiente bloque de código presenta tres ejemplos de consulta.
 
@@ -475,7 +475,7 @@ Como en la serie tradicional, los nombres de las variables cambian de una edici�
 
 La función `enoe()` descarga las bases de datos trimestrales de la Encuesta Nacional de Ocupación y Empleo (ENOE) desde 2005. La sintaxis de la función tiene cinco parámetros, de los cuales los dos primeros son indispensables. Primero, se debe especificar el año de levantamiento de los datos en formato numérico. Posteriormente se debe especificar el trimestre del año en formato alfanumérico, los cuales pueden ser `trim1`, `trim2`, `trim3`, o `trim4`; también se acepta el número del trimestre, de 1 a 4. La función descarga por separado las cinco bases de datos que componen la ENOE. Sin embargo, el tercer parámetro, `integrar`, que se describe más adelante en esta sub-sección, integra las cinco bases de datos en una sola matriz de datos. Los parámetros `tabla` y `estado`, que se describen al final, devuelven solamente algunas de las bases de datos o los datos de una o varias entidades federativas.
 
-La función descarga los trimestres del primero de 2005 al segundo de 2026, que se pueden consultar con `bases_importinegi("enoe")`. El segundo trimestre de 2020 no está disponible, porque en ese trimestre el INEGI no levantó la ENOE.
+La función descarga los trimestres del primero de 2005 al segundo de 2026, que se pueden consultar con `bases_importinegi("enoe")`. El segundo trimestre de 2020 no está disponible, porque en ese trimestre el INEGI no levantó la ENOE. En su lugar levantó la Encuesta Telefónica de Ocupación y Empleo (ETOE), que se descarga con la función `etoe()` y se explica en la siguiente sección.
 
 Cuando el parámetro `integrar` esta (por default) en `FALSE`, la función descarga una lista de R con cinco bases de datos separadas: las dos partes del cuestionario de ocupación y empleo (`coe1` y `coe2`), hogares (`hog`), sociodemográfico (`sdem`) y vivienda (`viv`). La función `summary` provee un resumen de las cinco bases de datos (nombre, tamaño y tipo de objeto) y permite identificar la posición de cada base de datos en la lista. En el siguiente bloque de código, se extrae la base de datos del cuestionario de hogares de la ENOE 2005, Trimestre I.
 
@@ -521,6 +521,46 @@ dt.sdem124 = enoe(year = 2024, trimestre = "trim1", tabla = "sdem")
 # Descargar e integrar las bases de datos de Jalisco de la ENOE 2024, Trimestre I
 dt.enoe124.jal = enoe(year = 2024, trimestre = "trim1", integrar = TRUE, estado = "Jalisco")
 ```
+
+## Encuesta Telefonica de Ocupacion y Empleo
+
+La función `etoe()` descarga las bases de datos mensuales de la Encuesta Telefónica de Ocupación y Empleo (ETOE). El INEGI levantó esta encuesta en abril, mayo y junio de 2020, cuando suspendió las entrevistas en las viviendas de la ENOE por la emergencia sanitaria de COVID-19; por esa razón, la ENOE no tiene el segundo trimestre de 2020. La ETOE utiliza el mismo diseño conceptual y el mismo cuestionario básico de ocupación y empleo que la ENOE, pero el INEGI advierte que sus cifras no son estrictamente comparables con las de la ENOE.
+
+La función se utiliza de la misma manera que `enoe()`. La sintaxis de la función tiene seis parámetros, de los cuales los dos primeros son indispensables. Primero, se debe especificar el año de levantamiento de los datos en formato numérico; el único año disponible es 2020. Posteriormente se debe especificar el mes en formato alfanumérico, el cual puede ser `abril`, `mayo` o `junio`; también se acepta el número del mes, de 4 a 6. Los meses disponibles se pueden consultar con `bases_importinegi("etoe")`.
+
+Los parámetros `integrar`, `tabla` y `estado` funcionan como en `enoe()`. Cuando el parámetro `integrar` está (por default) en `FALSE`, la función descarga una lista de R con las cinco bases de datos que componen la encuesta: las dos partes del cuestionario de ocupación y empleo (`coe1` y `coe2`), hogares (`hog`), sociodemográfico (`sdem`) y vivienda (`viv`). Con `integrar = TRUE`, la función integra las cinco bases de datos en una sola, con una fila por residente del hogar, y conserva al final los hogares sin residentes, que son hogares que no se entrevistaron.
+
+```{r, eval = FALSE}
+# Crear un objeto con las cinco bases de datos de la ETOE de abril de 2020, separadas.
+lista.etoe.abril = etoe(year = 2020, mes = "abril")
+
+# Descargar e integrar las bases de datos de la ETOE de junio de 2020.
+dt.etoe.junio = etoe(year = 2020, mes = "junio", integrar = TRUE)
+```
+
+El sexto parámetro, `poblacion`, selecciona la versión de los ponderadores. El INEGI publica cada mes de la ETOE en dos versiones, que tienen las mismas filas y difieren en los ponderadores. La versión `cpv2020`, que es la selección por default, contiene los ponderadores calculados con la estimación de población del INEGI con base en el Censo de Población y Vivienda 2020; es la versión más reciente. La versión `conapo` contiene los ponderadores calculados con las proyecciones de población del CONAPO; es la versión que el INEGI publicó en 2020, por lo que reproduce las cifras de los boletines de ese año.
+
+```{r, eval = FALSE}
+# Descargar la base de datos sociodemográfica de mayo de 2020,
+# con los ponderadores de las proyecciones de población del CONAPO
+dt.sdem.mayo = etoe(year = 2020, mes = "mayo", tabla = "sdem", poblacion = "conapo")
+```
+
+Cada base de datos tiene tres ponderadores. En la versión `cpv2020` se llaman `FAC_NP`, `FAC32_NP` y `FAC39_NP`; en la versión `conapo`, `FAC`, `FAC32` y `FAC39`. El primero se utiliza en las estimaciones nacionales; los otros dos, en las estimaciones del agregado de 32 y de 39 ciudades. Como en la ENOE, la base de datos integrada mantiene los ponderadores del residente, del hogar y de la vivienda: los del residente conservan su nombre y los del hogar y los de la vivienda llevan el sufijo de su base de datos (por ejemplo, `FAC_NP_HOG` y `FAC_NP_VIV`).
+
+Las bases de datos de la ETOE no tienen una columna que indique el mes: la columna `PER` vale `220` (segundo trimestre de 2020) en los tres meses. Por lo tanto, para unir las bases de datos de varios meses se debe agregar antes una columna con el mes, como se muestra en el siguiente bloque de código. Además, la muestra de la ETOE es un panel: cuatro de cada cinco viviendas están en la muestra de los tres meses, por lo que, al unir los meses, las mismas viviendas, hogares y residentes aparecen varias veces. Las bases de datos de junio tienen columnas que las de abril y mayo no tienen (`NUPM` y, en la versión `cpv2020`, `TIPO`), por lo que para unirlas con las de los otros meses se deben igualar antes sus columnas.
+
+```{r, eval = FALSE}
+# Unir la base de datos sociodemográfica de abril y mayo de 2020,
+# con una columna que indica el mes
+dt.sdem.abril = etoe(year = 2020, mes = "abril", tabla = "sdem")
+dt.sdem.mayo  = etoe(year = 2020, mes = "mayo", tabla = "sdem")
+dt.sdem.abril$MES = "abril"
+dt.sdem.mayo$MES  = "mayo"
+dt.sdem = rbind(dt.sdem.abril, dt.sdem.mayo)
+```
+
+El INEGI presenta la ETOE con alcance nacional. El parámetro `estado` conserva los datos de una o varias entidades federativas, como en `enoe()`, pero la muestra es pequeña para hacer estimaciones por entidad (en algunas entidades tiene unas decenas de viviendas por mes), por lo que la función lo advierte con un mensaje.
 
 ## Marco Geoestadistico Nacional
 

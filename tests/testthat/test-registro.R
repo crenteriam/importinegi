@@ -100,8 +100,33 @@ test_that("api_a_tabla() devuelve una tabla vacia con las mismas columnas", {
 test_that("inegi_api_id() lee el identificador del proyecto en la pagina del programa", {
   local_mocked_bindings(inegi_texto = texto_simulado)
   expect_identical(inegi_api_id("enigh/nc/2014"), 1780L)
-  expect_identical(inegi_api_id("/enigh/nc/2014/"), 1780L)
+  expect_identical(inegi_api_id("enigh/nc/2014/"), 1780L)
   expect_error(inegi_api_id("sin/identificador"), "No se encontr\u00f3 el identificador del proyecto")
+})
+
+test_that("la pagina de un proyecto puede estar fuera de la seccion de programas", {
+  # Sin "/" al principio, la pagina esta en /programas/
+  expect_identical(inegi_api_pagina("enoe/15ymas"), "/programas/enoe/15ymas/")
+  expect_identical(inegi_api_pagina("ccpv/2020/"), "/programas/ccpv/2020/")
+  # Con "/" al principio, es la ruta completa: la ETOE esta en /investigacion/
+  expect_identical(inegi_api_pagina("/investigacion/etoe"), "/investigacion/etoe/")
+  expect_identical(inegi_api_pagina(" /investigacion/etoe/ "), "/investigacion/etoe/")
+
+  pedidas <- character()
+  local_mocked_bindings(inegi_texto = function(url) {
+    pedidas <<- c(pedidas, url)
+    if (identical(url, "/investigacion/etoe/")) {
+      "<menu-gen idm=\"3093\" tipo=\"1\" url=\"\"></menu-gen>"
+    } else {
+      "<html><body>Sin componente de descargas</body></html>"
+    }
+  })
+  expect_identical(inegi_api_id("/investigacion/etoe"), 3093L)
+  expect_error(
+    inegi_api_id("investigacion/etoe"),
+    "No se encontr\u00f3 el identificador del proyecto en la p\u00e1gina https://www.inegi.org.mx/programas/investigacion/etoe/"
+  )
+  expect_identical(pedidas, c("/investigacion/etoe/", "/programas/investigacion/etoe/"))
 })
 
 test_that("inegi_api_id() lee el identificador con comillas, con ap\u00f3strofos o sin comillas", {
@@ -180,6 +205,16 @@ test_that("el registro se construye de extremo a extremo contra un servidor HTTP
   expect_identical(nrow(registro), 49L)
   expect_length(attr(registro, "fallas"), 0)
   expect_true(all(startsWith(registro$url, getOption("importinegi.base"))))
+
+  # Un proyecto cuya pagina no esta en la seccion de programas
+  expect_identical(inegi_api_id("/investigacion/etoe"), 1780L)
+  investigacion <- registro_construir(
+    data.frame(proyecto = "etoe", edicion = NA, pagina = "/investigacion/etoe"),
+    silencioso = TRUE
+  )
+  expect_identical(nrow(investigacion), 49L)
+  expect_identical(unique(investigacion$proyecto), "etoe")
+  expect_true(all(is.na(investigacion$edicion)))
 })
 
 test_that("registro_construir() valida la tabla de proyectos", {
@@ -200,6 +235,12 @@ test_that("la lista de proyectos del paquete tiene el formato esperado", {
                    as.character(seq(2011, 2025, by = 2)))
   expect_false(anyDuplicated(proyectos$pagina) > 0)
   expect_true(all(grepl("^[a-z0-9_/]+$", proyectos$pagina)))
+  # Solo la ETOE esta fuera de la seccion de programas del sitio: su pagina se
+  # escribe con la ruta completa
+  expect_identical(proyectos$pagina[startsWith(proyectos$pagina, "/")], "/investigacion/etoe")
+  expect_identical(proyectos$proyecto[startsWith(proyectos$pagina, "/")], "etoe")
+  # Cada proyecto de la lista esta en el registro del paquete
+  expect_setequal(unique(registro_archivos$proyecto), unique(proyectos$proyecto))
 })
 
 test_that("registro_construir() consulta los tipos de documento de cada proyecto", {
