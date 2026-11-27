@@ -221,7 +221,7 @@ revisar_integracion_etoe <- function(mes, poblacion, tablas) {
   # hogares sin residentes; los del hogar y los de la vivienda, con el sufijo
   # de su tabla y el valor de la fila que corresponde
   ponderadores <- ponderadores_etoe(poblacion)
-  expect_identical(names(integrada)[enoe_es_ponderador(names(integrada))],
+  expect_identical(grep("^FAC", names(integrada), value = TRUE),
                    c(ponderadores, paste0(ponderadores, "_HOG"), paste0(ponderadores, "_VIV")), info = etiqueta)
   residentes <- seq_len(nrow(tablas$sdem))
   fila_hogar <- match(enoe_clave(integrada, llaves$hog), enoe_clave(tablas$hog, llaves$hog))
