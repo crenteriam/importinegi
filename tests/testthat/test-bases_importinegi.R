@@ -93,12 +93,12 @@ test_that("bases_importinegi() describe las bases de la Encuesta Intercensal", {
 test_that("bases_importinegi() describe los trimestres de la ENOE", {
   ocupacion <- bases_importinegi("enoe")
   expect_identical(unique(ocupacion$proyecto), "enoe")
-  expect_identical(nrow(ocupacion), 85L)
+  expect_identical(nrow(ocupacion), 86L)
   expect_identical(range(ocupacion$year), c(2005L, 2026L))
   # `base` es el trimestre como se escribe en enoe(); 2020-T2 no existe
   expect_identical(ocupacion$base[ocupacion$year == 2019], c("trim1", "trim2", "trim3", "trim4"))
   expect_identical(ocupacion$base[ocupacion$year == 2020], c("trim1", "trim3", "trim4"))
-  expect_identical(ocupacion$base[ocupacion$year == 2026], c("trim1", "trim2"))
+  expect_identical(ocupacion$base[ocupacion$year == 2026], c("trim1", "trim2", "trim3"))
   expect_true(all(is.na(ocupacion$modulo)))
   expect_identical(unique(ocupacion$tablas), "coe1, coe2, hog, sdem, viv")
   expect_identical(unique(ocupacion$cobertura), "nacional")
@@ -111,12 +111,13 @@ test_that("bases_importinegi() describe los trimestres de la ENOE", {
   expect_identical(fila(2023, "trim1")$descripcion, "ENOE, cuestionario ampliado")
   cuantos <- function(descripcion) sum(ocupacion$descripcion == descripcion)
   expect_identical(cuantos("ENOE, cuestionario ampliado"), 24L)
-  expect_identical(cuantos("ENOE, cuestionario b\u00e1sico"), 51L)
+  expect_identical(cuantos("ENOE, cuestionario b\u00e1sico"), 52L)
   expect_identical(cuantos("ENOE Nueva Edici\u00f3n (ENOE_N), cuestionario ampliado"), 2L)
   expect_identical(cuantos("ENOE Nueva Edici\u00f3n (ENOE_N), cuestionario b\u00e1sico"), 8L)
   expect_equal(fila(2005, "trim1")$tamano_mb, 27.2)
   expect_equal(fila(2020, "trim3")$tamano_mb, 18.3)
   expect_equal(fila(2024, "trim1")$tamano_mb, 34)
+  expect_equal(fila(2026, "trim3")$tamano_mb, 32.7)
   expect_true(all(ocupacion$tamano_mb > 18 & ocupacion$tamano_mb < 40))
   # Coincide con lo que enoe() puede descargar
   for (i in seq_len(nrow(ocupacion))) {
