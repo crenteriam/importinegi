@@ -4,7 +4,7 @@
 #'
 #' La ENOE es un proyecto estadistico de encuestas en hogares especializado en informacion sobre el mercado laboral. La ENOE provee informacion trimestral sobre la fuerza laboral, la ocupacion, subocupacion y desocupacion de los miembros del hogar encuestado.
 #'
-#' La funcion descarga la serie vigente de la encuesta (poblacion de 15 años y mas), del primer trimestre de 2005 al segundo trimestre de 2026. El INEGI no publico la ENOE del segundo trimestre de 2020: en ese trimestre levanto la Encuesta Telefonica de Ocupacion y Empleo (ETOE), que se descarga con \code{\link{etoe}}. \code{\link{bases_importinegi}} lista los trimestres disponibles sin descargar nada: \code{bases_importinegi("enoe")}.
+#' La funcion descarga la serie vigente de la encuesta (poblacion de 15 años y mas), del primer trimestre de 2005 al tercer trimestre de 2026. El INEGI no publico la ENOE del segundo trimestre de 2020: en ese trimestre levanto la Encuesta Telefonica de Ocupacion y Empleo (ETOE), que se descarga con \code{\link{etoe}}. \code{\link{bases_importinegi}} lista los trimestres disponibles sin descargar nada: \code{bases_importinegi("enoe")}.
 #'
 #' Cada trimestre se publica en cinco bases de datos (tablas), que se eligen con el argumento \code{tabla}:
 #' \describe{
@@ -81,7 +81,9 @@ enoe <- function(year, trimestre, integrar = FALSE, tabla = NULL, estado = NULL)
 # (VIV), hogar (HOG), sociodemografico (SDEM) y el cuestionario de ocupacion y
 # empleo en dos partes (COE1 y COE2). La forma de los archivos se reviso el 22
 # de noviembre de 2026 en los encabezados de las 425 tablas de los 85
-# trimestres publicados (2005-T1 a 2026-T2), sin descargarlos completos. Las
+# trimestres publicados entonces (2005-T1 a 2026-T2), sin descargarlos
+# completos. El trimestre 2026-T3, que el INEGI publico despues, tiene las
+# columnas de 2026-T2 (encabezados leidos el 27 de noviembre de 2026). Las
 # columnas que identifican a la vivienda cambian tres veces:
 #
 #   2005-T1 a 2020-T1    CD_A, ENT, CON y V_SEL.
@@ -142,7 +144,7 @@ enoe_trimestres <- function() {
 
 # Cuestionario de ocupacion y empleo de cada trimestre. El ampliado se aplico
 # de 2005-T1 a 2006-T2, en el segundo trimestre de 2007 y de 2008 y, desde
-# 2009, en el primer trimestre de cada año (26 de los 85 trimestres, segun el
+# 2009, en el primer trimestre de cada año (26 de los 86 trimestres, segun el
 # numero de columnas de COE1 y COE2); en los demas se aplico el basico.
 enoe_cuestionario <- function(year, trimestre) {
   ampliado <- year == 2005 | (year == 2006 & trimestre <= 2) |
@@ -491,10 +493,10 @@ enoe_es_ponderador <- function(columnas) {
 #    entre niveles, por decision del autor (24 de noviembre de 2026): el de la
 #    tabla de hogares y el de la de viviendas llevan tambien el sufijo de su
 #    tabla (FAC_TRI_HOG, FAC_TRI_VIV) y el que queda sin sufijo es el del
-#    residente. En los 85 trimestres, el ponderador del residente es distinto
-#    del de su hogar en 1.7 a 4.0 % de los residentes, y el del hogar es
-#    distinto del de su vivienda en decenas o miles de hogares. Un hogar sin
-#    residentes queda con NA en el ponderador del residente.
+#    residente. En los 85 trimestres de 2005-T1 a 2026-T2, el ponderador del
+#    residente es distinto del de su hogar en 1.7 a 4.0 % de los residentes, y
+#    el del hogar es distinto del de su vivienda en decenas o miles de hogares.
+#    Un hogar sin residentes queda con NA en el ponderador del residente.
 #
 # `tablas` es una lista con nombre o un entorno. Si es un entorno, cada tabla
 # se quita de el en cuanto se usa, para liberar su memoria. `adicionales` son

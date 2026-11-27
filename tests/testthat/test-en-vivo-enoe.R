@@ -2,7 +2,8 @@
 # con IMPORTINEGI_EN_VIVO=true (ver .github/workflows/pruebas-en-vivo.yaml).
 #
 # La forma de los archivos se reviso el 22 de noviembre de 2026 en los
-# encabezados de las tablas de los 85 trimestres, sin descargarlos completos;
+# encabezados de las tablas de los 85 trimestres publicados entonces (el de
+# 2026-T3, en los suyos, el 27 de noviembre), sin descargarlos completos;
 # solo las tablas de vivienda y de hogar de cuatro trimestres se leyeron
 # enteras. Estas pruebas leen las cinco tablas de un trimestre de cada
 # estructura (cuatro descargas, 112 MB) y comprueban lo que quedo por confirmar:
@@ -17,13 +18,13 @@
 # el caso mas frecuente: por eso la tabla integrada mantiene el del residente,
 # el del hogar y el de la vivienda.
 #
-# La opcion enoe_serie del flujo repite las comprobaciones de forma en los 85
+# La opcion enoe_serie del flujo repite las comprobaciones de forma en los 86
 # trimestres (2.3 GB de descarga); no corre en los pull requests.
 
 # Un trimestre de cada estructura; dos con cuestionario ampliado y dos con el
 # basico; el primero y el ultimo de la serie.
 trimestres_en_vivo <- function() {
-  list(c(2005L, 1L), c(2020L, 3L), c(2024L, 1L), c(2026L, 2L))
+  list(c(2005L, 1L), c(2020L, 3L), c(2024L, 1L), c(2026L, 3L))
 }
 
 # Columnas de cada tabla segun el inventario del 22 de noviembre de 2026.
@@ -197,6 +198,11 @@ test_that("EN VIVO: enoe() lee las cinco tablas de un trimestre de cada estructu
     "2020-T3" = c(viv = 160998L, hog = 161806L, sin_entrevista = 76729L),
     "2024-T1" = c(viv = 150460L, hog = 151332L, sin_entrevista = 26147L)
   )
+  # Registros que declara cada DBF de 2026-T3, leidos en sus encabezados el 27
+  # de noviembre de 2026
+  declarados <- list(
+    "2026-T3" = c(coe1 = 341422, coe2 = 341422, hog = 151301, sdem = 412008, viv = 150348)
+  )
   for (trimestre in trimestres_en_vivo()) {
     etiqueta <- paste0(trimestre[1], "-T", trimestre[2])
     tablas <- tryCatch(suppressMessages(enoe(trimestre[1], trimestre[2])), error = function(e) e)
@@ -222,6 +228,10 @@ test_that("EN VIVO: enoe() lee las cinco tablas de un trimestre de cada estructu
       registros <- registros_dbf(buscar_archivos(carpeta, extension = "dbf")[1])
       unlink(carpeta, recursive = TRUE)
       expect_identical(registros[["reales"]], registros[["declarados"]], info = paste(etiqueta, nombre, "registros"))
+      if (!is.null(declarados[[etiqueta]])) {
+        expect_identical(registros[["declarados"]], declarados[[etiqueta]][[nombre]],
+                         info = paste(etiqueta, nombre, "registros del inventario"))
+      }
       # leer_dbf() omite los registros borrados: la tabla tiene solo los vigentes
       vigentes <- registros[["declarados"]] - registros[["borrados"]]
       expect_identical(nrow(tablas[[nombre]]), as.integer(vigentes), info = paste(etiqueta, nombre))
@@ -324,15 +334,15 @@ test_that("EN VIVO (medicion): tiempo y memoria de las cinco tablas y de la tabl
   medir("integrada", integrar = TRUE)
 })
 
-# Serie completa: las comprobaciones de forma en los 85 trimestres (2.3 GB de
+# Serie completa: las comprobaciones de forma en los 86 trimestres (2.3 GB de
 # descarga). Solo corre en la ejecucion manual del flujo pruebas-en-vivo.yaml
 # con la opcion enoe_serie.
-test_that("EN VIVO (serie): los 85 trimestres de la ENOE se leen y se integran", {
+test_that("EN VIVO (serie): los 86 trimestres de la ENOE se leen y se integran", {
   skip_if_not(identical(Sys.getenv("IMPORTINEGI_ENOE_SERIE"), "true"),
               "La serie completa solo corre con IMPORTINEGI_ENOE_SERIE=true")
   en_vivo()
   trimestres <- enoe_trimestres()
-  expect_identical(nrow(trimestres), 85L)
+  expect_identical(nrow(trimestres), 86L)
   for (i in seq_len(nrow(trimestres))) {
     year <- trimestres$year[i]
     trimestre <- trimestres$trimestre[i]

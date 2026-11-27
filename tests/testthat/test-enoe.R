@@ -19,20 +19,20 @@ tabla_prueba <- function(...) {
 
 # Trimestres del registro ----------------------------------------------------------
 
-test_that("el registro tiene los 85 trimestres de la ENOE", {
+test_that("el registro tiene los 86 trimestres de la ENOE", {
   withr::local_options(importinegi.registro = NULL)
   trimestres <- enoe_trimestres()
   expect_named(trimestres, c("year", "trimestre", "edicion", "url", "tamano", "bytes"))
   expect_false(anyNA(trimestres))
-  # Todos los trimestres de 2005-T1 a 2026-T2, salvo 2020-T2 (lo sustituyo la ETOE)
+  # Todos los trimestres de 2005-T1 a 2026-T3, salvo 2020-T2 (lo sustituyo la ETOE)
   todos <- expand.grid(trimestre = 1:4, year = 2005:2026)
-  todos <- todos[!(todos$year == 2026 & todos$trimestre > 2) & !(todos$year == 2020 & todos$trimestre == 2), ]
+  todos <- todos[!(todos$year == 2026 & todos$trimestre > 3) & !(todos$year == 2020 & todos$trimestre == 2), ]
   expect_identical(paste(trimestres$year, trimestres$trimestre), paste(todos$year, todos$trimestre))
-  expect_identical(nrow(trimestres), 85L)
+  expect_identical(nrow(trimestres), 86L)
   # Tres formas de nombre: 2005trim1, enoe_n_2020_trim3 y enoe_2023_trim1
   forma <- sub("^.*/microdatos/([a-z_]*)[0-9]{4}_?trim[1-4]_dbf[.]zip$", "\\1", trimestres$url)
   expect_identical(vapply(c("", "enoe_n_", "enoe_"), function(f) sum(forma == f), integer(1), USE.NAMES = FALSE),
-                   c(61L, 10L, 14L))
+                   c(61L, 10L, 15L))
   expect_identical(forma[trimestres$year == 2020], c("", "enoe_n_", "enoe_n_"))
   # La ENOE Nueva Edicion va de 2020-T3 a 2022-T4
   nueva <- trimestres[trimestres$edicion == "ENOE_N", ]
@@ -47,7 +47,7 @@ test_that("el cuestionario ampliado se asigna a los 26 trimestres en que se apli
   trimestres <- enoe_trimestres()
   cuestionario <- enoe_cuestionario(trimestres$year, trimestres$trimestre)
   expect_identical(sum(cuestionario == "ampliado"), 26L)
-  expect_identical(sum(cuestionario == "b\u00e1sico"), 59L)
+  expect_identical(sum(cuestionario == "b\u00e1sico"), 60L)
   ampliado <- paste(trimestres$year, trimestres$trimestre)[cuestionario == "ampliado"]
   expect_identical(ampliado[1:8], c("2005 1", "2005 2", "2005 3", "2005 4", "2006 1", "2006 2", "2007 2", "2008 2"))
   expect_identical(ampliado[9:26], paste(2009:2026, 1))
@@ -72,7 +72,7 @@ test_that("el a\u00f1o y el trimestre se validan sin descargar", {
   # Trimestres que no existen
   expect_error(
     enoe(2004, 4),
-    "La ENOE del cuarto trimestre de 2004 no existe.*del primer trimestre de 2005 al segundo trimestre de 2026"
+    "La ENOE del cuarto trimestre de 2004 no existe.*del primer trimestre de 2005 al tercer trimestre de 2026"
   )
   # 2020-T2: el mensaje remite a etoe()
   expect_error(
@@ -90,6 +90,14 @@ test_that("el a\u00f1o y el trimestre se validan sin descargar", {
   expect_match(enoe_elegir(2005, 1)$url, "/contenidos/programas/enoe/15ymas/microdatos/2005trim1_dbf[.]zip$")
   expect_match(enoe_elegir(2021, 4)$url, "/microdatos/enoe_n_2021_trim4_dbf[.]zip$")
   expect_match(enoe_elegir(2025, 3)$url, "/microdatos/enoe_2025_trim3_dbf[.]zip$")
+  # El ultimo trimestre del registro
+  ultimo <- enoe_elegir(2026, 3)
+  expect_true(ultimo$registrado)
+  expect_match(ultimo$url, "/microdatos/enoe_2026_trim3_dbf[.]zip$")
+  expect_identical(ultimo$tamano, "32.7 MB")
+  expect_identical(enoe_cuestionario(2026, 3), "b\u00e1sico")
+  # El trimestre en curso todavia no esta en el registro: se busca con el nombre vigente
+  expect_false(enoe_elegir(2026, 4)$registrado)
 })
 
 test_that("`integrar`, `tabla` y `estado` se validan antes de descargar", {
