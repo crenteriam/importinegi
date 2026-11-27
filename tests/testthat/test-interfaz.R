@@ -67,6 +67,17 @@ test_that("enoe() conserva los argumentos de la serie 1.x y agrega `tabla` y `es
   expect_null(argumentos$estado)
 })
 
+test_that("etoe() tiene los argumentos de enoe(), con `mes` en lugar de `trimestre`, y agrega `poblacion`", {
+  expect_true("etoe" %in% getNamespaceExports("importinegi"))
+  argumentos <- formals(etoe)
+  expect_identical(names(argumentos), c("year", "mes", "integrar", "tabla", "estado", "poblacion"))
+  expect_identical(sub("^mes$", "trimestre", names(argumentos)[1:5]), names(formals(enoe)))
+  expect_identical(argumentos[c("integrar", "tabla", "estado")], formals(enoe)[c("integrar", "tabla", "estado")])
+  # Por omision, los ponderadores de la estimacion de poblacion con base en el Censo 2020
+  expect_identical(argumentos$poblacion, "cpv2020")
+  expect_identical(names(etoe_versiones())[1], "cpv2020")
+})
+
 test_that("enigh_nuevaconstruccion() ya no se exporta y enigh_nc() la sustituye", {
   expect_false("enigh_nuevaconstruccion" %in% getNamespaceExports("importinegi"))
   expect_true("enigh_nc" %in% getNamespaceExports("importinegi"))

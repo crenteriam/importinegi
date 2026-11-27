@@ -162,17 +162,17 @@ test_that("bases_importinegi() coincide con lo que cpv_censo() puede descargar",
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CPV_CENSO "), bases_importinegi("cpv_censo"))
   expect_identical(unique(bases_importinegi()$proyecto),
-                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe"))
+                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe", "etoe"))
   expect_identical(
-    bases_importinegi(c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe")),
+    bases_importinegi(c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe", "etoe")),
     bases_importinegi()
   )
   de_2020 <- bases_importinegi(year = 2020)
   expect_identical(unique(de_2020$year), 2020L)
-  # Seis bases del censo, los 18 temas del censo de derechos humanos federal y
-  # tres trimestres de la ENOE
-  expect_identical(unique(de_2020$proyecto), c("cpv_censo", "cndhf", "enoe"))
-  expect_identical(nrow(de_2020), 27L)
+  # Seis bases del censo, los 18 temas del censo de derechos humanos federal,
+  # tres trimestres de la ENOE y los tres meses de la ETOE
+  expect_identical(unique(de_2020$proyecto), c("cpv_censo", "cndhf", "enoe", "etoe"))
+  expect_identical(nrow(de_2020), 30L)
   expect_identical(bases_importinegi("cpv_censo", "2020"),
                    structure(de_2020[de_2020$proyecto == "cpv_censo", ], registro = registro_generado()))
   varios <- bases_importinegi(year = c(1990, 2000))

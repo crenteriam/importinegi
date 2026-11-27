@@ -26,7 +26,7 @@ Encuesta Nacional de Ocupacion y Empleo (ENOE)
 \details{
 La ENOE es un proyecto estadistico de encuestas en hogares especializado en informacion sobre el mercado laboral. La ENOE provee informacion trimestral sobre la fuerza laboral, la ocupacion, subocupacion y desocupacion de los miembros del hogar encuestado.
 
-La funcion descarga la serie vigente de la encuesta (poblacion de 15 años y mas), del primer trimestre de 2005 al segundo trimestre de 2026. El INEGI no publico la ENOE del segundo trimestre de 2020: en ese trimestre levanto la Encuesta Telefonica de Ocupacion y Empleo (ETOE), que esta funcion no descarga. \code{\link{bases_importinegi}} lista los trimestres disponibles sin descargar nada: \code{bases_importinegi("enoe")}.
+La funcion descarga la serie vigente de la encuesta (poblacion de 15 años y mas), del primer trimestre de 2005 al segundo trimestre de 2026. El INEGI no publico la ENOE del segundo trimestre de 2020: en ese trimestre levanto la Encuesta Telefonica de Ocupacion y Empleo (ETOE), que se descarga con \code{\link{etoe}}. \code{\link{bases_importinegi}} lista los trimestres disponibles sin descargar nada: \code{bases_importinegi("enoe")}.
 
 Cada trimestre se publica en cinco bases de datos (tablas), que se eligen con el argumento \code{tabla}:
 \describe{
@@ -85,4 +85,6 @@ El INEGI reemplaza los archivos de trimestres ya publicados cuando actualiza sus
 }
 \seealso{
 \code{\link{bases_importinegi}} para consultar los trimestres disponibles.
+
+\code{\link{etoe}} para descargar la Encuesta Telefonica de Ocupacion y Empleo, que sustituyo a la ENOE en abril, mayo y junio de 2020.
 }

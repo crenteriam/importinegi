@@ -23,18 +23,25 @@ api_url_archivos <- function(id, tipo = 4) {
   )
 }
 
+# Ruta de la pagina de un proyecto en el sitio del INEGI. Casi todas estan en
+# la seccion de programas y se escriben sin ella ("enoe/15ymas", "ccpv/2010").
+# La pagina de un proyecto de otra seccion se escribe con su ruta completa,
+# empezando con "/": "/investigacion/etoe".
+inegi_api_pagina <- function(pagina) {
+  pagina <- trimws(as.character(pagina))
+  seccion <- if (startsWith(pagina, "/")) "/" else "/programas/"
+  paste0(seccion, gsub("^/+|/+$", "", pagina), "/")
+}
+
 # Identificador de un proyecto en el servicio de descargas. Se lee de la pagina
-# del programa (por ejemplo "enoe/15ymas" o "ccpv/2010"). En algunas paginas el
-# identificador viene sin comillas (<menu-gen idm=2937 ...>).
+# del proyecto (ver inegi_api_pagina()). En algunas paginas el identificador
+# viene sin comillas (<menu-gen idm=2937 ...>).
 inegi_api_id <- function(pagina) {
-  pagina <- gsub("^/+|/+$", "", pagina)
-  html <- inegi_texto(paste0("/programas/", pagina, "/"))
+  ruta <- inegi_api_pagina(pagina)
+  html <- inegi_texto(ruta)
   etiqueta <- regmatches(html, regexpr("<menu-gen[^>]*[ \t\r\n]idm=[\"']?[0-9]+", html))
   if (length(etiqueta) == 0) {
-    detener(
-      "No se encontr\u00f3 el identificador del proyecto en la p\u00e1gina ",
-      inegi_url(paste0("/programas/", pagina, "/")), "."
-    )
+    detener("No se encontr\u00f3 el identificador del proyecto en la p\u00e1gina ", inegi_url(ruta), ".")
   }
   as.integer(sub(".*idm=[\"']?([0-9]+)$", "\\1", etiqueta))
 }
@@ -145,7 +152,8 @@ registro_tipos <- function(tipos) {
 }
 
 # Construye el registro para una lista de proyectos. `proyectos` es una tabla
-# con las columnas proyecto, edicion y pagina (ver data-raw/proyectos.csv). La
+# con las columnas proyecto, edicion y pagina (ver data-raw/proyectos.csv);
+# pagina es la ruta de la pagina del proyecto (ver inegi_api_pagina()). La
 # columna opcional `tipos` indica los tipos de documento que se consultan,
 # separados por "|" (por ejemplo "4|12"); si falta o esta vacia, solo los
 # microdatos (tipo 4).

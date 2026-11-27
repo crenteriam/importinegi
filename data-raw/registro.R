@@ -16,6 +16,9 @@
 # (pagina es la ruta de https://www.inegi.org.mx/programas/<pagina>/ y tipos,
 # los tipos de documento del servicio de descargas que se consultan, separados
 # por "|": 4 = microdatos, 12 = datos abiertos) y vuelve a ejecutar el script.
+# Si la pagina del proyecto no esta en la seccion de programas del sitio, se
+# escribe su ruta completa, empezando con "/": la de la ETOE es
+# "/investigacion/etoe" (https://www.inegi.org.mx/investigacion/etoe/).
 
 if (!file.exists("DESCRIPTION") || !file.exists("data-raw/proyectos.csv")) {
   stop("Ejecuta este script desde la carpeta raiz del paquete importinegi.")

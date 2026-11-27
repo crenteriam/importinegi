@@ -4,7 +4,7 @@
 #'
 #' La ENOE es un proyecto estadistico de encuestas en hogares especializado en informacion sobre el mercado laboral. La ENOE provee informacion trimestral sobre la fuerza laboral, la ocupacion, subocupacion y desocupacion de los miembros del hogar encuestado.
 #'
-#' La funcion descarga la serie vigente de la encuesta (poblacion de 15 años y mas), del primer trimestre de 2005 al segundo trimestre de 2026. El INEGI no publico la ENOE del segundo trimestre de 2020: en ese trimestre levanto la Encuesta Telefonica de Ocupacion y Empleo (ETOE), que esta funcion no descarga. \code{\link{bases_importinegi}} lista los trimestres disponibles sin descargar nada: \code{bases_importinegi("enoe")}.
+#' La funcion descarga la serie vigente de la encuesta (poblacion de 15 años y mas), del primer trimestre de 2005 al segundo trimestre de 2026. El INEGI no publico la ENOE del segundo trimestre de 2020: en ese trimestre levanto la Encuesta Telefonica de Ocupacion y Empleo (ETOE), que se descarga con \code{\link{etoe}}. \code{\link{bases_importinegi}} lista los trimestres disponibles sin descargar nada: \code{bases_importinegi("enoe")}.
 #'
 #' Cada trimestre se publica en cinco bases de datos (tablas), que se eligen con el argumento \code{tabla}:
 #' \describe{
@@ -62,6 +62,7 @@
 #' \dontrun{enoe(year = 2024, trimestre = "trim1", integrar = TRUE, estado = "Jalisco")}
 #' @return Con \code{integrar = FALSE}, una lista con las cinco bases de datos en formato data.frame, con los nombres \code{coe1}, \code{coe2}, \code{hog}, \code{sdem} y \code{viv}. Si en \code{tabla} se indica una sola base de datos, un data.frame; si se indican varias, una lista con esas bases de datos, en el orden indicado. Con \code{integrar = TRUE}, un data.frame. El resultado tiene los atributos \code{"fuente"}, \code{"llave"} y, cuando el INEGI publico una nota sobre los archivos del trimestre, \code{"nota"}.
 #' @seealso \code{\link{bases_importinegi}} para consultar los trimestres disponibles.
+#' @seealso \code{\link{etoe}} para descargar la Encuesta Telefonica de Ocupacion y Empleo, que sustituyo a la ENOE en abril, mayo y junio de 2020.
 #' @export
 
 enoe <- function(year, trimestre, integrar = FALSE, tabla = NULL, estado = NULL) {
@@ -89,7 +90,10 @@ enoe <- function(year, trimestre, integrar = FALSE, tabla = NULL, estado = NULL)
 #   2025-T3 en adelante  CVE_ENT en lugar de ENT.
 #
 # El hogar agrega N_HOG y H_MUD, y la persona, N_REN. El segundo trimestre de
-# 2020 no existe: el INEGI levanto en su lugar la ETOE, que es otro proyecto.
+# 2020 no existe: el INEGI levanto en su lugar la ETOE, que es otro proyecto y
+# se descarga con etoe() (R/etoe.R). Sus archivos tienen la forma de los de la
+# ENOE hasta 2020-T1, y etoe() usa las funciones de este archivo para leerlos
+# e integrarlos: las que reciben `encuesta` la nombran en sus mensajes.
 # Los nombres de los archivos tambien cambian (SDEMT105.dbf, sdemt212.dbf,
 # ENOEN_SDEMT320.DBF, ENOE_SDEMT124.dbf); los de las columnas estan en
 # mayusculas en todos los trimestres.
@@ -203,23 +207,24 @@ enoe_validar_trimestre <- function(trimestre) {
 
 # Las tablas se piden con su abreviatura, sin distinguir mayusculas. Tambien se
 # acepta el nombre del archivo del INEGI ("SDEMT124", "ENOE_SDEMT124.dbf"), que
-# es como se llamaban los elementos de la lista en la serie 1.x.
-enoe_validar_tabla <- function(tabla) {
+# es como se llamaban los elementos de la lista en la serie 1.x. En la ETOE los
+# archivos se llaman "SDEMT0420.dbf" o "sdemn0620.dbf".
+enoe_validar_tabla <- function(tabla, encuesta = "ENOE") {
   if (is.null(tabla)) {
     return(enoe_tablas())
   }
   opciones <- paste0(
-    "Tablas de la ENOE: \"viv\" (vivienda), \"hog\" (hogar), \"sdem\" (sociodemogr\u00e1fico), ",
+    "Tablas de la ", encuesta, ": \"viv\" (vivienda), \"hog\" (hogar), \"sdem\" (sociodemogr\u00e1fico), ",
     "\"coe1\" y \"coe2\" (cuestionario de ocupaci\u00f3n y empleo, primera y segunda parte)."
   )
   if (!is.character(tabla) || length(tabla) == 0 || anyNA(tabla)) {
     detener("`tabla` debe ser el nombre de una o varias tablas. ", opciones)
   }
-  patron <- "^(enoen?_)?(viv|hog|sdem|coe1|coe2)(t[0-9]+)?([.]dbf)?$"
+  patron <- "^(enoen?_)?(viv|hog|sdem|coe1|coe2)([tn][0-9]+)?([.]dbf)?$"
   nombre <- tolower(trimws(tabla))
   ajenas <- tabla[!grepl(patron, nombre)]
   if (length(ajenas) > 0) {
-    detener("`tabla = ", enumerar(ajenas), "` no es una tabla de la ENOE. ", opciones)
+    detener("`tabla = ", enumerar(ajenas), "` no es una tabla de la ", encuesta, ". ", opciones)
   }
   unique(sub(patron, "\\2", nombre))
 }
@@ -259,7 +264,7 @@ enoe_elegir <- function(year, trimestre) {
         paste0(
           " Suspendi\u00f3 las entrevistas en las viviendas por la emergencia sanitaria de COVID-19 y, ",
           "para abril, mayo y junio, public\u00f3 la Encuesta Telef\u00f3nica de Ocupaci\u00f3n y Empleo ",
-          "(ETOE), que es otro proyecto y no se descarga con enoe()."
+          "(ETOE), que es otro proyecto y se descarga con etoe(): por ejemplo, etoe(2020, \"abril\")."
         )
       }
     )
@@ -298,19 +303,21 @@ enoe_descargar <- function(elegido) {
 
 # Archivos del zip: tabla a la que corresponde cada DBF y notas del INEGI. El
 # nombre de cada tabla se reconoce sin distinguir mayusculas, con o sin el
-# prefijo de la edicion y con o sin el trimestre.
-enoe_contenido <- function(zip) {
+# prefijo de la edicion y con o sin el periodo, dentro o fuera de una carpeta.
+# El periodo va despues de una "t" (SDEMT124.dbf; en la ETOE, SDEMT0420.dbf) o,
+# en un archivo de la ETOE, de una "n" (sdemn0620.dbf).
+enoe_contenido <- function(zip, encuesta = "ENOE") {
   lista <- tryCatch(utils::unzip(zip, list = TRUE), error = function(e) NULL)
   if (is.null(lista) || nrow(lista) == 0) {
     detener("No se pudo leer el contenido de ", basename(zip), ".")
   }
   archivo <- basename(lista$Name)
-  patron <- "^([a-z]+_)?(viv|hog|sdem|coe1|coe2)t?[0-9]*[.]dbf$"
+  patron <- "^([a-z]+_)?(viv|hog|sdem|coe1|coe2)[tn]?[0-9]*[.]dbf$"
   es_tabla <- grepl(patron, archivo, ignore.case = TRUE)
   tabla <- tolower(sub(patron, "\\2", archivo[es_tabla], ignore.case = TRUE))
   if (anyDuplicated(tabla) > 0) {
     detener(
-      "El archivo de la ENOE tiene m\u00e1s de un archivo para la tabla ", enumerar(unique(tabla[duplicated(tabla)])),
+      "El archivo de la ", encuesta, " tiene m\u00e1s de un archivo para la tabla ", enumerar(unique(tabla[duplicated(tabla)])),
       ". Contiene: ", enumerar(archivo, maximo = 15), "."
     )
   }
@@ -400,12 +407,20 @@ enoe_filtrar_entidades <- function(datos, entidades) {
 
 # Llave ------------------------------------------------------------------------
 
+# Columnas que, desde 2020-T3, completan la identificacion de la vivienda en la
+# ENOE cuando la tabla las tiene.
+enoe_llave_adicional <- function() {
+  c("TIPO", "MES_CAL", "CA")
+}
+
 # Columnas que identifican cada fila de una tabla, segun las columnas que tiene:
-# la llave cambia con el trimestre (ver el comentario inicial).
-enoe_llave <- function(columnas, nivel) {
+# la llave cambia con el trimestre (ver el comentario inicial). `adicionales`
+# son las columnas que completan la identificacion de la vivienda cuando la
+# tabla las tiene; la ETOE no usa ninguna (ver R/etoe.R).
+enoe_llave <- function(columnas, nivel, adicionales = enoe_llave_adicional()) {
   llave <- c(
     "CD_A", utils::head(intersect(c("ENT", "CVE_ENT"), columnas), 1), "CON", "V_SEL",
-    intersect(c("TIPO", "MES_CAL", "CA"), columnas)
+    intersect(adicionales, columnas)
   )
   if (nivel >= 2L) {
     llave <- c(llave, "N_HOG", "H_MUD")
@@ -417,8 +432,8 @@ enoe_llave <- function(columnas, nivel) {
 }
 
 # Llave de una tabla, despues de comprobar que tiene todas sus columnas.
-enoe_llave_tabla <- function(datos, nombre) {
-  llave <- enoe_llave(names(datos), enoe_nivel()[[nombre]])
+enoe_llave_tabla <- function(datos, nombre, adicionales = enoe_llave_adicional()) {
+  llave <- enoe_llave(names(datos), enoe_nivel()[[nombre]], adicionales)
   faltan <- setdiff(llave, names(datos))
   if (length(faltan) > 0) {
     detener(
@@ -447,9 +462,10 @@ enoe_como <- function(valores, modelo) {
   }
 }
 
-# Columnas de ponderadores: FAC hasta 2020-T1; FAC_TRI y FAC_MEN despues.
+# Columnas de ponderadores: FAC hasta 2020-T1; FAC_TRI y FAC_MEN despues. En
+# la ETOE, FAC, FAC32 y FAC39, o FAC_NP, FAC32_NP y FAC39_NP.
 enoe_es_ponderador <- function(columnas) {
-  grepl("^FAC(_[A-Z0-9]+)?$", columnas)
+  grepl("^FAC[0-9]*(_[A-Z0-9]+)?$", columnas)
 }
 
 # Integra las tablas de un trimestre en una sola. Reglas:
@@ -481,9 +497,10 @@ enoe_es_ponderador <- function(columnas) {
 #    residentes queda con NA en el ponderador del residente.
 #
 # `tablas` es una lista con nombre o un entorno. Si es un entorno, cada tabla
-# se quita de el en cuanto se usa, para liberar su memoria.
+# se quita de el en cuanto se usa, para liberar su memoria. `adicionales` son
+# las columnas que completan la llave de la vivienda (ver enoe_llave()).
 
-enoe_integrar <- function(tablas) {
+enoe_integrar <- function(tablas, adicionales = enoe_llave_adicional()) {
   if (!is.environment(tablas)) {
     tablas <- list2env(as.list(tablas), envir = new.env(parent = emptyenv()))
   }
@@ -504,7 +521,7 @@ enoe_integrar <- function(tablas) {
   # Filas del resultado: para cada tabla, que fila suya corresponde a cada fila
   # del resultado (NA si no tiene). `identificacion` guarda la llave de las
   # filas del resultado.
-  llave <- enoe_llave_tabla(tablas[[base]], base)
+  llave <- enoe_llave_tabla(tablas[[base]], base, adicionales)
   identificacion <- as.list(tablas[[base]][llave])
   exigir_llave_unica(base, enoe_clave(identificacion, llave), llave)
   filas <- stats::setNames(list(seq_along(identificacion[[1]])), base)
@@ -512,7 +529,7 @@ enoe_integrar <- function(tablas) {
   otra <- NULL
   for (nombre in orden[-1]) {
     otra <- tablas[[nombre]]
-    llave <- intersect(enoe_llave_tabla(otra, nombre), names(identificacion))
+    llave <- intersect(enoe_llave_tabla(otra, nombre, adicionales), names(identificacion))
     clave <- enoe_clave(otra, llave)
     exigir_llave_unica(nombre, clave, llave)
     hallada <- match(enoe_clave(identificacion, llave), clave)
@@ -608,18 +625,29 @@ enoe_obtener <- function(year, trimestre, integrar, tabla, estado) {
   if (!isTRUE(getOption("importinegi.cache", FALSE))) {
     on.exit(unlink(zip), add = TRUE)
   }
-  contenido <- enoe_contenido(zip)
+  enoe_leer(zip, elegido$url, paste("del", elegido$etiqueta), pedidas, integrar, entidades)
+}
+
+# Lee las tablas pedidas del zip de un periodo y arma el resultado. La usan
+# enoe() y etoe(), que publican sus archivos con la misma forma. `url` es la
+# direccion del zip; `periodo`, el periodo para los mensajes, con su
+# preposicion ("del primer trimestre de 2024", "de abril de 2020");
+# `encuesta`, las siglas de la encuesta para los mensajes, y `adicionales`, las
+# columnas que completan la llave de la vivienda (ver enoe_llave()).
+enoe_leer <- function(zip, url, periodo, pedidas, integrar, entidades, encuesta = "ENOE",
+                      adicionales = enoe_llave_adicional()) {
+  contenido <- enoe_contenido(zip, encuesta)
   faltan <- setdiff(pedidas, names(contenido$tablas))
   if (length(faltan) > 0) {
     detener(
-      "El archivo de la ENOE del ", elegido$etiqueta, " no contiene ",
+      "El archivo de la ", encuesta, " ", periodo, " no contiene ",
       if (length(faltan) == 1) "la tabla " else "las tablas ", enumerar(faltan),
       ". Contiene: ", enumerar(contenido$archivos, maximo = 15), "."
     )
   }
   nota <- enoe_nota(zip, contenido$notas)
   if (!is.null(nota)) {
-    message("Nota del INEGI sobre los archivos del ", elegido$etiqueta, ":\n", nota)
+    message("Nota del INEGI sobre los archivos ", periodo, ":\n", nota)
   }
 
   # Las tablas se guardan en un entorno para que la integracion pueda liberar
@@ -630,10 +658,10 @@ enoe_obtener <- function(year, trimestre, integrar, tabla, estado) {
   for (nombre in pedidas) {
     almacen[[nombre]] <- enoe_leer_tabla(zip, contenido$tablas[[nombre]], entidades)
     columnas <- names(almacen[[nombre]])
-    llaves[[nombre]] <- intersect(enoe_llave(columnas, nivel[[nombre]]), columnas)
+    llaves[[nombre]] <- intersect(enoe_llave(columnas, nivel[[nombre]], adicionales), columnas)
   }
   con_atributos <- function(resultado, llave) {
-    attr(resultado, "fuente") <- elegido$url
+    attr(resultado, "fuente") <- url
     attr(resultado, "llave") <- llave
     resultado
   }
@@ -641,7 +669,7 @@ enoe_obtener <- function(year, trimestre, integrar, tabla, estado) {
   if (length(pedidas) == 1) {
     resultado <- con_atributos(almacen[[pedidas]], llaves[[pedidas]])
   } else if (integrar) {
-    resultado <- con_atributos(enoe_integrar(almacen), llaves[[enoe_orden(pedidas)[1]]])
+    resultado <- con_atributos(enoe_integrar(almacen, adicionales), llaves[[enoe_orden(pedidas)[1]]])
   } else {
     resultado <- lapply(pedidas, function(nombre) con_atributos(almacen[[nombre]], llaves[[nombre]]))
     names(resultado) <- pedidas

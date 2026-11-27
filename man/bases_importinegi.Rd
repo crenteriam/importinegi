@@ -28,6 +28,8 @@ Data.frame con una fila por proyecto, año y base de datos (en \code{"cngmd"} y 
 En \code{"enigh_tradicional"} y \code{"enigh_nc"} hay una fila por edicion: \code{base} vale \code{"microdatos"}, \code{tablas} lista las tablas que se pueden pedir con el argumento \code{tabla} de la funcion (la primera es la que se descarga por omision) y \code{tamano_mb} es el peso de todos los archivos de la edicion.
 
 En \code{"enoe"} hay una fila por trimestre: \code{base} es el trimestre, como se escribe en el argumento \code{trimestre} de la funcion (\code{"trim1"}); \code{descripcion} indica la edicion de la encuesta y el cuestionario de ocupacion y empleo que se aplico (basico o ampliado), y \code{tablas} lista las cinco tablas del trimestre, que se descargan todas por omision.
+
+En \code{"etoe"} hay una fila por mes: \code{base} es el mes, como se escribe en el argumento \code{mes} de la funcion (\code{"abril"}); \code{descripcion} indica las versiones de los ponderadores en que se publica el mes, como se escriben en el argumento \code{poblacion} (\code{"cpv2020"} y \code{"conapo"}); \code{tablas} lista las cinco tablas del mes, que se descargan todas por omision, y \code{tamano_mb} es el tamaño del archivo de la version que se descarga por omision.
 }
 \description{
 Devuelve una tabla con las bases de datos del INEGI que se pueden descargar con las funciones de este paquete, por proyecto estadistico y año. No descarga ningun archivo ni requiere conexion a internet.
@@ -37,7 +39,7 @@ La tabla sale del registro de archivos del INEGI que se distribuye con el paquet
 
 Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{cpv_censo}}), el Conteo de Poblacion y Vivienda (\code{\link{cpv_conteo}}), la Encuesta Intercensal (\code{\link{cpv_intercensal}}), el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cngmd}}) y el Censo Nacional de Derechos Humanos Federal (\code{\link{cndhf}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 
-Tambien incluye la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}} y \code{\link{enigh_nc}}), con una fila por edicion, y la Encuesta Nacional de Ocupacion y Empleo (\code{\link{enoe}}), con una fila por trimestre.
+Tambien incluye la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}} y \code{\link{enigh_nc}}), con una fila por edicion, la Encuesta Nacional de Ocupacion y Empleo (\code{\link{enoe}}), con una fila por trimestre, y la Encuesta Telefonica de Ocupacion y Empleo (\code{\link{etoe}}), con una fila por mes.
 
 A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 }
@@ -64,11 +66,16 @@ ediciones$tablas[ediciones$year == 2010]
 # Trimestres de la ENOE de 2020, con su edicion y su cuestionario.
 bases_importinegi(proyecto = "enoe", year = 2020)
 
+# Meses de la ETOE, con las versiones de sus ponderadores.
+bases_importinegi(proyecto = "etoe")
+
 }
 \seealso{
 \code{\link{enigh_tradicional}} y \code{\link{enigh_nc}} para descargar la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
 
 \code{\link{enoe}} para descargar la Encuesta Nacional de Ocupacion y Empleo.
+
+\code{\link{etoe}} para descargar la Encuesta Telefonica de Ocupacion y Empleo.
 
 \code{\link{cpv_censo}}, \code{\link{cpv_conteo}}, \code{\link{cpv_intercensal}}, \code{\link{cngmd}} y \code{\link{cndhf}} para descargar las bases de datos y \code{\link{catalogo_inegi}} para consultar el catalogo de proyectos estadisticos del INEGI.
 }
