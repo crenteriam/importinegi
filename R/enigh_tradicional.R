@@ -2,7 +2,7 @@
 #'
 #' Descarga las tablas de la Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH) en su serie tradicional, de 1984 a 2014, y las devuelve como data.frame.
 #'
-#' La ENIGH provee informacion estadistica sobre los ingresos y los gastos de los hogares en cuanto a su monto, procedencia y distribucion, y sobre las caracteristicas sociodemograficas y ocupacionales de sus integrantes. El INEGI la publica en tres series. La serie tradicional conserva la construccion original de las variables de ingreso y de gasto y tiene 15 ediciones: 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014. La Nueva construccion presenta los levantamientos de 2008 a 2014 con otra construccion de las variables y se descarga con \code{\link{enigh_nc}}. Desde 2016 la encuesta se publica como Nueva serie, que esta funcion no descarga.
+#' La ENIGH provee informacion estadistica sobre los ingresos y los gastos de los hogares en cuanto a su monto, procedencia y distribucion, y sobre las caracteristicas sociodemograficas y ocupacionales de sus integrantes. El INEGI la publica en tres series. La serie tradicional conserva la construccion original de las variables de ingreso y de gasto y tiene 15 ediciones: 1984, 1989, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2005, 2006, 2008, 2010, 2012 y 2014. La Nueva construccion presenta los levantamientos de 2008 a 2014 con otra construccion de las variables y se descarga con \code{\link{enigh_nc}}. Desde 2016 la encuesta se publica como Nueva serie, que se descarga con \code{\link{enigh_ns}}.
 #'
 #' Cada edicion se publica en varias tablas, que cambian con el tiempo. El argumento \code{tabla} elige cuales se descargan:
 #' \describe{
@@ -65,7 +65,7 @@
 #' \dontrun{attr(concentrado, "descriptor")}
 #'
 #' @return Si se indica una sola tabla, un data.frame. Si se indican varias, una lista con un data.frame por tabla, cada uno con el nombre de su tabla. El atributo \code{"fuente"} contiene la direccion de los archivos descargados y el atributo \code{"descriptor"}, la direccion del descriptor de archivos de la edicion.
-#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, las tablas de cada edicion y cuanto pesan. \code{\link{enigh_nc}} para la Nueva construccion de la ENIGH. \code{\link{catalogo_inegi}} para la documentacion de la encuesta en la Red Nacional de Metadatos.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, las tablas de cada edicion y cuanto pesan. \code{\link{enigh_nc}} para la Nueva construccion de la ENIGH, de 2008 a 2014, y \code{\link{enigh_ns}} para la Nueva serie, de 2016 a 2024. \code{\link{catalogo_inegi}} para la documentacion de la encuesta en la Red Nacional de Metadatos.
 #' @export
 enigh_tradicional <- function(year, tabla = "concentrado") {
   if (missing(year)) {

@@ -88,7 +88,7 @@ El catálogo se descarga una sola vez por sesión de R: las consultas posteriore
 
 La función `bases_importinegi()` muestra las bases de datos que se pueden descargar con las funciones de este paquete. A diferencia de `catalogo_inegi()`, que consulta en línea todos los proyectos estadísticos que documenta el INEGI, esta función muestra solamente lo que `importinegi` puede descargar. La función no descarga ningún archivo ni requiere conexión a internet.
 
-El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla. En el Censo Nacional de Gobiernos Municipales y en el Censo Nacional de Derechos Humanos Federal, cada fila es un tema del censo y la columna `modulo` indica el módulo al que pertenece. En la serie tradicional de la ENIGH, cada fila es una edición de la encuesta y la columna `tablas` indica las tablas que se pueden descargar. En la ENOE, cada fila es un trimestre: la columna `base` indica el trimestre, como se escribe en la función de descarga (`trim1`), y la columna `descripcion` indica la edición de la encuesta y el cuestionario de ocupación y empleo que se aplicó (básico o ampliado).
+El resultado es una base de datos con una fila por proyecto estadístico, año y base de datos. Para cada base de datos, se indica su nombre (`base`), que es el que se escribe en la función de descarga, su descripción, las tablas que la componen (`tablas`), si el INEGI la publica en un archivo nacional o solamente por entidad federativa (`cobertura`), el formato de los archivos (`formato`) y el tamaño de la descarga de todo el país en megabytes (`tamano_mb`). Este último dato permite conocer el tamaño de una descarga antes de realizarla. En el Censo Nacional de Gobiernos Municipales y en el Censo Nacional de Derechos Humanos Federal, cada fila es un tema del censo y la columna `modulo` indica el módulo al que pertenece. En las tres series de la ENIGH, cada fila es una edición de la encuesta y la columna `tablas` indica las tablas que se pueden descargar. En la ENOE, cada fila es un trimestre: la columna `base` indica el trimestre, como se escribe en la función de descarga (`trim1`), y la columna `descripcion` indica la edición de la encuesta y el cuestionario de ocupación y empleo que se aplicó (básico o ampliado).
 
 La función tiene dos parámetros, ambos opcionales. El parámetro `proyecto` limita la consulta a un proyecto estadístico y el parámetro `year` la limita a uno o varios años. El siguiente bloque de código presenta tres ejemplos de consulta.
 
@@ -103,7 +103,7 @@ bases.censo = bases_importinegi(proyecto = "cpv_censo")
 bases.censo2020 = bases_importinegi(proyecto = "cpv_censo", year = 2020)
 ```
 
-La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda, de la Encuesta Intercensal, del Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México, del Censo Nacional de Derechos Humanos Federal y de la serie tradicional de la ENIGH. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
+La información proviene del registro de archivos del INEGI que se distribuye con el paquete, que es el mismo que utilizan las funciones de descarga. Por lo tanto, la función muestra los archivos que existían cuando se generó el registro; los archivos que el INEGI publique posteriormente aparecerán al actualizar el paquete. En esta versión, la función incluye las bases de datos del Censo y del Conteo de Población y Vivienda, de la Encuesta Intercensal, del Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de México, del Censo Nacional de Derechos Humanos Federal, de las tres series de la ENIGH y de la ENOE. Los demás proyectos estadísticos del paquete se incorporarán conforme se actualicen sus funciones; mientras tanto, los años y las bases de datos disponibles se consultan en la documentación de cada función.
 
 ## Censo Nacional de Poblacion y Vivienda
 
@@ -368,7 +368,7 @@ datos.municipios$cvegeo = paste0(datos.municipios$enticve1, datos.municipios$mun
 
 ## Encuesta Nacional de Ingresos y Gastos de los Hogares
 
-El INEGI publica la ENIGH en tres series. La serie tradicional abarca los levantamientos de 1984 a 2014 y conserva la construcción original de las variables de ingreso y de gasto. La Nueva Construcción presenta los levantamientos de 2008 a 2014 con otra construcción de esas variables; son las mismas entrevistas que las de la serie tradicional de esos años. La Nueva Serie comienza en 2016, con un diseño distinto, y el INEGI no la considera comparable con las ediciones anteriores. En esta versión, la serie tradicional se descarga con la función `enigh_tradicional()` y la Nueva Construcción, con la función `enigh_nc()`. La Nueva Serie todavía no se puede descargar con el paquete.
+El INEGI publica la ENIGH en tres series. La serie tradicional abarca los levantamientos de 1984 a 2014 y conserva la construcción original de las variables de ingreso y de gasto. La Nueva Construcción presenta los levantamientos de 2008 a 2014 con otra construcción de esas variables; son las mismas entrevistas que las de la serie tradicional de esos años. La Nueva Serie comienza en 2016, con un diseño distinto, y el INEGI no la considera comparable con las ediciones anteriores. En esta versión, la serie tradicional se descarga con la función `enigh_tradicional()`; la Nueva Construcción, con la función `enigh_nc()`, y la Nueva Serie, con la función `enigh_ns()`.
 
 ### Serie tradicional
 
@@ -470,6 +470,71 @@ Las columnas se devuelven como en la serie tradicional: con los nombres que util
 La tabla `noagro` de 2010 es una excepción. El archivo DBF que el INEGI publica con el nombre de esa tabla contiene una copia de la tabla `agro`, por lo que la función lee la tabla del archivo CSV del INEGI, que sí contiene los negocios no agropecuarios, y asigna a cada columna el tipo de dato que el INEGI declara para ella.
 
 Como en la serie tradicional, los nombres de las variables cambian de una edición a otra. Por ejemplo, en el concentrado el INEGI cambió el nombre de unas 50 variables entre 2010 y 2012 (`INGCOR` pasó a ser `ING_COR`). La dirección del descriptor de archivos de cada edición queda almacenada en el atributo `descriptor` del objeto.
+
+### Nueva Serie
+
+La función `enigh_ns()` descarga las bases de datos de la Nueva Serie de la ENIGH, que tiene cinco ediciones: 2016, 2018, 2020, 2022 y 2024. La Nueva Serie tiene una muestra mayor que la de las ediciones anteriores (de 70 000 a 91 000 hogares, según la edición) y su cobertura es nacional y por entidad federativa. La sintaxis de la función tiene tres parámetros, de los cuales solo el primero es indispensable. El primer parámetro es el año del levantamiento (`year`) en formato numérico. El segundo parámetro es la tabla (`tabla`) en formato alfanumérico. La selección por default es `concentrado`, que contiene una fila por hogar, con su factor de expansión y los principales agregados de ingreso y de gasto. Cuando no se indica la tabla, la función avisa con un mensaje que descarga el concentrado y enumera las demás tablas de la edición. El tercer parámetro es la entidad federativa (`estado`); la selección por default descarga los datos de todo el país.
+
+Las tablas continúan la estructura de la Nueva Construcción de 2012 y 2014: las ediciones de 2016 y 2018 tienen las mismas doce tablas, con casi las mismas variables, y desde 2020 hay cinco tablas más. Los nombres de las tablas son los mismos que en `enigh_tradicional()` y `enigh_nc()`. Tres de ellos difieren de los que el INEGI da a sus archivos en esta serie: la tabla `concentrado` corresponde al archivo `concentradohogar`; `gastohogar`, a `gastoshogar`, y `gastopersona`, a `gastospersona`. La función solo acepta los nombres del paquete. La siguiente tabla muestra las ediciones en las que existe cada tabla. Esta información se puede consultar también con `bases_importinegi(proyecto = "enigh_ns")`.
+
+| `tabla` | Contenido | Ediciones |
+|:--------|:----------|:----------|
+| `concentrado` | Principales variables por hogar | Todas |
+| `viviendas` | Características de las viviendas | Todas |
+| `hogares` | Características de los hogares | Todas |
+| `poblacion` | Características sociodemográficas de los integrantes del hogar | Todas |
+| `trabajos` | Condición de actividad y trabajos de los integrantes del hogar de 12 años o más | Todas |
+| `ingresos` | Ingresos y percepciones financieras y de capital de cada integrante del hogar | Todas |
+| `ingresos_jcf` | Ingresos del programa Jóvenes Construyendo el Futuro | 2020 a 2024 |
+| `gastohogar` y `gastopersona` | Gastos del hogar y gastos de cada uno de sus integrantes | Todas |
+| `gastotarjetas` | Gastos del hogar cubiertos con tarjeta de crédito | Todas |
+| `erogaciones` | Erogaciones de capital del hogar | Todas |
+| `agro` y `noagro` | Negocios agropecuarios y no agropecuarios de los hogares | Todas |
+| `agroproductos`, `agroconsumo` y `agrogasto` | Productos de los negocios agrícolas del hogar; destino, cantidad y valor de esos productos, y gastos del negocio | 2020 a 2024 |
+| `noagroimportes` | Importe de los productos de los negocios no agrícolas del hogar | 2020 a 2024 |
+
+Si se indica una sola tabla, la función devuelve una base de datos (data.frame); si se indican varias, devuelve una lista de R con una base de datos por tabla, cada una con el nombre de su tabla. En el siguiente bloque de código se presentan tres ejemplos de descarga.
+
+```{r, eval = FALSE}
+# Default: concentrado de hogares de la ENIGH 2024
+concentrado24 = enigh_ns(year = 2024)
+
+# Tabla de viviendas de la ENIGH 2018
+viviendas18 = enigh_ns(year = 2018, tabla = "viviendas")
+
+# Tablas de población y de ingresos de la ENIGH 2022, en una lista
+tablas22 = enigh_ns(year = 2022, tabla = c("poblacion", "ingresos"))
+ingresos22 = tablas22$ingresos
+```
+
+El parámetro `estado` conserva los datos de una o varias entidades federativas, que se pueden escribir con su nombre, su abreviatura o su clave del INEGI. El INEGI publica cada tabla en un solo archivo nacional, por lo que la función descarga el archivo completo aunque se indique una entidad. La entidad de cada fila se obtiene de los dos primeros dígitos de `FOLIOVIV`, que son la clave de la entidad en todas las tablas de la serie.
+
+```{r, eval = FALSE}
+# Concentrado de hogares de Jalisco en la ENIGH 2024
+concentrado24.jal = enigh_ns(year = 2024, estado = "Jalisco")
+
+# Población de Jalisco y de Colima en la ENIGH 2022
+poblacion22.occ = enigh_ns(year = 2022, tabla = "poblacion", estado = c("Jalisco", "Colima"))
+```
+
+Las tablas se unen con las mismas variables en las cinco ediciones: `FOLIOVIV` y `FOLIOHOG` identifican al hogar, y `NUMREN`, a la persona. La tabla de viviendas solo incluye `FOLIOVIV`, y las tablas de trabajos y de negocios incluyen, además, el número del trabajo (`ID_TRABAJO`).
+
+El factor de expansión se llama `FACTOR` en toda la serie. De 2016 a 2020 se encuentra en la tabla de viviendas y en el concentrado; desde 2022 se encuentra también en las tablas de hogares, población, trabajos, ingresos, `gastohogar` y `gastopersona`. Las variables del diseño muestral (`EST_DIS` y `UPM`), que sirven para calcular la precisión de las estimaciones, se encuentran en las mismas tablas que el factor. Para ponderar una tabla que no incluye el factor, primero hay que unirle el del concentrado con el identificador del hogar, como se ilustra en el siguiente bloque de código. En las ediciones de 2016 y 2018, el factor es el que el INEGI actualizó en noviembre de 2021 con la estimación de población de su Marco de Muestreo de Viviendas.
+
+```{r, eval = FALSE}
+# Tablas de concentrado y de población de la ENIGH 2020, en una lista
+tablas20 = enigh_ns(year = 2020, tabla = c("concentrado", "poblacion"))
+
+# Unir el factor de expansión de cada hogar a las personas
+factores20 = tablas20$concentrado[, c("FOLIOVIV", "FOLIOHOG", "FACTOR")]
+personas20 = merge(tablas20$poblacion, factores20, by = c("FOLIOVIV", "FOLIOHOG"))
+```
+
+Las columnas se devuelven como en las otras dos series: con los nombres que utiliza el INEGI, todos en mayúsculas, y con el tipo de dato que el INEGI les da. El INEGI publica los nombres de esta serie en minúsculas; para regresarlos a minúsculas se puede utilizar `names(tabla) = tolower(names(tabla))`. Cuatro nombres llegan recortados a diez caracteres, que es el límite del formato DBF, en las ediciones de 2016 a 2022: `ANIO_PICKU` y `ANIO_CARRE` en la tabla de hogares, y `COMBUSTIBL` y `MEDIDOR_LU` en la tabla de viviendas. En 2024, el INEGI acortó esos nombres (`ANIO_PICK`, `ANIO_CARRE`, `COMBUS` y `MEDID_LUZ`). Los datos que el INEGI deja en blanco se codifican como valores perdidos (`NA`). En algunas variables, el INEGI utiliza un código de "no especificado": `&` en las columnas de texto y `-1` en las numéricas. La función conserva esos códigos.
+
+La tabla `gastohogar` es mucho más grande que las demás: tiene de 4.2 a 5.3 millones de filas, su descarga pesa de 39 a 58 MB y, ya leída, la de 2024 ocupa cerca de 1.5 GB de memoria. La función avisa antes de descargarla.
+
+Los nombres de las variables cambian poco de una edición a otra, pero las tablas de dos ediciones no se pueden combinar sin revisarlas. Por ejemplo, en 2024 el INEGI cambió el catálogo de claves de gasto y la variable `CLAVE` pasó de 4 a 6 caracteres. La dirección del descriptor de archivos de cada edición queda almacenada en el atributo `descriptor` del objeto.
 
 ## Encuesta Nacional de Ocupacion y Empleo
 

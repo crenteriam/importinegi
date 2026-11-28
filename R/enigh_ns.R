@@ -1,0 +1,94 @@
+#' Encuesta Nacional de Ingresos y Gastos de los Hogares, Nueva serie
+#'
+#' Descarga las tablas de la Encuesta Nacional de Ingresos y Gastos de los Hogares (ENIGH) en su Nueva serie, de 2016 a 2024, de todo el pais o de las entidades federativas que se indiquen, y las devuelve como data.frame.
+#'
+#' La ENIGH provee informacion estadistica sobre los ingresos y los gastos de los hogares en cuanto a su monto, procedencia y distribucion, y sobre las caracteristicas sociodemograficas y ocupacionales de sus integrantes. El INEGI la publica en tres series. La Nueva serie comienza en 2016 y tiene cinco ediciones: 2016, 2018, 2020, 2022 y 2024. Su diseño es distinto del de las ediciones anteriores: la muestra es mayor (de 70 000 a 91 000 hogares, segun la edicion) y su cobertura es nacional y por entidad federativa. El INEGI no la considera comparable con las ediciones de 2014 y anteriores, que se descargan con \code{\link{enigh_nc}} (Nueva construccion, de 2008 a 2014) y con \code{\link{enigh_tradicional}} (serie tradicional, de 1984 a 2014).
+#'
+#' Las tablas continuan la estructura de la Nueva construccion de 2012 y 2014: las ediciones de 2016 y 2018 tienen las mismas doce tablas, con casi las mismas columnas, y desde 2020 hay cinco tablas mas. El argumento \code{tabla} elige cuales se descargan:
+#' \describe{
+#'   \item{\code{"concentrado"}}{Principales variables por hogar: una fila por hogar, con su factor de expansion y los agregados de ingreso y de gasto. Las cinco ediciones.}
+#'   \item{\code{"viviendas"}}{Caracteristicas de las viviendas. Las cinco ediciones.}
+#'   \item{\code{"hogares"}}{Caracteristicas de los hogares. Las cinco ediciones.}
+#'   \item{\code{"poblacion"}}{Caracteristicas sociodemograficas de los integrantes del hogar. Las cinco ediciones.}
+#'   \item{\code{"trabajos"}}{Condicion de actividad y trabajos de los integrantes del hogar de 12 años o mas. Las cinco ediciones.}
+#'   \item{\code{"ingresos"}}{Ingresos y percepciones financieras y de capital de cada integrante del hogar. Las cinco ediciones.}
+#'   \item{\code{"ingresos_jcf"}}{Ingresos del programa Jovenes Construyendo el Futuro. Ediciones de 2020, 2022 y 2024.}
+#'   \item{\code{"gastohogar"} y \code{"gastopersona"}}{Gastos del hogar y gastos de cada uno de sus integrantes. Las cinco ediciones.}
+#'   \item{\code{"gastotarjetas"}}{Gastos del hogar que se cubrieron con tarjeta de credito bancaria o comercial. Las cinco ediciones.}
+#'   \item{\code{"erogaciones"}}{Erogaciones de capital del hogar. Las cinco ediciones.}
+#'   \item{\code{"agro"} y \code{"noagro"}}{Negocios agropecuarios y negocios no agropecuarios de los hogares. Las cinco ediciones.}
+#'   \item{\code{"agroproductos"}, \code{"agroconsumo"} y \code{"agrogasto"}}{Productos de los negocios agricolas del hogar; destino, cantidad y valor de los productos del negocio, y gastos del negocio. Ediciones de 2020, 2022 y 2024.}
+#'   \item{\code{"noagroimportes"}}{Importe de los productos de los negocios no agricolas del hogar. Ediciones de 2020, 2022 y 2024.}
+#' }
+#'
+#' Los nombres de las tablas son los que usan \code{\link{enigh_tradicional}} y \code{\link{enigh_nc}}.
+#'
+#' \code{\link{bases_importinegi}} lista las tablas de cada edicion sin descargar nada: \code{bases_importinegi("enigh_ns")}.
+#'
+#' La funcion toma la direccion de cada archivo del registro de archivos del INEGI que se distribuye con el paquete, descarga los archivos en una carpeta temporal y lee las tablas en formato DBF. Cada tabla viene en su propio archivo y todos los archivos son nacionales. La descarga del concentrado pesa de 12 a 16 MB y la de una edicion completa, de 72 a 102 MB. Requiere conexion a internet.
+#'
+#' La tabla \code{"gastohogar"} es mucho mas grande que las demas: tiene de 4.2 a 5.3 millones de filas, su descarga pesa de 39 a 58 MB (mas de la mitad de la edicion) y, ya leida, la de 2024 ocupa cerca de 1.5 GB de memoria. La funcion avisa antes de descargarla.
+#'
+#' @section Entidades federativas:
+#' El argumento \code{estado} conserva las filas de una o varias entidades federativas. El INEGI publica cada tabla en un solo archivo nacional, asi que la funcion descarga el archivo completo aunque se indique una entidad. La entidad de cada fila se toma de los dos primeros digitos de \code{FOLIOVIV}, que son la clave de la entidad en todas las tablas de la serie.
+#'
+#' @section Como unir las tablas:
+#' Las tablas de una edicion se unen con el identificador del hogar, que son dos variables: \code{FOLIOVIV} (la vivienda) y \code{FOLIOHOG} (el hogar dentro de la vivienda). La tabla de viviendas solo tiene \code{FOLIOVIV}. Las tablas de personas traen ademas el numero de renglon de la persona, \code{NUMREN}; las de trabajos y negocios, el numero del trabajo, \code{ID_TRABAJO}, y las tablas \code{"agroproductos"} y \code{"agroconsumo"}, el numero del producto, \code{NUMPROD}. Estas variables se llaman igual en las cinco ediciones.
+#'
+#' El factor de expansion indica cuantos hogares representa cada hogar de la muestra, y las estimaciones deben usarlo. Se llama \code{FACTOR} en toda la serie. De 2016 a 2020 esta en la tabla de viviendas y en el concentrado; desde 2022 esta tambien en las tablas de hogares, poblacion, trabajos, ingresos, gastohogar y gastopersona. Para ponderar una tabla que no lo trae hay que unirle el factor del concentrado con el identificador del hogar. Las variables del diseño muestral (\code{EST_DIS} y \code{UPM}), que sirven para calcular la precision de las estimaciones, estan en las mismas tablas que el factor. En las ediciones de 2016 y 2018, el factor es el que el INEGI actualizo en noviembre de 2021 con la estimacion de poblacion de su Marco de Muestreo de Viviendas.
+#'
+#' Los nombres de las variables y sus codigos cambian poco de una edicion a otra, pero las tablas de dos ediciones no se pueden apilar sin revisarlas. Por ejemplo, \code{UBICA_GEO} tiene 9 caracteres en 2016 y 5 desde 2018 (la entidad y el municipio), y en 2024 el INEGI cambio el catalogo de claves de gasto, con lo que \code{CLAVE} paso de 4 a 6 caracteres. El INEGI describe las tablas y las variables de cada edicion en su descriptor de archivos, cuya direccion queda en el atributo \code{"descriptor"} del resultado.
+#'
+#' @section Contenido de las tablas:
+#' Los nombres de las columnas son los del INEGI, en mayusculas, como en \code{\link{enigh_tradicional}} y \code{\link{enigh_nc}}, para que las tablas de las tres series se puedan unir y comparar con los mismos nombres. El INEGI publica los nombres de esta serie en minusculas, y asi aparecen en su documentacion; \code{names(tabla) <- tolower(names(tabla))} los devuelve a minusculas.
+#'
+#' Cuatro nombres llegan recortados a 10 caracteres, el limite del formato DBF, en las ediciones de 2016 a 2022: \code{ANIO_PICKU} y \code{ANIO_CARRE} en hogares, y \code{COMBUSTIBL} y \code{MEDIDOR_LU} en viviendas. En 2024 el INEGI acorto esos nombres y ya no hay recortes: \code{ANIO_PICK}, \code{ANIO_CARRE}, \code{COMBUS} y \code{MEDID_LUZ}.
+#'
+#' Las columnas conservan el tipo que les da el INEGI: las que declara como texto se devuelven como texto, con sus ceros a la izquierda (los folios, las claves y la mayoria de los codigos), y las que declara como numero, como numero.
+#'
+#' Los datos que el INEGI deja en blanco se devuelven como \code{NA}. Los codigos no se sustituyen por sus descripciones. En algunas variables el INEGI usa un codigo de "no especificado": \code{&} en las columnas de texto y \code{-1} en las numericas. La funcion los deja como estan.
+#'
+#' @param year Año del levantamiento de la encuesta en formato numerico. Es obligatorio. Los años disponibles son 2016, 2018, 2020, 2022 y 2024.
+#' @param tabla Tabla o tablas que se descargan, en formato alfanumerico. Por omision, \code{"concentrado"}; en ese caso la funcion avisa que tabla descarga y cuales son las demas tablas de la edicion. Las opciones son: \code{"concentrado"}, \code{"viviendas"}, \code{"hogares"}, \code{"poblacion"}, \code{"trabajos"}, \code{"ingresos"}, \code{"ingresos_jcf"}, \code{"gastohogar"}, \code{"gastopersona"}, \code{"gastotarjetas"}, \code{"erogaciones"}, \code{"agro"}, \code{"agroproductos"}, \code{"agroconsumo"}, \code{"agrogasto"}, \code{"noagro"} y \code{"noagroimportes"}. Cinco de ellas existen solo desde 2020 (ver Detalles).
+#' @param estado Entidad federativa. Acepta el nombre (\code{"Jalisco"}, \code{"Ciudad de Mexico"}), la abreviatura (\code{"jal"}, \code{"cdmx"}) o la clave del INEGI (\code{14}, \code{"09"}), sin distinguir mayusculas ni acentos, y varias entidades a la vez. La funcion descarga el archivo nacional y conserva las filas de las entidades indicadas. Por omision, todo el pais.
+#'
+#' @examples
+#'
+#' # Consulta las tablas de cada edicion, sin descargar nada
+#' \dontrun{ediciones <- bases_importinegi("enigh_ns")}
+#'
+#' # Descarga el concentrado de la ENIGH 2024: una fila por hogar. Como no se
+#' # indica la tabla, un mensaje avisa cual se descarga y cuales tiene la edicion
+#' \dontrun{concentrado <- enigh_ns(year = 2024)}
+#'
+#' # Concentrado de los hogares de Jalisco en la ENIGH 2024
+#' \dontrun{jalisco <- enigh_ns(year = 2024, tabla = "concentrado", estado = "Jalisco")}
+#'
+#' # Descarga dos tablas de la ENIGH 2022 y extrae una
+#' \dontrun{tablas <- enigh_ns(year = 2022, tabla = c("poblacion", "ingresos"))}
+#' \dontrun{ingresos <- tablas$ingresos}
+#'
+#' # Une el factor de expansion de cada hogar a las personas de la ENIGH 2020,
+#' # cuya tabla de poblacion no lo trae
+#' \dontrun{
+#' tablas <- enigh_ns(year = 2020, tabla = c("concentrado", "poblacion"))
+#' factores <- tablas$concentrado[, c("FOLIOVIV", "FOLIOHOG", "FACTOR")]
+#' personas <- merge(tablas$poblacion, factores, by = c("FOLIOVIV", "FOLIOHOG"))
+#' }
+#'
+#' # Hogares que representa la muestra de cada entidad en la ENIGH 2024
+#' \dontrun{tapply(concentrado$FACTOR, substr(concentrado$FOLIOVIV, 1, 2), sum)}
+#'
+#' # Direccion del descriptor de archivos de la edicion
+#' \dontrun{attr(concentrado, "descriptor")}
+#'
+#' @return Si se indica una sola tabla, un data.frame. Si se indican varias, una lista con un data.frame por tabla, cada uno con el nombre de su tabla. Si se indica \code{estado}, cada tabla contiene solo las filas de esas entidades. El atributo \code{"fuente"} contiene la direccion de los archivos descargados y el atributo \code{"descriptor"}, la direccion del descriptor de archivos de la edicion.
+#' @seealso \code{\link{bases_importinegi}} para consultar, sin descargar nada, las tablas de cada edicion y cuanto pesan. \code{\link{enigh_nc}} para la Nueva construccion de la ENIGH, de 2008 a 2014, y \code{\link{enigh_tradicional}} para la serie tradicional, de 1984 a 2014. \code{\link{catalogo_inegi}} para la documentacion de la encuesta en la Red Nacional de Metadatos.
+#' @name enigh_ns
+#' @usage enigh_ns(year, tabla = "concentrado", estado = NULL)
+NULL
+
+# La funcion todavia no esta escrita: por indicacion del autor, la documentacion
+# se redacto antes que el codigo. Al escribirla, el bloque de arriba pasa a
+# documentar la funcion (con @export y sin @name ni @usage) y el ejemplo de
+# bases_importinegi() deja de ir dentro de \dontrun{}.
