@@ -15,7 +15,7 @@ test_that("las funciones geograficas se detienen con un mensaje claro si falta s
     requiere_paquete = function(paquete) stop("falta ", paquete, call. = FALSE)
   )
   expect_error(sig_caminos_extrae(tempdir(), mapa = "red_vial"), "falta sf")
-  expect_error(sig_marcogeo(year = 2009, mapa = "municipios"), "falta sf")
+  expect_error(sig_marcogeoestadistico(year = 2009, mapa = "municipios"), "falta sf")
 })
 
 test_that("requiere_paquete() indica la version anterior de readxl en R 4.1", {

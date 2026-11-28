@@ -8,6 +8,8 @@
 #'
 #' Tambien incluye la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}} y \code{\link{enigh_nc}}), con una fila por edicion, la Encuesta Nacional de Ocupacion y Empleo (\code{\link{enoe}}), con una fila por trimestre, y la Encuesta Telefonica de Ocupacion y Empleo (\code{\link{etoe}}), con una fila por mes.
 #'
+#' Incluye ademas el Marco Geoestadistico (\code{\link{sig_marcogeoestadistico}}), con una fila por edicion. Estas filas no salen del registro de microdatos, sino de la lista de productos del Marco Geoestadistico del INEGI, que tambien se distribuye con el paquete.
+#'
 #' A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 #'
 #' @param proyecto Proyecto estadistico que se quiere consultar, en formato alfanumerico (por ejemplo, \code{"cpv_censo"}). Por omision, todos los proyectos.
@@ -39,6 +41,11 @@
 #' # Meses de la ETOE, con las versiones de sus ponderadores.
 #' bases_importinegi(proyecto = "etoe")
 #'
+#' # Ediciones del Marco Geoestadistico y mapas de la edicion de 2025.
+#' marco <- bases_importinegi(proyecto = "sig_marcogeoestadistico")
+#' marco[, c("year", "base", "descripcion")]
+#' marco$tablas[marco$year == 2025]
+#'
 #' @return Data.frame con una fila por proyecto, año y base de datos (en \code{"cngmd"} y \code{"cndhf"}, una fila por edicion y tema), y las siguientes columnas:
 #' \describe{
 #'   \item{\code{proyecto}}{Proyecto estadistico. Coincide con el nombre de la funcion que lo descarga (por ejemplo, \code{"cpv_censo"} se descarga con \code{cpv_censo()}).}
@@ -48,7 +55,7 @@
 #'   \item{\code{descripcion}}{Descripcion de la base de datos. En \code{"cngmd"} y \code{"cndhf"}, titulo que el INEGI le da al tema, que tambien se puede escribir en el argumento \code{tema}.}
 #'   \item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga. En \code{"cngmd"} y \code{"cndhf"}, \code{NA}: las tablas de un tema se conocen al descargarlo.}
 #'   \item{\code{cobertura}}{\code{"nacional y por entidad"} si el INEGI publica un archivo nacional ademas de los archivos por entidad federativa, \code{"por entidad"} si solo publica archivos por entidad, o \code{"nacional"} si solo publica el archivo nacional.}
-#'   \item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"} o \code{"xlsx"}).}
+#'   \item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"}, \code{"xlsx"} o \code{"shp"}).}
 #'   \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
 #' }
 #'
@@ -57,6 +64,9 @@
 #' En \code{"enoe"} hay una fila por trimestre: \code{base} es el trimestre, como se escribe en el argumento \code{trimestre} de la funcion (\code{"trim1"}); \code{descripcion} indica la edicion de la encuesta y el cuestionario de ocupacion y empleo que se aplico (basico o ampliado), y \code{tablas} lista las cinco tablas del trimestre, que se descargan todas por omision.
 #'
 #' En \code{"etoe"} hay una fila por mes: \code{base} es el mes, como se escribe en el argumento \code{mes} de la funcion (\code{"abril"}); \code{descripcion} indica las versiones de los ponderadores en que se publica el mes, como se escriben en el argumento \code{poblacion} (\code{"cpv2020"} y \code{"conapo"}); \code{tablas} lista las cinco tablas del mes, que se descargan todas por omision, y \code{tamano_mb} es el tamaño del archivo de la version que se descarga por omision.
+#'
+#' En \code{"sig_marcogeoestadistico"} hay una fila por edicion del Marco Geoestadistico: \code{year} es el año de edicion; \code{base} es la version de la edicion, como se escribe en el argumento \code{version} de la funcion (solo hace falta indicarla en los años que tienen varias ediciones); \code{tablas} lista los mapas de la edicion, que se piden con el argumento \code{mapa}, y \code{tamano_mb} es el peso de todos los mapas de la edicion para todo el pais.
+#' @seealso \code{\link{sig_marcogeoestadistico}} para descargar los mapas del Marco Geoestadistico.
 #' @seealso \code{\link{enigh_tradicional}} y \code{\link{enigh_nc}} para descargar la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
 #' @seealso \code{\link{enoe}} para descargar la Encuesta Nacional de Ocupacion y Empleo.
 #' @seealso \code{\link{etoe}} para descargar la Encuesta Telefonica de Ocupacion y Empleo.
@@ -71,7 +81,11 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
   gobierno <- gobierno_bases()
   enigh <- enigh_bases()
   ocupacion <- rbind(enoe_bases(), etoe_bases())
-  proyectos <- c(unique(bases$proyecto), gobierno_programas()$programa, names(enigh_programas()), "enoe", "etoe")
+  marco <- marcogeo_bases()
+  proyectos <- c(
+    unique(bases$proyecto), gobierno_programas()$programa, names(enigh_programas()), "enoe", "etoe",
+    "sig_marcogeoestadistico"
+  )
 
   if (!is.null(proyecto)) {
     if (!is.character(proyecto) || length(proyecto) == 0 || anyNA(proyecto)) {
@@ -89,6 +103,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
     gobierno <- gobierno[gobierno$proyecto %in% proyecto, ]
     enigh <- enigh[enigh$proyecto %in% proyecto, ]
     ocupacion <- ocupacion[ocupacion$proyecto %in% proyecto, ]
+    marco <- marco[marco$proyecto %in% proyecto, ]
   }
   if (!is.null(year)) {
     numeros <- suppressWarnings(as.integer(as.character(year)))
@@ -99,6 +114,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
     gobierno <- gobierno[gobierno$year %in% numeros, ]
     enigh <- enigh[enigh$year %in% numeros, ]
     ocupacion <- ocupacion[ocupacion$year %in% numeros, ]
+    marco <- marco[marco$year %in% numeros, ]
   }
 
   filas <- lapply(seq_len(nrow(bases)), function(i) {
@@ -124,7 +140,7 @@ bases_importinegi <- function(proyecto = NULL, year = NULL) {
   })
   tabla <- do.call(rbind, c(
     filas, if (nrow(gobierno) > 0) list(gobierno), if (nrow(enigh) > 0) list(enigh),
-    if (nrow(ocupacion) > 0) list(ocupacion)
+    if (nrow(ocupacion) > 0) list(ocupacion), if (nrow(marco) > 0) list(marco)
   ))
   if (is.null(tabla)) {
     tabla <- data.frame(

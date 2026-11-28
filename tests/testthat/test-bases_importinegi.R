@@ -16,7 +16,7 @@ test_that("bases_importinegi() lista las bases del paquete sin conexion", {
   expect_true(all(is.na(bases$tablas[gobierno])) && !anyNA(bases$tablas[!gobierno]))
   expect_true(all(bases$tamano_mb > 0))
   expect_true(all(bases$cobertura %in% c("nacional y por entidad", "por entidad", "nacional")))
-  expect_true(all(bases$formato %in% c("dbf", "csv", "xlsx")))
+  expect_true(all(bases$formato %in% c("dbf", "csv", "xlsx", "shp")))
 })
 
 test_that("bases_importinegi() describe las bases del Censo de Poblacion y Vivienda", {
@@ -162,33 +162,43 @@ test_that("bases_importinegi() coincide con lo que cpv_censo() puede descargar",
 
 test_that("bases_importinegi() filtra por proyecto y por a\u00f1o", {
   expect_identical(bases_importinegi("CPV_CENSO "), bases_importinegi("cpv_censo"))
-  expect_identical(unique(bases_importinegi()$proyecto),
-                   c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe", "etoe"))
-  expect_identical(
-    bases_importinegi(c("cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe", "etoe")),
-    bases_importinegi()
+  proyectos <- c(
+    "cpv_censo", "cpv_conteo", "cpv_intercensal", "cngmd", "cndhf", "enigh_tradicional", "enigh_nc", "enoe", "etoe",
+    "sig_marcogeoestadistico"
   )
+  expect_identical(unique(bases_importinegi()$proyecto), proyectos)
+  expect_identical(bases_importinegi(proyectos), bases_importinegi())
   de_2020 <- bases_importinegi(year = 2020)
   expect_identical(unique(de_2020$year), 2020L)
   # Seis bases del censo, los 18 temas del censo de derechos humanos federal,
-  # tres trimestres de la ENOE y los tres meses de la ETOE
-  expect_identical(unique(de_2020$proyecto), c("cpv_censo", "cndhf", "enoe", "etoe"))
-  expect_identical(nrow(de_2020), 30L)
+  # tres trimestres de la ENOE, los tres meses de la ETOE y una edicion del
+  # Marco Geoestadistico
+  expect_identical(
+    unique(de_2020$proyecto), c("cpv_censo", "cndhf", "enoe", "etoe", "sig_marcogeoestadistico")
+  )
+  expect_identical(nrow(de_2020), 31L)
   expect_identical(bases_importinegi("cpv_censo", "2020"),
                    structure(de_2020[de_2020$proyecto == "cpv_censo", ], registro = registro_generado()))
   varios <- bases_importinegi(year = c(1990, 2000))
   expect_identical(unique(varios$year), c(1990L, 2000L))
-  # Cuatro bases de los censos y la ENIGH de 2000
-  expect_identical(nrow(varios), 5L)
+  # Cuatro bases de los censos, la ENIGH de 2000 y el Marco Geoestadistico de 2000
+  expect_identical(nrow(varios), 6L)
 
   conteos <- bases_importinegi(year = c(1995, 2005))
-  # Cinco bases de los conteos, la ENIGH de 2005 y los cuatro primeros trimestres de la ENOE
-  expect_identical(conteos$proyecto, rep(c("cpv_conteo", "enigh_tradicional", "enoe"), c(5L, 1L, 4L)))
+  # Cinco bases de los conteos, la ENIGH de 2005, los cuatro primeros trimestres
+  # de la ENOE y dos ediciones del Marco Geoestadistico
+  expect_identical(
+    conteos$proyecto,
+    rep(c("cpv_conteo", "enigh_tradicional", "enoe", "sig_marcogeoestadistico"), c(5L, 1L, 4L, 2L))
+  )
 
   # En 2015 y 2025 hay Encuesta Intercensal, censo de gobiernos municipales y
-  # ENOE; en 2025, tambien censo de derechos humanos federal
+  # ENOE; en 2025, tambien censo de derechos humanos federal y Marco
+  # Geoestadistico
   de_2015_y_2025 <- bases_importinegi(year = c(2015, 2025))
-  expect_identical(unique(de_2015_y_2025$proyecto), c("cpv_intercensal", "cngmd", "cndhf", "enoe"))
+  expect_identical(
+    unique(de_2015_y_2025$proyecto), c("cpv_intercensal", "cngmd", "cndhf", "enoe", "sig_marcogeoestadistico")
+  )
   intercensales <- bases_importinegi("cpv_intercensal", year = c(2015, 2025))
   expect_identical(intercensales, structure(de_2015_y_2025[de_2015_y_2025$proyecto == "cpv_intercensal", ],
                                             registro = registro_generado()))

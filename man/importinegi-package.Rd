@@ -36,7 +36,7 @@ Censos de gobierno y encuestas en hogares:
 
 Informacion georreferenciada:
 \itemize{
-\item \code{\link{sig_marcogeo}}: Marco Geoestadistico Nacional.
+\item \code{\link{sig_marcogeoestadistico}}: Marco Geoestadistico, de 1995 a 2026, por edicion, mapa y entidad.
 \item \code{\link{sig_caminos_descarga}} y \code{\link{sig_caminos_extrae}}: Red Nacional de Caminos.
 }
 }
@@ -44,7 +44,7 @@ Informacion georreferenciada:
 \section{Paquetes opcionales}{
 
 
-Las funciones \code{\link{sig_marcogeo}} y \code{\link{sig_caminos_extrae}} requieren el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}. La base \code{"resultados"} de \code{\link{cpv_intercensal}} requiere el paquete \code{readxl}, que se instala con \code{install.packages("readxl")}.
+Las funciones \code{\link{sig_marcogeoestadistico}} y \code{\link{sig_caminos_extrae}} requieren el paquete \code{sf}, que no se instala junto con \code{importinegi}. Se instala con \code{install.packages("sf")}. La base \code{"resultados"} de \code{\link{cpv_intercensal}} requiere el paquete \code{readxl}, que se instala con \code{install.packages("readxl")}.
 }
 
 \section{Guia de uso}{

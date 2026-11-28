@@ -212,10 +212,10 @@ test_that("leer_xlsx() devuelve como NA el texto NULL", {
 })
 
 test_that("las funciones que leen por su cuenta aplican nulos_a_na() a su resultado", {
-  # sig_marcogeo() y sig_caminos_extrae() todavia no usan las utilidades de
-  # lectura. enoe() ya lee con leer_dbf(): la regla se prueba con una de sus
-  # muestras en test-enoe.R
-  for (funcion in list(sig_marcogeo, sig_caminos_extrae)) {
+  # sig_caminos_extrae() todavia no usa las utilidades de lectura. enoe() ya lee
+  # con leer_dbf() y sig_marcogeoestadistico(), con marcogeo_leer(): la regla se
+  # prueba con sus muestras en test-enoe.R y en test-sig_marcogeoestadistico.R
+  for (funcion in list(sig_caminos_extrae, marcogeo_leer)) {
     expect_true(any(grepl("nulos_a_na", deparse(body(funcion)), fixed = TRUE)))
   }
 })

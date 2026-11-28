@@ -57,7 +57,15 @@ utils::write.csv(registro, "data-raw/registro_inegi.csv", row.names = FALSE,
 
 registro_archivos <- registro
 attr(registro_archivos, "generado") <- as.character(Sys.Date())
-save(registro_archivos, file = "R/sysdata.rda", compress = "xz", version = 2)
+
+# R/sysdata.rda guarda tambien los datos del Marco Geoestadistico, que genera
+# data-raw/marcogeo.R: se conservan.
+internos <- new.env()
+if (file.exists("R/sysdata.rda")) {
+  load("R/sysdata.rda", envir = internos)
+}
+internos$registro_archivos <- registro_archivos
+save(list = sort(ls(internos)), envir = internos, file = "R/sysdata.rda", compress = "xz", version = 2)
 
 message(
   "Registro generado: ", nrow(registro), " archivos de ",

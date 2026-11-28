@@ -3,15 +3,15 @@
 # de la serie 1.x. Se pueden agregar funciones y argumentos nuevos (al final),
 # pero no quitar ni reordenar los existentes. Las excepciones son las cinco
 # funciones censo_poblacion_*(), que se eliminaron porque cpv_censo() las sustituye;
-# censo_municipal(), que se elimino porque cngmd() la sustituye, y
-# enigh_nuevaconstruccion(), que se elimino porque enigh_nc() la sustituye.
+# censo_municipal(), que se elimino porque cngmd() la sustituye;
+# enigh_nuevaconstruccion(), que se elimino porque enigh_nc() la sustituye, y
+# sig_marcogeo(), que se elimino porque sig_marcogeoestadistico() la sustituye.
 
 interfaz_1x <- list(
   catalogo_inegi          = c("id"),
   enoe                    = c("year", "trimestre", "integrar"),
   sig_caminos_descarga    = c("year"),
-  sig_caminos_extrae      = c(".", "mapa"),
-  sig_marcogeo            = c("year", "mapa", "version")
+  sig_caminos_extrae      = c(".", "mapa")
 )
 
 test_that("se conservan las funciones exportadas de la serie 1.x", {
@@ -93,4 +93,14 @@ test_that("enigh_tradicional() se exporta con sus dos argumentos", {
   argumentos <- formals(enigh_tradicional)
   expect_identical(names(argumentos), c("year", "tabla"))
   expect_identical(argumentos$tabla, "concentrado")
+})
+
+test_that("sig_marcogeo() ya no se exporta y sig_marcogeoestadistico() la sustituye", {
+  expect_false("sig_marcogeo" %in% getNamespaceExports("importinegi"))
+  expect_true("sig_marcogeoestadistico" %in% getNamespaceExports("importinegi"))
+  argumentos <- formals(sig_marcogeoestadistico)
+  # Conserva los argumentos de sig_marcogeo() y agrega `estado`
+  expect_identical(names(argumentos), c("year", "mapa", "estado", "version"))
+  expect_null(argumentos$estado)
+  expect_null(argumentos$version)
 })
