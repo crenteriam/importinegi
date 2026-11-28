@@ -74,10 +74,13 @@ test_that("zip_indice_local() lee el indice en formato zip64", {
   expect_identical(indice$metodo, c(8, 8))
   expect_identical(indice$posicion[1], 0)
   expect_gt(indice$posicion[2], 0)
-  # El indice coincide con el contenido
-  carpeta <- withr::local_tempdir()
-  utils::unzip(muestra("sig/zip64.zip"), exdir = carpeta)
-  expect_identical(file.size(file.path(carpeta, indice$nombre)), indice$tamano)
+  # La posicion es la del encabezado de cada archivo dentro del zip. El
+  # contenido no se extrae aqui: utils::unzip() de R 4.1 no abre los zip en
+  # formato zip64.
+  bytes <- readBin(muestra("sig/zip64.zip"), what = "raw", n = 1e4)
+  for (posicion in indice$posicion) {
+    expect_true(zip_firma(bytes, posicion + 1, c(0x50, 0x4b, 0x03, 0x04)))
+  }
 })
 
 test_that("zip_indice_local() encuentra el indice aunque no quepa en el tramo final", {
