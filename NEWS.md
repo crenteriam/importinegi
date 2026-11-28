@@ -4,7 +4,7 @@
 
 * El paquete requiere ahora R 4.1 o posterior.
 * Dependencias: se eliminaron `data.table`, `dplyr` y `haven`, que no se usaban, y `rio`, que `enoe()` usaba solo para leer archivos DBF (ahora los lee con `foreign`, con el mismo resultado).
-* `sf` pasa a ser un paquete opcional. Solo lo necesitan `sig_marcogeo()` y `sig_caminos_extrae()`, que avisan si no esta instalado.
+* `sf` pasa a ser un paquete opcional. Solo lo necesitan `sig_marcogeoestadistico()` y `sig_caminos_extrae()`, que avisan si no esta instalado.
 * `readxl` es un paquete opcional nuevo: solo lo necesita la base `"resultados"` de `cpv_intercensal()`.
 * Pruebas automatizadas con `testthat` (tercera edicion).
 * Integracion continua con GitHub Actions en Windows, macOS y Linux, en sustitucion de Travis CI.
@@ -31,6 +31,8 @@
 * El motor de la ENIGH atiende tambien la Nueva construccion (52 tablas, cada una en su archivo) y puede leer una tabla del archivo CSV del INEGI, con los tipos de sus columnas fijados en el paquete, cuando el archivo DBF no contiene la tabla que anuncia. Por ahora es un solo caso: los negocios no agropecuarios de 2010 de la Nueva construccion.
 * El registro admite proyectos cuya pagina no esta en la seccion de programas del sitio del INEGI: en `data-raw/proyectos.csv`, esa pagina se escribe con su ruta completa, empezando con `/`. Es el caso de la Encuesta Telefonica de Ocupacion y Empleo (`/investigacion/etoe`).
 * La lectura y la integracion de las tablas de `enoe()` pasan a una funcion interna que tambien usa `etoe()`. El resultado de `enoe()` no cambia.
+* Nuevas utilidades internas para leer el indice de un archivo zip, local o remoto, sin depender de `utils::unzip()`. Con el indice se conoce el contenido de un zip aunque los nombres de sus archivos no esten en UTF-8, se avisa con claridad cuando un archivo usa un metodo de compresion que R no abre (Deflate64) y se puede descargar una sola parte de un zip remoto con solicitudes parciales (cabecera `Range`).
+* El paquete incluye la lista de productos del Marco Geoestadistico (26 productos) y el inventario de su descarga por capa (160 capas de 2017 a 2026, con las entidades que no tienen archivo). Se generan con el script `data-raw/marcogeo.R` a partir del servicio de productos del INEGI y del sondeo de las 5,280 direcciones de la descarga por capa. La tarea de GitHub Actions que regenera el registro ejecuta tambien este script.
 
 ## Funciones
 
@@ -149,6 +151,22 @@
 * Ayuda de `catalogo_inegi()`: describe las columnas del catalogo y agrega ejemplos de busqueda.
 * Ayuda de `cpv_censo()` y seccion del Censo de Poblacion y Vivienda de la viñeta, reescrita para `cpv_censo()`: bases disponibles por año, entidades, niveles de agregacion y tablas. La documentacion ya no menciona las funciones `censo_poblacion_*()`.
 * Ayuda de `bases_importinegi()` y nueva seccion de la viñeta, "Bases de datos disponibles".
+* Nueva funcion `sig_marcogeoestadistico()`, que descarga los mapas del Marco Geoestadistico del INEGI de 1995 a 2026: las 26 ediciones publicadas, por edicion, mapa y entidad.
+    * `sig_marcogeoestadistico(year, mapa, estado, version)`: `year` y `mapa` son obligatorios. `year` es el año de edicion que el INEGI asigna a cada producto.
+    * `version` distingue las ediciones de un mismo año como las distingue el INEGI: `"4.3"`, `"5.0"`, `"5.0.A"` y `"5.0.A 1:20 000"` en 2010; `"junio"` y `"diciembre"` en 2017; `"febrero"`, `"junio"` y `"diciembre"` en 2018; `"censo agropecuario 2022"` y `"diciembre"` en 2023. Si el año tiene varias ediciones y no se indica `version`, la funcion se detiene y las lista.
+    * 18 mapas: entidades, municipios, AGEB rurales y urbanas, localidades (urbanas, amanzanadas y rurales), integracion territorial, territorio insular y, desde diciembre de 2017, manzanas, frentes de manzana, vialidades, servicios (areas, lineas y puntos), caserio disperso y poligonos externos. Tambien las zonas en disputa entre entidades de dos ediciones de 2010. Desde diciembre de 2017, `mapa` acepta ademas el codigo del INEGI (`"MUN"`, `"FM"`).
+    * Devuelve siempre un solo mapa: un objeto de clase `sf`. Varias entidades, o todo el pais cuando el INEGI publica el mapa solo por entidad, se combinan en un solo objeto.
+    * `estado` acepta nombre, abreviatura o clave, y varias entidades a la vez. `"nacional"` devuelve todo el pais. Si no se indica, se descarga todo el pais, salvo en los mapas que el INEGI publica solo por entidad y en las manzanas, los frentes de manzana y las vialidades, cuyo archivo nacional pesa de 400 MB a 1 GB: en esos se descarga Aguascalientes, con un aviso.
+    * Devuelve cada mapa como lo publica el INEGI: no cambia los nombres de las columnas, la proyeccion ni el contenido. Solo convierte en `NA` el texto `"NULL"`. La ayuda documenta la proyeccion de cada edicion y sus excepciones.
+    * El texto se lee con la codificacion que declara cada archivo. Los archivos que no declaran ninguna (la mayoria de 1995 a 2013) se leen como Latin-1; antes, sus nombres con acentos quedaban como texto no valido.
+    * Descarga solo lo necesario. De diciembre de 2017 en adelante, el archivo del mapa y de la entidad que se piden, en lugar del producto completo de 2.4 a 3.1 GB. En las tres ediciones que el INEGI publica solo como producto completo (febrero y junio de 2018, y Censo Agropecuario 2022), el tramo del producto que corresponde a cada entidad.
+    * `bases_importinegi("sig_marcogeoestadistico")` lista las ediciones y los mapas de cada una.
+* **Cambio incompatible:** se elimino `sig_marcogeo()`. `sig_marcogeoestadistico()` la sustituye. Conserva los argumentos `year`, `mapa` y `version`, y agrega `estado` en la tercera posicion, por lo que `version` se debe escribir con su nombre.
+    * `sig_marcogeo(2009, "municipios")` pasa a ser `sig_marcogeoestadistico(2009, "municipios")`.
+    * `sig_marcogeo(2010, "entidades", version = "5.0.A")` pasa a ser `sig_marcogeoestadistico(2010, "entidades", version = "5.0.A")`.
+    * `mapa = "ageb"` pasa a ser `"ageb_urbana"` (2000, 2005, 2009, 2010 y 2013) o `"ageb_rural"` (2007); `"urbano"` pasa a ser `"localidades_urbanas"`, y `"rural"`, `"localidades_rurales"`. Con los nombres anteriores, la funcion se detiene e indica el nombre nuevo.
+    * `sig_marcogeo()` sin argumentos abria la pagina del Marco Geoestadistico en el navegador (solo en Windows). Las ediciones y sus mapas se consultan ahora con `bases_importinegi("sig_marcogeoestadistico")`.
+    * `sig_marcogeo()` cubria 8 ediciones (1995, 2000, 2005, 2007, 2009, dos de 2010 y 2013). Sus direcciones usaban `http` y un dominio anterior del INEGI.
 * Ayuda de `cpv_conteo()` y nueva seccion de la viñeta, "Conteo de Poblacion y Vivienda", que explica como se levantaron los conteos de 1995 y 2005.
 * Ayuda de `cpv_intercensal()` y nueva seccion de la viñeta, "Encuesta Intercensal", que explica como se levantaron las encuestas de 2015 y 2025.
 * Ayuda de `cngmd()` y seccion de la viñeta sobre el Censo Nacional de Gobiernos Municipales, reescrita para `cngmd()`: modulos por edicion, temas, tablas, catalogos y siglas del INEGI. La documentacion ya no menciona `censo_municipal()`.
@@ -158,7 +176,8 @@
 * Ayuda de `enoe()` y seccion de la ENOE de la viñeta, actualizadas: trimestres disponibles, tablas, argumentos `tabla` y `estado`, valor que devuelve la funcion, como se integran las tablas y ponderadores. La ayuda de `bases_importinegi()` y la seccion "Bases de datos disponibles" de la viñeta describen las filas de la ENOE.
 * Ayuda de `etoe()` y nueva seccion de la viñeta, "Encuesta Telefonica de Ocupacion y Empleo": meses disponibles, versiones de los ponderadores, tablas, como se integran y como unir varios meses. La ayuda de `enoe()` y la seccion de la ENOE de la viñeta remiten a `etoe()`. La ayuda de `bases_importinegi()` y la seccion "Bases de datos disponibles" de la viñeta describen las filas de la ETOE.
 * La pagina de ayuda del paquete (`?importinegi`) incluye el indice de funciones por proyecto estadistico.
-* La ayuda de `sig_marcogeo()` y `sig_caminos_extrae()` indica que requieren el paquete `sf`.
+* La ayuda de `sig_caminos_extrae()` indica que requiere el paquete `sf`.
+* Ayuda de `sig_marcogeoestadistico()`: ediciones, mapas, proyeccion de cada edicion y tamaño de las descargas. La ayuda de `bases_importinegi()` describe las filas del Marco Geoestadistico.
 * Viñeta: nueva seccion sobre el catalogo de proyectos estadisticos y requisitos de la version; se corrigieron referencias que ya no eran vigentes (el paquete `rgdal` y dos nombres de funciones).
 * README: instalacion de la version estable y de la version en desarrollo, y ejemplo de uso. Las notas de las versiones anteriores pasan a este archivo.
 * README: lista de los proyectos estadisticos cuyas funciones ya se actualizaron en la version 2.0.0, con sus años.

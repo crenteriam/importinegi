@@ -1,11 +1,14 @@
-# Genera el registro de archivos del INEGI (data-raw/registro.R) y lo publica
-# como artefacto de la ejecucion.
+# Genera el registro de archivos del INEGI (data-raw/registro.R) y los datos del
+# Marco Geoestadistico (data-raw/marcogeo.R), y los publica como artefacto de la
+# ejecucion. El segundo script sondea mas de cinco mil direcciones y tarda
+# varios minutos.
 #
 # - Manual: pestana Actions > registro-inegi.yaml > Run workflow.
-# - Anual (15 de enero): si el registro generado difiere del que esta en el
+# - Anual (15 de enero): si lo generado difiere de lo que esta en el
 #   repositorio, la ejecucion falla para avisar que el INEGI publico o cambio
 #   archivos.
-# - En pull requests que tocan el script, la lista de proyectos o este archivo.
+# - En pull requests que tocan los scripts, la lista de proyectos o este
+#   archivo.
 on:
   workflow_dispatch:
   schedule:
@@ -14,6 +17,7 @@ on:
     paths:
       - 'data-raw/**'
       - 'R/registro.R'
+      - 'R/marcogeo-registro.R'
       - 'R/utils-descarga.R'
       - '.github/workflows/registro-inegi.yaml'
 
@@ -41,15 +45,21 @@ jobs:
       - name: Generar el registro
         run: Rscript data-raw/registro.R
 
+      # Cada script es de todo o nada y no depende del otro: este corre aunque
+      # el anterior haya fallado.
+      - name: Generar los datos del Marco Geoestadistico
+        if: always()
+        run: Rscript data-raw/marcogeo.R
+
       - name: Resumen de cambios
         if: always()
         run: |
-          git add --intent-to-add data-raw/registro_inegi.csv R/sysdata.rda 2>/dev/null || true
+          git add --intent-to-add data-raw/registro_inegi.csv data-raw/marcogeo_productos.csv data-raw/marcogeo_capas.csv R/sysdata.rda 2>/dev/null || true
           {
             echo "## Registro de archivos del INEGI"
             echo
             echo '```'
-            git diff --stat -- data-raw/registro_inegi.csv R/sysdata.rda || true
+            git diff --stat -- data-raw/registro_inegi.csv data-raw/marcogeo_productos.csv data-raw/marcogeo_capas.csv R/sysdata.rda || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -59,15 +69,23 @@ jobs:
         if: always()
         run: git diff --unified=0 -- data-raw/registro_inegi.csv | head -n 5000
 
+      # Productos y capas del Marco Geoestadistico que el INEGI agrego, quito o
+      # cambio.
+      - name: Cambios en los datos del Marco Geoestadistico
+        if: always()
+        run: git diff --unified=0 -- data-raw/marcogeo_productos.csv data-raw/marcogeo_capas.csv | head -n 1000
+
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: registro-inegi
           path: |
             data-raw/registro_inegi.csv
+            data-raw/marcogeo_productos.csv
+            data-raw/marcogeo_capas.csv
             R/sysdata.rda
           if-no-files-found: warn
 
       - name: Avisar si el registro cambio
         if: github.event_name == 'schedule'
-        run: git diff --exit-code -- data-raw/registro_inegi.csv
+        run: git diff --exit-code -- data-raw/registro_inegi.csv data-raw/marcogeo_productos.csv data-raw/marcogeo_capas.csv

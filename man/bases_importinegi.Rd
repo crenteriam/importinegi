@@ -21,7 +21,7 @@ Data.frame con una fila por proyecto, año y base de datos (en \code{"cngmd"} y 
 \item{\code{descripcion}}{Descripcion de la base de datos. En \code{"cngmd"} y \code{"cndhf"}, titulo que el INEGI le da al tema, que tambien se puede escribir en el argumento \code{tema}.}
 \item{\code{tablas}}{Tablas de la base de datos, separadas por comas, cuando se publica en varias tablas. La primera es la que se descarga por omision. Se eligen con el argumento \code{tabla} de la funcion de descarga. En \code{"cngmd"} y \code{"cndhf"}, \code{NA}: las tablas de un tema se conocen al descargarlo.}
 \item{\code{cobertura}}{\code{"nacional y por entidad"} si el INEGI publica un archivo nacional ademas de los archivos por entidad federativa, \code{"por entidad"} si solo publica archivos por entidad, o \code{"nacional"} si solo publica el archivo nacional.}
-\item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"} o \code{"xlsx"}).}
+\item{\code{formato}}{Formato de los archivos que lee el paquete (\code{"dbf"}, \code{"csv"}, \code{"xlsx"} o \code{"shp"}).}
 \item{\code{tamano_mb}}{Tamaño de la descarga de todo el pais, en megabytes: el archivo nacional si existe o, si no, la suma de los archivos de todas las entidades.}
 }
 
@@ -30,6 +30,8 @@ En \code{"enigh_tradicional"} y \code{"enigh_nc"} hay una fila por edicion: \cod
 En \code{"enoe"} hay una fila por trimestre: \code{base} es el trimestre, como se escribe en el argumento \code{trimestre} de la funcion (\code{"trim1"}); \code{descripcion} indica la edicion de la encuesta y el cuestionario de ocupacion y empleo que se aplico (basico o ampliado), y \code{tablas} lista las cinco tablas del trimestre, que se descargan todas por omision.
 
 En \code{"etoe"} hay una fila por mes: \code{base} es el mes, como se escribe en el argumento \code{mes} de la funcion (\code{"abril"}); \code{descripcion} indica las versiones de los ponderadores en que se publica el mes, como se escriben en el argumento \code{poblacion} (\code{"cpv2020"} y \code{"conapo"}); \code{tablas} lista las cinco tablas del mes, que se descargan todas por omision, y \code{tamano_mb} es el tamaño del archivo de la version que se descarga por omision.
+
+En \code{"sig_marcogeoestadistico"} hay una fila por edicion del Marco Geoestadistico: \code{year} es el año de edicion; \code{base} es la version de la edicion, como se escribe en el argumento \code{version} de la funcion (solo hace falta indicarla en los años que tienen varias ediciones); \code{tablas} lista los mapas de la edicion, que se piden con el argumento \code{mapa}, y \code{tamano_mb} es el peso de todos los mapas de la edicion para todo el pais.
 }
 \description{
 Devuelve una tabla con las bases de datos del INEGI que se pueden descargar con las funciones de este paquete, por proyecto estadistico y año. No descarga ningun archivo ni requiere conexion a internet.
@@ -40,6 +42,8 @@ La tabla sale del registro de archivos del INEGI que se distribuye con el paquet
 Por ahora la tabla incluye los proyectos cuyas funciones ya usan el registro: el Censo de Poblacion y Vivienda (\code{\link{cpv_censo}}), el Conteo de Poblacion y Vivienda (\code{\link{cpv_conteo}}), la Encuesta Intercensal (\code{\link{cpv_intercensal}}), el Censo Nacional de Gobiernos Municipales y Demarcaciones Territoriales de la Ciudad de Mexico (\code{\link{cngmd}}) y el Censo Nacional de Derechos Humanos Federal (\code{\link{cndhf}}). Los demas proyectos del paquete se agregaran conforme sus funciones se actualicen; mientras tanto, sus años y bases disponibles se consultan en la ayuda de cada funcion.
 
 Tambien incluye la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares (\code{\link{enigh_tradicional}} y \code{\link{enigh_nc}}), con una fila por edicion, la Encuesta Nacional de Ocupacion y Empleo (\code{\link{enoe}}), con una fila por trimestre, y la Encuesta Telefonica de Ocupacion y Empleo (\code{\link{etoe}}), con una fila por mes.
+
+Incluye ademas el Marco Geoestadistico (\code{\link{sig_marcogeoestadistico}}), con una fila por edicion. Estas filas no salen del registro de microdatos, sino de la lista de productos del Marco Geoestadistico del INEGI, que tambien se distribuye con el paquete.
 
 A diferencia de \code{\link{catalogo_inegi}}, que consulta en linea todos los proyectos estadisticos que documenta el INEGI, esta funcion muestra solo lo que \code{importinegi} puede descargar.
 }
@@ -69,8 +73,15 @@ bases_importinegi(proyecto = "enoe", year = 2020)
 # Meses de la ETOE, con las versiones de sus ponderadores.
 bases_importinegi(proyecto = "etoe")
 
+# Ediciones del Marco Geoestadistico y mapas de la edicion de 2025.
+marco <- bases_importinegi(proyecto = "sig_marcogeoestadistico")
+marco[, c("year", "base", "descripcion")]
+marco$tablas[marco$year == 2025]
+
 }
 \seealso{
+\code{\link{sig_marcogeoestadistico}} para descargar los mapas del Marco Geoestadistico.
+
 \code{\link{enigh_tradicional}} y \code{\link{enigh_nc}} para descargar la serie tradicional y la Nueva construccion de la Encuesta Nacional de Ingresos y Gastos de los Hogares.
 
 \code{\link{enoe}} para descargar la Encuesta Nacional de Ocupacion y Empleo.

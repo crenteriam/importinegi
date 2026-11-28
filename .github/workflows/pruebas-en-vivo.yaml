@@ -7,7 +7,9 @@
 #   Encuestas Intercensales 2015 y 2025 (148 MB), y con el primer trimestre de
 #   2024 de la ENOE; no corren en los pull requests. La opcion enoe_serie lee e
 #   integra los 86 trimestres de la ENOE (descarga 2.3 GB; tarda cerca de una
-#   hora); tampoco corre en los pull requests.
+#   hora); tampoco corre en los pull requests. La opcion marcogeo_completo lee
+#   todos los mapas de las 26 ediciones del Marco Geoestadistico (descarga
+#   cerca de 2.2 GB); tampoco corre en los pull requests, que leen una muestra.
 # - En pull requests que tocan el codigo del paquete o estas pruebas.
 #
 # Si el sitio del INEGI no responde, esta tarea falla aunque el paquete este
@@ -21,6 +23,10 @@ on:
         default: false
       enoe_serie:
         description: 'Leer e integrar los 86 trimestres de la ENOE (descarga 2.3 GB, cerca de una hora)'
+        type: boolean
+        default: false
+      marcogeo_completo:
+        description: 'Leer todos los mapas de las 26 ediciones del Marco Geoestadistico (descarga 2.2 GB)'
         type: boolean
         default: false
   pull_request:
@@ -38,14 +44,16 @@ jobs:
   en-vivo:
     runs-on: ubuntu-latest
     # Los pull requests tardan de 15 a 25 minutos; la serie completa de la ENOE,
-    # cerca de una hora mas.
-    timeout-minutes: ${{ inputs.enoe_serie && 180 || 45 }}
+    # cerca de una hora mas. Las 26 ediciones del Marco Geoestadistico se dejan
+    # con el mismo margen.
+    timeout-minutes: ${{ (inputs.enoe_serie || inputs.marcogeo_completo) && 180 || 45 }}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       IMPORTINEGI_EN_VIVO: "true"
       IMPORTINEGI_MEDIR_MEMORIA: ${{ inputs.medir_memoria && 'true' || 'false' }}
       IMPORTINEGI_ENOE_SERIE: ${{ inputs.enoe_serie && 'true' || 'false' }}
+      IMPORTINEGI_MARCOGEO_COMPLETO: ${{ inputs.marcogeo_completo && 'true' || 'false' }}
 
     steps:
       - uses: actions/checkout@v6
@@ -55,8 +63,9 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"hard"'
-          # readxl: lo necesita la base "resultados" de cpv_intercensal()
-          extra-packages: any::pkgload, any::testthat, any::withr, any::webfakes, any::readxl
+          # readxl: lo necesita la base "resultados" de cpv_intercensal().
+          # sf: lo necesita sig_marcogeoestadistico()
+          extra-packages: any::pkgload, any::testthat, any::withr, any::webfakes, any::readxl, any::sf
 
       - name: Pruebas en vivo contra el INEGI
         # Las lineas se recortan: una linea enorme en la salida de una prueba deja

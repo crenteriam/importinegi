@@ -12,6 +12,8 @@ servidor_prueba <- function(entorno = parent.frame()) {
   testthat::skip_if_not_installed("webfakes")
   testthat::skip_on_cran()
   app <- webfakes::new_app()
+  # Para leer el cuerpo de las consultas en JSON (servicio de productos)
+  app$use(webfakes::mw_json())
   app$locals$carpeta <- normalizePath(testthat::test_path("fixtures"))
   app$locals$solicitudes <- 0
 
@@ -329,6 +331,69 @@ servidor_prueba <- function(entorno = parent.frame()) {
   app$get("/etoe/descargas", function(req, res) {
     res$send(as.character(req$app$locals$descargas_etoe))
   })
+  # Archivos del Marco Geoestadistico, con las muestras de fixtures/sig: los
+  # productos completos ("producto_" mas el nombre del archivo) y la descarga
+  # por capa ("capa_" mas el nombre del archivo). Como el servidor del INEGI,
+  # atiende las solicitudes parciales (cabecera Range) con el codigo 206 y la
+  # cabecera Content-Range, y responde con una pagina HTML y el codigo 200
+  # cuando el archivo no existe. Lleva la cuenta de las solicitudes atendidas
+  # y de los bytes enviados.
+  app$locals$descargas_sig <- 0
+  app$locals$bytes_sig <- 0
+  app$locals$enviar_sig <- function(req, res, archivo) {
+    locales <- req$app$locals
+    ruta <- file.path(locales$carpeta, "sig", archivo)
+    if (!file.exists(ruta)) {
+      res$set_status(200L)
+      res$set_type("text/html")
+      res$send("<!DOCTYPE html><html><head><title>Pagina no encontrada</title></head></html>")
+      return(invisible())
+    }
+    tamano <- file.size(ruta)
+    bytes <- readBin(ruta, what = "raw", n = tamano)
+    rango <- req$get_header("Range")
+    res$set_header("Accept-Ranges", "bytes")
+    res$set_type("application/x-zip-compressed")
+    if (!is.null(rango) && grepl("^bytes=[0-9]*-[0-9]*$", rango) && rango != "bytes=-") {
+      limites <- strsplit(sub("^bytes=", "", rango), "-", fixed = TRUE)[[1]]
+      if (!nzchar(limites[1])) {
+        # "-n": los ultimos n bytes
+        desde <- max(0, tamano - as.numeric(limites[2]))
+        hasta <- tamano - 1
+      } else {
+        desde <- as.numeric(limites[1])
+        hasta <- if (length(limites) < 2) tamano - 1 else min(as.numeric(limites[2]), tamano - 1)
+      }
+      res$set_status(206L)
+      res$set_header("Content-Range", sprintf("bytes %.0f-%.0f/%.0f", desde, hasta, tamano))
+      bytes <- bytes[(desde + 1):(hasta + 1)]
+    }
+    locales$descargas_sig <- locales$descargas_sig + 1
+    locales$bytes_sig <- locales$bytes_sig + length(bytes)
+    res$send(bytes)
+  }
+  app$get(
+    webfakes::new_regexp("^/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/geografia/"),
+    function(req, res) req$app$locals$enviar_sig(req, res, paste0("producto_", basename(req$path)))
+  )
+  app$get(webfakes::new_regexp("^/contenidos/descargadenue/MGdescarga/MGN[0-9]{4}/"), function(req, res) {
+    req$app$locals$enviar_sig(req, res, paste0("capa_", basename(req$path)))
+  })
+  # Servicio de productos del INEGI: responde con la muestra a la consulta de
+  # la coleccion del Marco Geoestadistico y, a cualquier otra, como el servicio
+  # real cuando faltan parametros.
+  app$post("/app/api/productos/interna_v2/componente/mapas/lista/resultados/", function(req, res) {
+    consulta <- req$json
+    if (identical(consulta$tema, "213") && identical(consulta$titg, "4328")) {
+      res$send_file(file.path("sig", "api_productos.json"), root = req$app$locals$carpeta)
+    } else {
+      res$set_type("application/json")
+      res$send("{\"success\":false,\"error\":true,\"message\":\"Par\u00e1metros de consulta nulos.\"}")
+    }
+  })
+  app$get("/sig/descargas", function(req, res) {
+    res$send(paste(req$app$locals$descargas_sig, req$app$locals$bytes_sig))
+  })
   app$get("/enoe/descargas", function(req, res) {
     res$send(as.character(req$app$locals$descargas_enoe))
   })
@@ -400,4 +465,43 @@ omitir_si_no_en_vivo <- function() {
     identical(Sys.getenv("IMPORTINEGI_EN_VIVO"), "true"),
     "Las pruebas en vivo solo corren con IMPORTINEGI_EN_VIVO=true"
   )
+}
+
+# Servidor local con las muestras del Marco Geoestadistico. Empieza y termina
+# sin las descargas que sig_marcogeoestadistico() conserva durante la sesion y
+# sin los indices de zip remotos que guarda en la memoria.
+marcogeo_local <- function(entorno = parent.frame()) {
+  testthat::skip_if_not_installed("sf")
+  limpiar <- function() {
+    unlink(file.path(tempdir(), "importinegi", "marcogeo"), recursive = TRUE)
+    memoria_borrar()
+  }
+  limpiar()
+  withr::defer(limpiar(), envir = entorno)
+  servidor <- servidor_prueba(entorno)
+  withr::local_options(
+    importinegi.base = sub("/$", "", servidor$url("/")),
+    importinegi.espera = 0,
+    importinegi.cache = FALSE,
+    .local_envir = entorno
+  )
+  servidor
+}
+
+# Solicitudes atendidas y bytes enviados por el servidor local en los archivos
+# del Marco Geoestadistico.
+descargas_sig <- function(servidor) {
+  texto <- httr2::resp_body_string(httr2::req_perform(httr2::request(servidor$url("/sig/descargas"))))
+  valores <- as.numeric(strsplit(texto, " ", fixed = TRUE)[[1]])
+  list(solicitudes = valores[1], bytes = valores[2])
+}
+
+# Comprueba que el resultado sea un solo mapa: un objeto de clase sf (no una
+# lista de mapas), con una sola columna de geometria.
+esperar_un_mapa <- function(mapa) {
+  testthat::expect_s3_class(mapa, "sf")
+  testthat::expect_s3_class(mapa, "data.frame")
+  testthat::expect_identical(sum(vapply(mapa, inherits, logical(1), what = "sfc")), 1L)
+  testthat::expect_length(attr(mapa, "sf_column"), 1L)
+  invisible(mapa)
 }

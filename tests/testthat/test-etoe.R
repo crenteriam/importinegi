@@ -518,7 +518,8 @@ test_that("bases_importinegi() lista los meses de la ETOE", {
   }
   # La ETOE va despues de la ENOE en la tabla completa
   todas <- bases_importinegi()
-  expect_identical(utils::tail(unique(todas$proyecto), 2), c("enoe", "etoe"))
+  proyectos <- unique(todas$proyecto)
+  expect_identical(match("etoe", proyectos), match("enoe", proyectos) + 1L)
   expect_identical(valores(todas[todas$proyecto == "etoe", ]), valores(bases))
 
   # Con una sola version en el registro, la descripcion lo dice
